@@ -43,7 +43,7 @@ class _PageSliderState extends State<PageSlider> {
     return PopScope(
       canPop:
           false, // Evita que el usuario cierre la pantalla con el botón de retroceso
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
       },
       child: Scaffold(

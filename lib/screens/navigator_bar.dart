@@ -280,7 +280,7 @@ class _NavigatorBarState extends State<NavigatorBar> {
     return PopScope(
       canPop:
           false, // Evita que el usuario cierre la app con el botón de retroceso
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         bool exitApp = await _onBackPressed();
         if (exitApp) {
@@ -388,8 +388,9 @@ class _NavigatorBarState extends State<NavigatorBar> {
     targets.clear();
     targets.add(targetBottomNagigation1(keyBottomNavigation1, widget.stateApp));
     targets.add(targetBottomNavigation2(keyBottomNavigation2, widget.stateApp));
-    if (widget.stateApp == StateAplication.complement)
+    if (widget.stateApp == StateAplication.complement) {
       targets.add(targetCreateProcedure(keyCreateProcedure));
+    }
     targets.add(targetNotification(keyNotification));
     targets.add(targetMenu(keyMenu));
     targets.add(targetRefresh(keyRefresh));

@@ -40,7 +40,7 @@ class DialogOneFunction extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false, // Bloquea el botón de retroceso
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
       },
       child: ComponentAnimate(

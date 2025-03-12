@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
@@ -15,7 +15,8 @@ import 'package:muserpol_pvt/model/qr_model.dart';
 import 'package:muserpol_pvt/screens/flowQR/flow.dart';
 import 'package:muserpol_pvt/screens/access/login.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
-import 'package:platform_device_id/platform_device_id.dart';
+// import 'package:platform_device_id/platform_device_id.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:muserpol_pvt/services/services.dart';
 
@@ -53,13 +54,36 @@ class ScreenSwitchState extends State<ScreenSwitch> {
     initPlatformState();
   }
 
+  // Future<void> initPlatformState() async {
+  //   String? statusDeviceId;
+  //   try {
+  //     statusDeviceId = await PlatformDeviceId.getDeviceId;
+  //   } on PlatformException {
+  //     statusDeviceId = 'Failed to get deviceId.';
+  //   }
+  //   if (!mounted) return;
+  //   setState(() => deviceId = statusDeviceId);
+  // }
+
   Future<void> initPlatformState() async {
+    final deviceInfo = DeviceInfoPlugin();
     String? statusDeviceId;
+
     try {
-      statusDeviceId = await PlatformDeviceId.getDeviceId;
-    } on PlatformException {
-      statusDeviceId = 'Failed to get deviceId.';
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        statusDeviceId = androidInfo.id; // Obtiene el ID único en Android
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        statusDeviceId =
+            iosInfo.identifierForVendor; // Obtiene el ID único en iOS
+      } else {
+        statusDeviceId = 'Plataforma no soportada';
+      }
+    } catch (e) {
+      statusDeviceId = 'Error obteniendo ID: $e';
     }
+
     if (!mounted) return;
     setState(() => deviceId = statusDeviceId);
   }
@@ -69,7 +93,7 @@ class ScreenSwitchState extends State<ScreenSwitch> {
     return PopScope(
       canPop:
           false, // Evita que el usuario cierre la pantalla con el botón de retroceso
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         bool exitApp = await _onBackPressed();
         if (exitApp) {

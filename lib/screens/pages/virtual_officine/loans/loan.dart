@@ -37,8 +37,7 @@ class _ScreenPageLoansState extends State<ScreenPageLoans> {
             Future.delayed(const Duration(seconds: 3));
             reloadLoans();
           },
-          builder: MaterialIndicatorDelegate(
-            builder: (context, controller) {
+          builder: MaterialIndicatorDelegate(builder: (context, controller) {
             return Image.asset(
               'assets/images/load.gif',
               fit: BoxFit.cover,
@@ -49,37 +48,61 @@ class _ScreenPageLoansState extends State<ScreenPageLoans> {
               child: loanBloc.state.existLoan
                   ? Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        if (loanBloc.state.loan!.notification! != '')
-                          Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  color: AdaptiveTheme.of(context).mode.isDark ? const Color(0xff184741) : const Color(0xffD2EAFA)),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.info_outline_rounded),
-                                    const SizedBox(width: 10),
-                                    Flexible(
-                                        child: Text(
-                                      loanBloc.state.loan!.notification!,
-                                    )),
-                                  ],
-                                ),
-                              )),
-                        if (loanBloc.state.loan!.payload!.inProcess!.isNotEmpty)
-                          loans('Prestamos en proceso:', [
-                            for (var item in loanBloc.state.loan!.payload!.inProcess!) CardLoan(itemProcess: item, color: const Color(0xffB3D4CF))
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (loanBloc.state.loan!.notification! != '')
+                              Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      color:
+                                          AdaptiveTheme.of(context).mode.isDark
+                                              ? const Color(0xff184741)
+                                              : const Color(0xffD2EAFA)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.info_outline_rounded),
+                                        const SizedBox(width: 10),
+                                        Flexible(
+                                            child: Text(
+                                          loanBloc.state.loan!.notification!,
+                                        )),
+                                      ],
+                                    ),
+                                  )),
+                            if (loanBloc
+                                .state.loan!.payload!.inProcess!.isNotEmpty)
+                              loans('Prestamos en proceso:', [
+                                for (var item
+                                    in loanBloc.state.loan!.payload!.inProcess!)
+                                  CardLoan(
+                                      itemProcess: item,
+                                      color: const Color(0xffB3D4CF))
+                              ]),
+                            if (loanBloc
+                                .state.loan!.payload!.current!.isNotEmpty)
+                              loans('Prestamos vigentes:', [
+                                for (var item
+                                    in loanBloc.state.loan!.payload!.current!)
+                                  CardLoan(itemCurrent: item)
+                              ]),
+                            if (loanBloc
+                                .state.loan!.payload!.liquited!.isNotEmpty)
+                              loans('Prestamos Liquidados:', [
+                                for (var item
+                                    in loanBloc.state.loan!.payload!.liquited!)
+                                  CardLoan(itemCurrent: item)
+                              ]),
+                            if (loanBloc.state.loan!.error == 'true')
+                              Text(loanBloc.state.loan!.message!),
+                            Center(
+                                child: IconBtnComponent(
+                                    iconText: 'assets/icons/reload.svg',
+                                    onPressed: () => reloadLoans())),
+                            const SizedBox(height: 70)
                           ]),
-                        if (loanBloc.state.loan!.payload!.current!.isNotEmpty)
-                          loans('Prestamos vigentes:', [for (var item in loanBloc.state.loan!.payload!.current!) CardLoan(itemCurrent: item)]),
-                        if (loanBloc.state.loan!.payload!.liquited!.isNotEmpty)
-                          loans('Prestamos Liquidados:', [for (var item in loanBloc.state.loan!.payload!.liquited!) CardLoan(itemCurrent: item)]),
-                        if (loanBloc.state.loan!.error == 'true') Text(loanBloc.state.loan!.message!),
-                        Center(child: IconBtnComponent(iconText: 'assets/icons/reload.svg', onPressed: () => reloadLoans())),
-                        const SizedBox(height: 70)
-                      ]),
                     )
                   : Image.asset(
                       'assets/images/load.gif',
@@ -96,9 +119,11 @@ class _ScreenPageLoansState extends State<ScreenPageLoans> {
     final authService = Provider.of<AuthService>(context, listen: false);
 
     loanBloc.add(ClearLoans());
-    final biometric = biometricUserModelFromJson(await authService.readBiometric());
+    final biometric =
+        biometricUserModelFromJson(await authService.readBiometric());
     if (!mounted) return;
-    var response = await serviceMethod(mounted, context, 'get', null, serviceLoans(biometric.affiliateId!), true, true);
+    var response = await serviceMethod(mounted, context, 'get', null,
+        serviceLoans(biometric.affiliateId!), true, true);
     if (response != null) {
       loanBloc.add(UpdateLoan(loanModelFromJson(response.body)));
     }
@@ -109,7 +134,10 @@ class _ScreenPageLoansState extends State<ScreenPageLoans> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Text(text, style: const TextStyle(fontWeight: FontWeight.bold)), ...cards],
+        children: [
+          Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ...cards
+        ],
       ),
     );
   }

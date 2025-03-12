@@ -3,10 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 ThemeData styleLigth() {
   return ThemeData.light(useMaterial3: true).copyWith(
-      floatingActionButtonTheme: ThemeData.light().floatingActionButtonTheme.copyWith(
+      floatingActionButtonTheme: ThemeData.light()
+          .floatingActionButtonTheme
+          .copyWith(
             backgroundColor: const Color(0xff419388),
             splashColor: Colors.transparent,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
       dividerTheme: const DividerThemeData(
         color: Color(0xff419388),
@@ -24,7 +27,8 @@ ThemeData styleLigth() {
                 color: Color(0xff419388),
               ),
             ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
               borderSide: const BorderSide(color: Colors.grey, width: 2),
@@ -51,13 +55,16 @@ ThemeData styleLigth() {
       buttonTheme: ThemeData.light().buttonTheme.copyWith(
             padding: const EdgeInsets.all(0),
             splashColor: Colors.transparent,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
       textTheme: ThemeData.light()
           .textTheme
           .copyWith(
-            bodyLarge: TextStyle(color: const Color(0xff21232A), fontSize: 17.sp),
-            bodyMedium: TextStyle(color: const Color(0xff21232A), fontSize: 17.sp),
+            bodyLarge:
+                TextStyle(color: const Color(0xff21232A), fontSize: 17.sp),
+            bodyMedium:
+                TextStyle(color: const Color(0xff21232A), fontSize: 17.sp),
             labelLarge: TextStyle(fontSize: 17.sp),
           )
           .apply(
@@ -75,8 +82,12 @@ ThemeData styleLigth() {
       cardColor: const Color(0xfff2f2f2),
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
-      dialogBackgroundColor: const Color(0xfff2f2f2),
-      dialogTheme: ThemeData.light().dialogTheme.copyWith(surfaceTintColor: const Color(0xfff2f2f2)),
+      // dialogBackgroundColor: const Color(0xfff2f2f2),
+      // dialogTheme: ThemeData.light().dialogTheme.copyWith(surfaceTintColor: const Color(0xfff2f2f2)),
+      dialogTheme: ThemeData.light().dialogTheme.copyWith(
+            backgroundColor: const Color(0xfff2f2f2),
+            surfaceTintColor: const Color(0xfff2f2f2),
+          ),
       scaffoldBackgroundColor: const Color(0xfff2f2f2),
       primaryColorDark: const Color(0xff21232A),
       iconTheme: const IconThemeData(color: Color(0xff419388)),
@@ -90,10 +101,13 @@ ThemeData styleLigth() {
 
 ThemeData styleDark() {
   return ThemeData.dark(useMaterial3: true).copyWith(
-    floatingActionButtonTheme: ThemeData.light().floatingActionButtonTheme.copyWith(
+      floatingActionButtonTheme: ThemeData.light()
+          .floatingActionButtonTheme
+          .copyWith(
             backgroundColor: const Color(0xff419388),
             splashColor: Colors.transparent,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
       drawerTheme: ThemeData.dark().drawerTheme.copyWith(
           elevation: 0,
@@ -106,7 +120,8 @@ ThemeData styleDark() {
               borderRadius: BorderRadius.circular(8.0),
               borderSide: const BorderSide(color: Color(0xff419388)),
             ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
               borderSide: const BorderSide(color: Color(0xffE8EAED)),
@@ -133,7 +148,8 @@ ThemeData styleDark() {
       buttonTheme: ThemeData.dark().buttonTheme.copyWith(
             padding: const EdgeInsets.all(0),
             splashColor: Colors.transparent,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
       textTheme: ThemeData.dark()
           .textTheme
@@ -162,8 +178,15 @@ ThemeData styleDark() {
       cardColor: const Color(0xff132c29),
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
-      dialogBackgroundColor: const Color(0xff132c29),
-      dialogTheme: ThemeData.light().dialogTheme.copyWith(surfaceTintColor: const Color(0xff132c29)),
+      // dialogBackgroundColor: const Color(0xff132c29),
+      // dialogTheme: ThemeData.light()
+      //     .dialogTheme
+      //     .copyWith(surfaceTintColor: const Color(0xff132c29)),
+      dialogTheme: ThemeData.dark().dialogTheme.copyWith(
+            backgroundColor:
+                const Color(0xff132c29), 
+            surfaceTintColor: const Color(0xff132c29),
+          ),
       scaffoldBackgroundColor: const Color(0xff132c29),
       primaryColorDark: const Color(0xfff2f2f2),
       iconTheme: const IconThemeData(color: Color(0xff419388)),

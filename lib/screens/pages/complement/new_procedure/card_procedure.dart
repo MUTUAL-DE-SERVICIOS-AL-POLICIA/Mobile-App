@@ -74,7 +74,7 @@ class _StepperProcedureState extends State<StepperProcedure> {
     return PopScope(
       canPop:
           false, // Evita que el usuario cierre la pantalla con el botón de retroceso
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         bool exitScreen = await _onBackPressed();
         if (exitScreen) {

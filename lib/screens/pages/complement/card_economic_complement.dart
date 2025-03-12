@@ -7,7 +7,8 @@ import 'package:muserpol_pvt/model/procedure_model.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:muserpol_pvt/utils/save_document.dart';
-import 'package:open_file_safe/open_file_safe.dart';
+// import 'package:open_file_safe/open_file_safe.dart';
+import 'package:open_file_safe_plus/open_file_safe_plus.dart';
 
 class CardEc extends StatefulWidget {
   final Datum? item;
@@ -128,7 +129,7 @@ class _CardEcState extends State<CardEc> {
           'Documents',
           'eco_com_${widget.item!.title!.replaceAll(' ', '_').replaceAll('/', '_').toLowerCase()}.pdf',
           response.bodyBytes);
-      await OpenFile.open(pathFile);
+      await OpenFileSafePlus.open(pathFile);
     }
   }
 }

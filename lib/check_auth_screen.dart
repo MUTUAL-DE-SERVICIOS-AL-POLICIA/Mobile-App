@@ -43,14 +43,16 @@ class CheckAuthScreen extends StatelessWidget {
     );
   }
 
-  goFirstInto(BuildContext context) async {
+ goFirstInto(BuildContext context) async {
     final authService = Provider.of<AuthService>(context, listen: false);
     if (await authService.readFirstTime() == '') {
+      if (!context.mounted) return;
       Future.microtask(() {
         Navigator.pushReplacement(
             context, PageRouteBuilder(pageBuilder: (_, __, ___) => const PageSlider(), transitionDuration: const Duration(seconds: 0)));
       });
     } else {
+      if (!context.mounted) return;
       Future.microtask(() {
         Navigator.pushReplacement(
             context, PageRouteBuilder(pageBuilder: (_, __, ___) => const ScreenSwitch(), transitionDuration: const Duration(seconds: 0)));

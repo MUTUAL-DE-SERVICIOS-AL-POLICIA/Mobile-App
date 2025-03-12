@@ -5,7 +5,7 @@ import 'dart:math' as math;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
 
@@ -24,6 +24,9 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
   bool? isCameraReady;
   Future<void>? _initializeControllerFuture;
   double mirror = 0;
+
+  final ImagePicker _picker = ImagePicker(); // Inicializa ImagePicker
+
   @override
   void initState() {
     super.initState();
@@ -34,13 +37,12 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    controllerCam!.dispose();
+    controllerCam?.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // App state changed before we got the chance to initialize.
     if (controllerCam == null || !controllerCam!.value.isInitialized) {
       return;
     }
@@ -66,9 +68,7 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
     controllerCam = CameraController(description, ResolutionPreset.high,
         enableAudio: false);
     _initializeControllerFuture = controllerCam!.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       controllerCam!.setFlashMode(FlashMode.off);
       controllerCam!.addListener(() {
         if (mounted) setState(() {});
@@ -140,7 +140,7 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
             'assets/images/load.gif',
             fit: BoxFit.cover,
             height: 20,
-          )); // Otherwise, display a loading indicator.
+          ));
         }
       },
     );
@@ -159,19 +159,25 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
     try {
       if (userBloc.state.stateBtntoggleCameraLens) {
         userBloc.add(UpdateStateCam(false));
-        final picture = await controllerCam!.takePicture();
-        ImageProperties properties = await FlutterNativeImage.getImageProperties(picture.path);
-        File compressedFile = await FlutterNativeImage.compressImage(
-          picture.path,
-          quality: 70,
-          targetWidth: properties.height! > properties.width! ? 240 : 320,
-          targetHeight: properties.height! > properties.width! ? 320 : 240,
+
+        // Capturar imagen con image_picker
+        final XFile? pickedFile = await _picker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 600, // Reducción de tamaño
+          maxHeight: 400,
+          imageQuality: 70, // Comprimir imagen
         );
-        String base64 = base64Encode(compressedFile.readAsBytesSync());
+
+        if (pickedFile == null) return; // Si el usuario cancela
+
+        File imageFile = File(pickedFile.path);
+
+        // Convertir imagen a Base64
+        String base64 = base64Encode(await imageFile.readAsBytes());
         widget.sendImage(base64);
       }
     } catch (_) {
-      debugPrint('paso paso algo');
+      debugPrint('Ocurrió un error al capturar la imagen.');
     }
   }
 
