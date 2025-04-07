@@ -4,8 +4,10 @@ import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
+import 'package:muserpol_pvt/screens/login/newlogin.dart';
 import 'package:muserpol_pvt/screens/navigator_bar.dart';
 import 'package:muserpol_pvt/screens/switch.dart';
+// import 'package:muserpol_pvt/screens/login/newlogin.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/swipe/slider.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +56,8 @@ class CheckAuthScreen extends StatelessWidget {
       if (!context.mounted) return;
       Future.microtask(() {
         Navigator.pushReplacement(
-            context, PageRouteBuilder(pageBuilder: (_, __, ___) => const ScreenSwitch(), transitionDuration: const Duration(seconds: 0)));
+            //context, PageRouteBuilder(pageBuilder: (_, __, ___) => const ScreenSwitch(), transitionDuration: const Duration(seconds: 0)));
+            context, PageRouteBuilder(pageBuilder: (_, __, ___) => const ScreenNewLogin(), transitionDuration: const Duration(seconds: 0)));
       });
     }
   }
