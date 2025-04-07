@@ -42,15 +42,20 @@ class MyHttpOverrides extends HttpOverrides {
 
 SharedPreferences? prefs;
 void main() async {
+  //carga las variales de entorno
   await dotenv.load(fileName: ".env");
+  //recupera tema guardado oscuro o claro
   WidgetsFlutterBinding.ensureInitialized();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
   prefs = await SharedPreferences.getInstance();
+  //inicializa firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  //inicializa las notificaciones
   PushNotificationService.initializeapp();
   HttpOverrides.global = MyHttpOverrides();
+  //Arranca la app
   runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 
@@ -64,6 +69,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    // Proporciona múltiples BLoCs a toda la app (gestión del estado por eventos).
     return MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => UserBloc()),
@@ -82,10 +88,12 @@ class MyApp extends StatelessWidget {
               ChangeNotifierProvider(create: (_) => TabProcedureState()),
               ChangeNotifierProvider(create: (_) => ProcessingState()),
             ],
+            // Inicializa utilidades para diseño adaptable en distintos tamaños de pantalla
             child: ScreenUtilInit(
                 designSize: const Size(360, 690),
                 minTextAdapt: true,
                 splitScreenMode: true,
+                // Carga el widget principal de la app: 'Muserpol'
                 builder: (context, child) =>
                     Muserpol(savedThemeMode: savedThemeMode))));
   }
