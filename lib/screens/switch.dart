@@ -193,6 +193,7 @@ class ScreenSwitchState extends State<ScreenSwitch> {
     );
   }
 
+  //Funciones relacionadas a la lectura de QR
   Future scan() async {
     try {
       var options = ScanOptions(
