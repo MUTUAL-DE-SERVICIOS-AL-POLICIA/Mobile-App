@@ -1,4 +1,12 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:muserpol_pvt/services/services.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:muserpol_pvt/components/card_login.dart';
+import 'package:muserpol_pvt/components/button.dart';
+import 'package:muserpol_pvt/components/inputs/identity_card.dart';
+import 'package:muserpol_pvt/components/inputs/password.dart';
 
 class Formlogin extends StatefulWidget {
   final String deviceId;
@@ -9,87 +17,114 @@ class Formlogin extends StatefulWidget {
 }
 
 class _FormloginState extends State<Formlogin> {
-  final List<String> _questions = [
-    'Número de Carnet',
-    'Fecha de Nacimiento (DD/MM/AAAA)',
-    'Número de Celular',
-  ];
-  final List<String> _answers = [];
-  final TextEditingController _controller = TextEditingController();
-  int _currentStep = 0;
+  final TextEditingController _dniCtrl = TextEditingController();
+  final TextEditingController _dniCompCtrl = TextEditingController();
+  final TextEditingController _passwordCtrl = TextEditingController();
 
-  void _nextStep() {
-    if (_controller.text.trim().isEmpty) return;
+  final FocusNode _complementFocusNode = FocusNode();
+  bool _stateAlphanumeric = true;
+  bool _isLoading = false;
+
+  void _setAlphanumericFalse() {
     setState(() {
-      _answers.add(_controller.text.trim());
-      _controller.clear();
-      _currentStep++;
+      _stateAlphanumeric = false;
+    });
+  }
+
+  void _onSubmit() {
+    setState(() => _isLoading = true);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() => _isLoading = false);
+      debugPrint("CI: ${_dniCtrl.text}-${_dniCompCtrl.text}");
+      debugPrint("Password: ${_passwordCtrl.text}");
+      debugPrint("Device ID: ${widget.deviceId}");
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = _currentStep >= _questions.length;
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Text(
-              'Device ID: ${widget.deviceId}',
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _answers.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading:
-                        const Icon(Icons.check_circle, color: Colors.green),
-                    title: Text(_questions[index]),
-                    subtitle: Text(_answers[index]),
-                  );
-                },
-              ),
-            ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: isCompleted
-                  ? const Text(
-                      '¡Registro completo!',
-                      key: ValueKey('done'),
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    )
-                  : Column(
-                      key: ValueKey(_currentStep),
-                      children: [
-                        Text(
-                          _questions[_currentStep],
-                          style: const TextStyle(fontSize: 18),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 30),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+                  const SizedBox(height: 25),
+                  IdentityCard(
+                    title: 'Cédula de identidad:',
+                    dniCtrl: _dniCtrl,
+                    dniComCtrl: _dniCompCtrl,
+                    textSecondFocusNode: _complementFocusNode,
+                    formatter: FilteringTextInputFormatter.digitsOnly,
+                    keyboardType: TextInputType.number,
+                    onEditingComplete: () {},
+                    stateAlphanumeric: _stateAlphanumeric,
+                    stateAlphanumericFalse: _setAlphanumericFalse,
+                  ),
+                  const SizedBox(height: 20),
+                  Password(
+                    passwordCtrl: _passwordCtrl,
+                    onEditingComplete: _onSubmit,
+                  ),
+                  const SizedBox(height: 10),
+                  ButtonWhiteComponent(
+                    text: 'Olvidé mi contraseña',
+                    onPressed: () => Navigator.pushNamed(context, 'forgot'),
+                  ),
+                  const SizedBox(height: 10),
+                  ButtonComponent(
+                    text: "ENTRAR",
+                    onPressed: _isLoading ? null : _onSubmit,
+                    stateLoading: _isLoading,
+                  ),
+                  const SizedBox(height: 25),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: MiniCardButton(
+                          icon: Icons.contact_phone,
+                          label: 'Contactos\na nivel nacional',
+                          onTap: () => Navigator.pushNamed(context, 'contacts'),
                         ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: _controller,
-                          onSubmitted: (_) => _nextStep(),
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'Escribe tu respuesta...',
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: MiniCardButton(
+                          icon: Icons.privacy_tip,
+                          label: 'Política\nde privacidad',
+                          onTap: () => launchUrl(
+                            Uri.parse(serviceGetPrivacyPolicy()),
+                            mode: LaunchMode.externalApplication,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: _nextStep,
-                          child: const Text('Siguiente'),
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      'Versión ${dotenv.env['version']}',
+                      style: const TextStyle(fontSize: 12),
                     ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "¿Quieres utilizar la app de la MUSERPOL? Regístrate",
+                    style: TextStyle(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

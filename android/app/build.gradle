@@ -96,4 +96,6 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:30.3.2')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.google.mlkit:text-recognition:16.0.0'
+
 }

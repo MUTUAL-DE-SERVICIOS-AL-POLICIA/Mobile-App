@@ -89,8 +89,10 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
       child: Scaffold(
         body: Stack(
           children: [
+            //Division logo y formulario
             const Formtop(),
             const FormButtom(),
+            /////////////////////////////
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(15, 30, 15, 0),
@@ -104,11 +106,19 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                     ),
                     const SizedBox(height: 30),
                     Expanded(
-                      child: Center(
-                        child: deviceId != null
-                            ? Formlogin(deviceId: deviceId!)
-                            : const CircularProgressIndicator(), 
-                      ),
+                      child: deviceId != null
+                          ? LayoutBuilder(
+                              builder: (context, constraints) {
+                                return ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      minHeight: constraints.maxHeight),
+                                  child: IntrinsicHeight(
+                                    child: Formlogin(deviceId: deviceId!),
+                                  ),
+                                );
+                              },
+                            )
+                          : const Center(child: CircularProgressIndicator()),
                     ),
                   ],
                 ),
