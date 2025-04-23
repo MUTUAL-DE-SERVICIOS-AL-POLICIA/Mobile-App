@@ -177,16 +177,16 @@ class ButtonDate extends StatelessWidget {
         focusElevation: 0,
         onPressed: onPressed,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(50.0),
             side: const BorderSide(
-              color: Colors.grey,
+              color: Color(0xff419388),
               width: 2.0,
             )),
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Text(text,
               style: TextStyle(
-                fontSize: 17.sp,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
                 color: AdaptiveTheme.of(context).theme.primaryColor,
               )),

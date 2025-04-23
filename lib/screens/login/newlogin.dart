@@ -104,7 +104,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                           ? 'assets/images/muserpol-logo.png'
                           : 'assets/images/muserpol-logo2.png',
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 15),
                     Expanded(
                       child: deviceId != null
                           ? LayoutBuilder(
