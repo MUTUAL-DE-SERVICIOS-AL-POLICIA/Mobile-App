@@ -8,6 +8,7 @@ import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/components/inputs/identity_card.dart';
 import 'package:muserpol_pvt/components/inputs/password.dart';
 import 'package:muserpol_pvt/components/inputs/birth_date.dart'; // tu componente personalizado
+import 'package:muserpol_pvt/screens/login/loginservice.dart';
 
 class Formlogin extends StatefulWidget {
   final String deviceId;
@@ -30,33 +31,36 @@ class _FormloginState extends State<Formlogin> {
   bool _dateState = false;
 
   DateTime _selectedDate = DateTime(1950, 1, 1);
-  String _dateCtrlText = '';
+  String _dateCtrlText = ''; // Para enviar al backend
+  String _dateDisplayText = ''; // Para mostrar en UI
 
-  void _onSubmit() {
+  void _onSubmit() async {
     setState(() => _isLoading = true);
-
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() => _isLoading = false);
-      debugPrint("CI: ${_dniCtrl.text}-${_dniCompCtrl.text}");
-      debugPrint(
-          "Método de acceso: ${_currentPage == 0 ? 'Contraseña' : 'Fecha de nacimiento'}");
-
-      if (_currentPage == 0) {
-        debugPrint("Password: ${_passwordCtrl.text}");
-      } else {
-        debugPrint("Fecha de nacimiento: $_selectedDate ($_dateCtrlText)");
-      }
-
-      debugPrint("Device ID: ${widget.deviceId}");
-    });
+    await LoginService.iniciarSesion(
+      context: context,
+      deviceId: widget.deviceId,
+      identityCard:
+          '${_dniCtrl.text.trim()}${_dniCompCtrl.text.isNotEmpty ? '-${_dniCompCtrl.text.trim()}' : ''}',
+      password: _currentPage == 0 ? _passwordCtrl.text.trim() : null,
+      birthDate: _currentPage == 1 ? _dateCtrlText : null,
+      isOfficeVirtual: _currentPage == 0,
+    );
+    setState(() => _isLoading = false);
   }
 
   void _onDateSelected(String textDisplay, DateTime dateValue, String _) {
     setState(() {
-      _dateCtrlText = textDisplay;
+      _dateDisplayText = textDisplay; // "24, febrero 1950" para mostrar
+      _dateCtrlText = _formatDateToIso(dateValue); // "1950-02-24" para enviar
       _selectedDate = dateValue;
       _dateState = false;
     });
+  }
+
+  String _formatDateToIso(DateTime date) {
+    return '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
   }
 
   Widget _buildPasswordLogin() {
@@ -71,7 +75,7 @@ class _FormloginState extends State<Formlogin> {
       dateState: _dateState,
       currentDate: _selectedDate,
       selectDate: _onDateSelected,
-      dateCtrl: _dateCtrlText,
+      dateCtrl: _dateDisplayText,
     );
   }
 
@@ -99,8 +103,6 @@ class _FormloginState extends State<Formlogin> {
                     stateAlphanumericFalse: () {},
                   ),
                   const SizedBox(height: 20),
-
-                  // Swiper con PageView
                   SizedBox(
                     height: 130,
                     child: PageView(
@@ -114,8 +116,6 @@ class _FormloginState extends State<Formlogin> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Indicador de página (dots)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(2, (index) {
@@ -132,7 +132,6 @@ class _FormloginState extends State<Formlogin> {
                       );
                     }),
                   ),
-
                   const SizedBox(height: 20),
                   ButtonWhiteComponent(
                     text: 'Olvidé mi contraseña',

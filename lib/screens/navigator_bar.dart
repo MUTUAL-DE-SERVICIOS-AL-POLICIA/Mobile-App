@@ -16,7 +16,7 @@ import 'package:muserpol_pvt/model/files_model.dart';
 import 'package:muserpol_pvt/model/loan_model.dart';
 import 'package:muserpol_pvt/model/procedure_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
-import 'package:muserpol_pvt/provider/files_state.dart';
+// import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/navigator_down.dart';
 import 'package:muserpol_pvt/screens/pages/complement/procedure.dart';
 import 'package:muserpol_pvt/screens/pages/menu.dart';
@@ -104,42 +104,42 @@ class _NavigatorBarState extends State<NavigatorBar> {
     }
   }
 
-  refresh() async {
-    setState(() => stateLoad = true);
-    if (await checkVersion(mounted, context)) {
-      if (!mounted) return;
-      final filesState = Provider.of<FilesState>(context, listen: false);
-      final tabProcedureState =
-          Provider.of<TabProcedureState>(context, listen: false);
-      final processingState =
-          Provider.of<ProcessingState>(context, listen: false);
-      final procedureBloc =
-          BlocProvider.of<ProcedureBloc>(context, listen: false);
-      tabProcedureState.updateTabProcedure(0);
-      for (var element in filesState.files) {
-        filesState.updateFile(element.id!, null);
-      }
-      processingState.updateStateProcessing(false);
-      procedureBloc.add(ClearProcedures());
-      // procedureBloc.add(Clear);
-      setState(() {
-        pageCurrent = 1;
-        pageHistory = 1;
-      });
-      if (widget.stateApp == StateAplication.complement) {
-        await getProcessingPermit();
-        await getObservations();
-        await getEconomicComplement(true);
-        await getEconomicComplement(false);
-      } else {
-        debugPrint('OBTENINENDO TODOS LOS APORTES Y PRESTAMOS');
-        await getContributions();
-        await getLoans();
-      }
-    } else {
-      setState(() => stateLoad = false);
-    }
-  }
+  // refresh() async {
+  //   setState(() => stateLoad = true);
+  //   if (await checkVersion(mounted, context)) {
+  //     if (!mounted) return;
+  //     final filesState = Provider.of<FilesState>(context, listen: false);
+  //     final tabProcedureState =
+  //         Provider.of<TabProcedureState>(context, listen: false);
+  //     final processingState =
+  //         Provider.of<ProcessingState>(context, listen: false);
+  //     final procedureBloc =
+  //         BlocProvider.of<ProcedureBloc>(context, listen: false);
+  //     tabProcedureState.updateTabProcedure(0);
+  //     for (var element in filesState.files) {
+  //       filesState.updateFile(element.id!, null);
+  //     }
+  //     processingState.updateStateProcessing(false);
+  //     procedureBloc.add(ClearProcedures());
+  //     // procedureBloc.add(Clear);
+  //     setState(() {
+  //       pageCurrent = 1;
+  //       pageHistory = 1;
+  //     });
+  //     if (widget.stateApp == StateAplication.complement) {
+  //       await getProcessingPermit();
+  //       await getObservations();
+  //       await getEconomicComplement(true);
+  //       await getEconomicComplement(false);
+  //     } else {
+  //       debugPrint('OBTENINENDO TODOS LOS APORTES Y PRESTAMOS');
+  //       await getContributions();
+  //       await getLoans();
+  //     }
+  //   } else {
+  //     setState(() => stateLoad = false);
+  //   }
+  // }
 
   getEconomicComplement(bool current) async {
     final procedureBloc =
@@ -266,7 +266,6 @@ class _NavigatorBarState extends State<NavigatorBar> {
             keyProcedure: keyCreateProcedure,
             keyRefresh: keyRefresh,
             keyNotification: keyNotification,
-            reload: () => refresh(),
             stateLoad: stateLoad),
         ScreenProcedures(current: false, scroll: _scrollController),
       ];

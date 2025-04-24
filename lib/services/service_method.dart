@@ -206,7 +206,7 @@ confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
   tabProcedureState.updateTabProcedure(0);
   processingState.updateStateProcessing(false);
   if (!mounted) return;
-  Navigator.pushReplacementNamed(context, 'switch');
+  Navigator.pushReplacementNamed(context, 'newlogin');
 }
 
 Future<bool> checkVersion(bool mounted, BuildContext context) async {
