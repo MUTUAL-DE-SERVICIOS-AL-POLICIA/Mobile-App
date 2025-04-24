@@ -112,10 +112,12 @@ class LoginService {
           context, biometricUserModelToJson(newBiometric));
 
       // Guardar estado de app
-      await authService.writeStateApp(
-          context, isOfficeVirtual ? 'virtualofficine' : 'complement');
-      await authService.writeToken(context, user.apiToken!);
-      tokenState.updateStateAuxToken(false);
+      // await authService.writeStateApp(
+      //     context, isOfficeVirtual ? 'virtualofficine' : 'complement');
+      await authService.writeStateApp(context, 'newpage');
+
+      // await authService.writeToken(context, user.apiToken!);
+      // tokenState.updateStateAuxToken(false);
 
       // Redirigir a pantalla final (por ahora "Hola")
       // Navigator.pushReplacement(

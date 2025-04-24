@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:muserpol_pvt/screens/pages/menu.dart'; 
-// import 'package:muserpol_pvt/model/files_model.dart';
-
 
 class ScreenHomeHola extends StatelessWidget {
   const ScreenHomeHola({super.key});
@@ -9,11 +6,13 @@ class ScreenHomeHola extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer:const MenuDrawer(),
-      appBar: AppBar(
-        title: const Text('Inicio'),
+      appBar: AppBar(title: const Text('Inicio')),
+      body: const Center(
+        child: Text(
+          'Hola',
+          style: TextStyle(fontSize: 24),
+        ),
       ),
-      
     );
   }
 }
