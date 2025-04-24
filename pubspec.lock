@@ -743,14 +743,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  open_file_safe_plus:
+  open_filex:
     dependency: "direct main"
     description:
-      name: open_file_safe_plus
-      sha256: "38a76b139f600c6dfee71c78f4a0197920d3285bd1d3a95ab62efff348b86002"
+      name: open_filex
+      sha256: "9976da61b6a72302cf3b1efbce259200cd40232643a467aac7370addf94d6900"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.6"
+    version: "4.7.0"
   path:
     dependency: transitive
     description:
@@ -935,6 +935,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
+  showcaseview:
+    dependency: "direct main"
+    description:
+      name: showcaseview
+      sha256: "82e013ac2de1ae92cc6e652badf676606057c8e17aa3afd91e78866c4b4e85b1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
   simple_circular_progress_bar:
     dependency: "direct main"
     description:
@@ -1064,10 +1072,10 @@ packages:
     dependency: "direct main"
     description:
       name: tutorial_coach_mark
-      sha256: "2c77c0b00bbe7d5b8a6d31cb9e03d44bf77dfe7ba6514cc2b546886d024a9945"
+      sha256: "9cdb721165d1cfb6e9b1910a1af1b3570fa6caa5059cf1506fcbd00bf7102abf"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.13"
+    version: "1.3.0"
   typed_data:
     dependency: transitive
     description:

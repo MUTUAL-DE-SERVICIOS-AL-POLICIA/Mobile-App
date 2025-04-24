@@ -11,7 +11,8 @@ import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:muserpol_pvt/utils/save_document.dart';
 // import 'package:open_file_safe/open_file_safe.dart';
-import 'package:open_file_safe_plus/open_file_safe_plus.dart';
+// import 'package:open_file_safe_plus/open_file_safe_plus.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
 
 class ScreenContributions extends StatefulWidget {
@@ -105,7 +106,7 @@ class _ScreenContributionsState extends State<ScreenContributions> {
     setState(() => stateLoading = false);
     if (response != null) {
       String pathFile = await saveFile('Contributions', 'contribucionesPasivo.pdf', response.bodyBytes);
-      await OpenFileSafePlus.open(pathFile);
+      await OpenFilex.open(pathFile);
     }
   }
 
@@ -119,7 +120,7 @@ class _ScreenContributionsState extends State<ScreenContributions> {
     setState(() => stateLoading = false);
     if (response != null) {
       String pathFile = await saveFile('Contributions', 'contribucionesActivo.pdf', response.bodyBytes);
-      await OpenFileSafePlus.open(pathFile);
+      await OpenFilex.open(pathFile);
     }
   }
 }
