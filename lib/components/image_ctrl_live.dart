@@ -55,12 +55,48 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
     }
   }
 
+  // Future<void> _getAvailableCameras() async {
+  //   _availableCameras = await availableCameras();
+  //   CameraDescription newDescription;
+  //   newDescription = _availableCameras!.firstWhere((description) =>
+  //       description.lensDirection == CameraLensDirection.front);
+  //   _initCamera(newDescription);
+  // }
+
   Future<void> _getAvailableCameras() async {
-    _availableCameras = await availableCameras();
-    CameraDescription newDescription;
-    newDescription = _availableCameras!.firstWhere((description) =>
-        description.lensDirection == CameraLensDirection.front);
-    _initCamera(newDescription);
+    try {
+      _availableCameras = await availableCameras();
+
+      if (_availableCameras == null || _availableCameras!.isEmpty) {
+        debugPrint('No se encontraron cámaras disponibles.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('No se encontraron cámaras disponibles.')));
+        }
+        return;
+      }
+      CameraDescription newDescription;
+      final frontCameras = _availableCameras!
+          .where((description) =>
+              description.lensDirection == CameraLensDirection.front)
+          .toList();
+
+      if (frontCameras.isNotEmpty) {
+        newDescription = frontCameras.first;
+      } else {
+        debugPrint(
+            'No se encontró cámara frontal, usando la primera disponible.');
+        newDescription = _availableCameras!.first;
+      }
+
+      _initCamera(newDescription);
+    } catch (e) {
+      debugPrint('Error al obtener las cámaras: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al inicializar la cámara.')));
+      }
+    }
   }
 
   Future<void> _initCamera(CameraDescription description) async {
