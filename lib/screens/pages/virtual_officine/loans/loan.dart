@@ -37,7 +37,7 @@ class _ScreenPageLoansState extends State<ScreenPageLoans> {
             Future.delayed(const Duration(seconds: 3));
             reloadLoans();
           },
-          builder: MaterialIndicatorDelegate(builder: (context, controller) {
+          builder: MaterialIndicatorDelegate (builder: (context, controller) {
             return Image.asset(
               'assets/images/load.gif',
               fit: BoxFit.cover,

@@ -30,8 +30,9 @@ import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 // Widget principal
 class NavigatorBar extends StatefulWidget {
   final bool tutorial; // Indica si se debe mostrar el tutorial
-  final StateAplication stateApp; // Estado actual de la aplicación (complemento u oficina virtual)
-  
+  final StateAplication
+      stateApp; // Estado actual de la aplicación (complemento u oficina virtual)
+
   const NavigatorBar({super.key, this.tutorial = true, required this.stateApp});
 
   @override
@@ -64,7 +65,8 @@ class _NavigatorBarState extends State<NavigatorBar> {
 
   bool stateLoad = true; // Cargando datos
   bool? stateLoadTutorial; // Tutorial cargado
-  bool consumeService = true; // Controla si se puede seguir cargando más datos (scroll infinito)
+  bool consumeService =
+      true; // Controla si se puede seguir cargando más datos (scroll infinito)
 
   @override
   void initState() {
@@ -122,9 +124,12 @@ class _NavigatorBarState extends State<NavigatorBar> {
 
       // Limpia estados y vuelve a cargar
       final filesState = Provider.of<FilesState>(context, listen: false);
-      final tabProcedureState = Provider.of<TabProcedureState>(context, listen: false);
-      final processingState = Provider.of<ProcessingState>(context, listen: false);
-      final procedureBloc = BlocProvider.of<ProcedureBloc>(context, listen: false);
+      final tabProcedureState =
+          Provider.of<TabProcedureState>(context, listen: false);
+      final processingState =
+          Provider.of<ProcessingState>(context, listen: false);
+      final procedureBloc =
+          BlocProvider.of<ProcedureBloc>(context, listen: false);
 
       tabProcedureState.updateTabProcedure(0);
       for (var element in filesState.files) {
@@ -155,7 +160,8 @@ class _NavigatorBarState extends State<NavigatorBar> {
 
   // Obtiene complementos económicos (paginados)
   getEconomicComplement(bool current) async {
-    final procedureBloc = BlocProvider.of<ProcedureBloc>(context, listen: false);
+    final procedureBloc =
+        BlocProvider.of<ProcedureBloc>(context, listen: false);
     setState(() {
       stateLoad = true;
       consumeService = false;
@@ -166,7 +172,8 @@ class _NavigatorBarState extends State<NavigatorBar> {
         context,
         'get',
         null,
-        serviceGetEconomicComplements(current ? pageCurrent : pageHistory, current),
+        serviceGetEconomicComplements(
+            current ? pageCurrent : pageHistory, current),
         true,
         true);
 
@@ -190,14 +197,15 @@ class _NavigatorBarState extends State<NavigatorBar> {
 
   // Obtiene observaciones del usuario
   getObservations() async {
-    final observationState = Provider.of<ObservationState>(context, listen: false);
+    final observationState =
+        Provider.of<ObservationState>(context, listen: false);
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    final processingState = Provider.of<ProcessingState>(context, listen: false);
+    final processingState =
+        Provider.of<ProcessingState>(context, listen: false);
 
     if (!mounted) return;
 
-    var response = await serviceMethod(
-        mounted, context, 'get', null,
+    var response = await serviceMethod(mounted, context, 'get', null,
         serviceGetObservation(userBloc.state.user!.id!), true, true);
 
     if (response != null) {
@@ -212,12 +220,12 @@ class _NavigatorBarState extends State<NavigatorBar> {
   getProcessingPermit() async {
     final loadingState = Provider.of<LoadingState>(context, listen: false);
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    final tabProcedureState = Provider.of<TabProcedureState>(context, listen: false);
+    final tabProcedureState =
+        Provider.of<TabProcedureState>(context, listen: false);
 
     if (!mounted) return;
 
-    var response = await serviceMethod(
-        mounted, context, 'get', null,
+    var response = await serviceMethod(mounted, context, 'get', null,
         serviceGetProcessingPermit(userBloc.state.user!.id!), true, false);
 
     if (response != null) {
@@ -245,18 +253,20 @@ class _NavigatorBarState extends State<NavigatorBar> {
 
   // Obtiene aportes
   getContributions() async {
-    final contributionBloc = BlocProvider.of<ContributionBloc>(context, listen: false);
+    final contributionBloc =
+        BlocProvider.of<ContributionBloc>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
-    final biometric = biometricUserModelFromJson(await authService.readBiometric());
+    final biometric =
+        biometricUserModelFromJson(await authService.readBiometric());
 
     if (!mounted) return;
 
-    var response = await serviceMethod(
-        mounted, context, 'get', null,
+    var response = await serviceMethod(mounted, context, 'get', null,
         serviceContributions(biometric.affiliateId!), true, true);
 
     if (response != null) {
-      contributionBloc.add(UpdateContributions(contributionModelFromJson(response.body)));
+      contributionBloc
+          .add(UpdateContributions(contributionModelFromJson(response.body)));
     }
   }
 
@@ -264,12 +274,12 @@ class _NavigatorBarState extends State<NavigatorBar> {
   getLoans() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     final loanBloc = BlocProvider.of<LoanBloc>(context, listen: false);
-    final biometric = biometricUserModelFromJson(await authService.readBiometric());
+    final biometric =
+        biometricUserModelFromJson(await authService.readBiometric());
 
     if (!mounted) return;
 
-    var response = await serviceMethod(
-        mounted, context, 'get', null,
+    var response = await serviceMethod(mounted, context, 'get', null,
         serviceLoans(biometric.affiliateId!), true, true);
 
     if (response != null) {
@@ -347,7 +357,8 @@ class _NavigatorBarState extends State<NavigatorBar> {
         builder: (BuildContext context) {
           return ComponentAnimate(
               child: DialogTwoAction(
-                  message: '¿Estás seguro de salir de la aplicación MUSERPOL PVT?',
+                  message:
+                      '¿Estás seguro de salir de la aplicación MUSERPOL PVT?',
                   actionCorrect: () => SystemChannels.platform
                       .invokeMethod('SystemNavigator.pop'),
                   messageCorrect: 'Salir'));
@@ -382,30 +393,46 @@ class _NavigatorBarState extends State<NavigatorBar> {
       },
       onClickTargetWithTapPosition: (target, tapDetails) {
         debugPrint("target: $target");
-        debugPrint("clicked at position local: ${tapDetails.localPosition} - global: ${tapDetails.globalPosition}");
+        debugPrint(
+            "clicked at position local: ${tapDetails.localPosition} - global: ${tapDetails.globalPosition}");
       },
       onClickOverlay: (target) {
         debugPrint('onClickOverlay: $target');
       },
-      onSkip: () => onSkip(),
+      onSkip: onSkip,
     )..show(context: context);
   }
 
   // Omitir tutorial
-  onSkip() async {
+  // Future<bool> onSkip() async {
+  //   setState(() => stateLoadTutorial = !stateLoadTutorial!);
+  //   if (await checkVersion(mounted, context)) {
+  //     if (widget.stateApp == StateAplication.complement) {
+  //       getEconomicComplement(true);
+  //       getEconomicComplement(false);
+  //     } else {
+  //       getContributions();
+  //       getLoans();
+  //     }
+  //   }
+  //   return true;
+  // }
+
+  // Omitir tutorial (sincrónico)
+  bool onSkip() {
     setState(() => stateLoadTutorial = !stateLoadTutorial!);
-    if (await checkVersion(mounted, context)) {
-      if (widget.stateApp == StateAplication.complement) {
-        getEconomicComplement(true);
-        getEconomicComplement(false);
-      } else {
-        getContributions();
-        getLoans();
-      }
+    if (widget.stateApp == StateAplication.complement) {
+      getEconomicComplement(true);
+      getEconomicComplement(false);
+    } else {
+      getContributions();
+      getLoans();
     }
+    Future.delayed(const Duration(milliseconds: 100), () async {});
+
+    return true;
   }
 
-  // Inicializa elementos visuales del tutorial
   void initTargets() {
     targets.clear();
     targets.add(targetBottomNagigation1(keyBottomNavigation1, widget.stateApp));

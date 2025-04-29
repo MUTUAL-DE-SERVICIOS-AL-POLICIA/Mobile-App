@@ -145,6 +145,8 @@ class _ModalInsideModalState extends State<ModalInsideModal>
       'device_id': widget.deviceId,
       'image': image
     };
+
+    debugPrint(body.toString());
     var response = await serviceMethod(mounted, context, 'post', body,
         serviceProcessEnrolled(null), true, true);
     userBloc.add(UpdateStateCam(true));

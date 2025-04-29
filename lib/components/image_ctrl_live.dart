@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
 
@@ -24,8 +23,6 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
   bool? isCameraReady;
   Future<void>? _initializeControllerFuture;
   double mirror = 0;
-
-  final ImagePicker _picker = ImagePicker(); // Inicializa ImagePicker
 
   @override
   void initState() {
@@ -196,24 +193,17 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
       if (userBloc.state.stateBtntoggleCameraLens) {
         userBloc.add(UpdateStateCam(false));
 
-        // Capturar imagen con image_picker
-        final XFile? pickedFile = await _picker.pickImage(
-          source: ImageSource.camera,
-          maxWidth: 600, // Reducción de tamaño
-          maxHeight: 400,
-          imageQuality: 70, // Comprimir imagen
-        );
+        if (controllerCam != null && controllerCam!.value.isInitialized) {
+          final XFile image = await controllerCam!.takePicture();
+          File imageFile = File(image.path);
 
-        if (pickedFile == null) return; // Si el usuario cancela
-
-        File imageFile = File(pickedFile.path);
-
-        // Convertir imagen a Base64
-        String base64 = base64Encode(await imageFile.readAsBytes());
-        widget.sendImage(base64);
+          // Convertir imagen a Base64
+          String base64 = base64Encode(await imageFile.readAsBytes());
+          widget.sendImage(base64);
+        }
       }
-    } catch (_) {
-      debugPrint('Ocurrió un error al capturar la imagen.');
+    } catch (e) {
+      debugPrint('Ocurrió un error al capturar la imagen: $e');
     }
   }
 
