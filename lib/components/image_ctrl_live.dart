@@ -141,7 +141,12 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
                 left: 0,
                 child: Transform(
                     alignment: Alignment.center,
-                    transform: Matrix4.rotationY(mirror),
+                    transform: Matrix4.rotationY(controllerCam!
+                                .description.lensDirection ==
+                            CameraLensDirection.front
+                        ? math
+                            .pi // Aplica el espejo solo para la cámara frontal
+                        : 0), // No aplicar nada para la cámara trasera
                     child: CameraPreview(
                       controllerCam!,
                     ))),
