@@ -53,14 +53,14 @@ class _IdentityCardState extends State<IdentityCard> {
                       if (value.length > 3) {
                         return null;
                       } else {
-                        return 'Ingrese su cédula de indentidad';
+                        return 'Ingrese su cédula de identidad';
                       }
                     },
                     inputFormatters: [LengthLimitingTextInputFormatter(10), widget.formatter],
                     keyboardType: widget.keyboardType,
                     textCapitalization: TextCapitalization.characters,
                     icon: Icons.person,
-                    labelText: "Cédula de indentidad",
+                    labelText: "Cédula de identidad",
                   ),
                 ),
                 if (dniComplement)

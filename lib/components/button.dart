@@ -4,35 +4,85 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
 
+// class ButtonComponent extends StatelessWidget {
+//   final String text;
+//   final Function()? onPressed;
+//   final bool stateLoading;
+//   const ButtonComponent(
+//       {super.key,
+//       required this.text,
+//       required this.onPressed,
+//       this.stateLoading = false});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialButton(
+//         minWidth: 200,
+//         padding: const EdgeInsets.symmetric(vertical: 19),
+//         color: AdaptiveTheme.of(context).theme.primaryColor,
+//         disabledColor: Colors.grey,
+//         shape: RoundedRectangleBorder(
+//           borderRadius:
+//               BorderRadius.circular(50),
+//         ),
+//         onPressed: onPressed,
+//         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+//           stateLoading
+//               ? Center(
+//                   child: Image.asset(
+//                   'assets/images/load.gif',
+//                   fit: BoxFit.cover,
+//                   height: 20,
+//                 ))
+//               : Text(text,
+//                   style: TextStyle(
+//                     fontSize: 17.sp,
+//                     fontWeight: FontWeight.bold,
+//                     color: Colors.white,
+//                   )),
+//         ]));
+//   }
+// }
+
 class ButtonComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
   final bool stateLoading;
-  const ButtonComponent({super.key, required this.text, required this.onPressed, this.stateLoading = false});
+
+  const ButtonComponent({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.stateLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-        minWidth: 200,
-        padding: const EdgeInsets.symmetric(vertical: 19),
+    return IntrinsicWidth(
+      child: MaterialButton(
+        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 16),
         color: AdaptiveTheme.of(context).theme.primaryColor,
         disabledColor: Colors.grey,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(50),
+        ),
         onPressed: onPressed,
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          stateLoading
-              ? Center(
-                  child: Image.asset(
-                  'assets/images/load.gif',
-                  fit: BoxFit.cover,
-                  height: 20,
-                ))
-              : Text(text,
-                  style: TextStyle(
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  )),
-        ]));
+        child: stateLoading
+            ? Image.asset(
+                'assets/images/load.gif',
+                fit: BoxFit.cover,
+                height: 20,
+              )
+            : Text(
+                text,
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+      ),
+    );
   }
 }
 
@@ -41,7 +91,12 @@ class ButtonIconComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
   final bool stateLoading;
-  const ButtonIconComponent({super.key, required this.icon, required this.text, required this.onPressed, this.stateLoading = false});
+  const ButtonIconComponent(
+      {super.key,
+      required this.icon,
+      required this.text,
+      required this.onPressed,
+      this.stateLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +137,8 @@ class ButtonIconComponent extends StatelessWidget {
 class ButtonWhiteComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
-  const ButtonWhiteComponent({super.key, required this.text, required this.onPressed});
+  const ButtonWhiteComponent(
+      {super.key, required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +162,13 @@ class ButtonDate extends StatelessWidget {
   final FontWeight? fontWeight;
   final bool iconState;
   final Function() onPressed;
-  const ButtonDate({super.key, required this.text, required this.onPressed, this.iconState = false, this.colorText, this.fontWeight});
+  const ButtonDate(
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      this.iconState = false,
+      this.colorText,
+      this.fontWeight});
 
   @override
   Widget build(BuildContext context) {
@@ -115,16 +177,16 @@ class ButtonDate extends StatelessWidget {
         focusElevation: 0,
         onPressed: onPressed,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(50.0),
             side: const BorderSide(
-              color: Colors.grey,
+              color: Color(0xff419388),
               width: 2.0,
             )),
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Text(text,
               style: TextStyle(
-                fontSize: 17.sp,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
                 color: AdaptiveTheme.of(context).theme.primaryColor,
               )),
@@ -137,7 +199,12 @@ class IconBtnComponent extends StatelessWidget {
   final String iconText;
   final Color? iconColor;
   final double? iconSize;
-  const IconBtnComponent({super.key, required this.onPressed, required this.iconText, this.iconColor, this.iconSize = 30});
+  const IconBtnComponent(
+      {super.key,
+      required this.onPressed,
+      required this.iconText,
+      this.iconColor,
+      this.iconSize = 30});
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +229,8 @@ class IconBtnComponent extends StatelessWidget {
 class Buttontoltip extends StatelessWidget {
   final JustTheController tooltipController;
   final Function(bool) onPressed;
-  const Buttontoltip({super.key, required this.tooltipController, required this.onPressed});
+  const Buttontoltip(
+      {super.key, required this.tooltipController, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -186,8 +254,10 @@ class Buttontoltip extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ButtonWhiteComponent(text: 'SI', onPressed: () => onPressed(true)),
-                        ButtonWhiteComponent(text: 'NO', onPressed: () => onPressed(false)),
+                        ButtonWhiteComponent(
+                            text: 'SI', onPressed: () => onPressed(true)),
+                        ButtonWhiteComponent(
+                            text: 'NO', onPressed: () => onPressed(false)),
                       ],
                     )
                   ],
@@ -210,7 +280,8 @@ class Buttontoltip extends StatelessWidget {
 class NumberComponent extends StatelessWidget {
   final String text;
   final bool iconColor;
-  const NumberComponent({super.key, required this.text, required this.iconColor});
+  const NumberComponent(
+      {super.key, required this.text, required this.iconColor});
 
   @override
   Widget build(BuildContext context) {
