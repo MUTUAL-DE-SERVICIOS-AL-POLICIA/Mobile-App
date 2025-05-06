@@ -12,6 +12,7 @@ import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/access/forgot_password/forgot_pwd.dart';
+import 'package:muserpol_pvt/screens/access/newlogin.dart';
 import 'package:muserpol_pvt/screens/inbox/notification.dart';
 import 'package:muserpol_pvt/screens/switch.dart';
 import 'package:muserpol_pvt/services/push_notifications.dart';
@@ -174,10 +175,11 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
             routes: {
               'check_auth': (_) => const CheckAuthScreen(),
               'slider': (_) => const PageSlider(),
+              'newlogin': (_) => const ScreenNewLogin(),
               'switch': (_) => const ScreenSwitch(),
               'forgot': (_) => const ForgotPwd(),
               'contacts': (_) => const ScreenContact(),
-              'message': (_) => const ScreenNotification()
+              'message': (_) => const ScreenNotification(),
             }));
   }
 }
