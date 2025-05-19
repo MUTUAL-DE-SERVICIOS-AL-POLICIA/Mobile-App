@@ -14,7 +14,12 @@ class CodeForgotPwd extends StatefulWidget {
   final Function() resendcode;
   final Function() correct;
   const CodeForgotPwd(
-      {super.key, required this.cellPhoneNumber, required this.dni, required this.resendcode, required this.correct, required this.stateSendSms});
+      {super.key,
+      required this.cellPhoneNumber,
+      required this.dni,
+      required this.resendcode,
+      required this.correct,
+      required this.stateSendSms});
 
   @override
   State<CodeForgotPwd> createState() => _CodeForgotPwdState();
@@ -31,7 +36,13 @@ class _CodeForgotPwdState extends State<CodeForgotPwd> with CodeAutoFill {
   @override
   void codeUpdated() {
     debugPrint('code $code');
-    setState(() => codeCtrl.text = code!);
+    // setState(() => codeCtrl.text = code!);
+    if (code != null) {
+      setState(() {
+        codeCtrl.text = code!;
+        debugPrint('Código autocompletado: $code');
+      });
+    }
   }
 
   @override
@@ -84,12 +95,16 @@ class _CodeForgotPwdState extends State<CodeForgotPwd> with CodeAutoFill {
                 inactiveFillColor: Colors.transparent,
                 shape: PinCodeFieldShape.box,
                 borderRadius: BorderRadius.circular(5),
-                activeFillColor: AdaptiveTheme.of(context).theme.scaffoldBackgroundColor,
+                activeFillColor:
+                    AdaptiveTheme.of(context).theme.scaffoldBackgroundColor,
               ),
               animationDuration: const Duration(milliseconds: 300),
               enableActiveFill: true,
             ),
-            if (!widget.stateSendSms) Password(passwordCtrl: passwordCtrl, onEditingComplete: () => node.nextFocus()),
+            if (!widget.stateSendSms)
+              Password(
+                  passwordCtrl: passwordCtrl,
+                  onEditingComplete: () => node.nextFocus()),
             if (!widget.stateSendSms)
               Password(
                   confirm: true,
@@ -110,10 +125,13 @@ class _CodeForgotPwdState extends State<CodeForgotPwd> with CodeAutoFill {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("¿No recibiste el código?"),
-                  ButtonWhiteComponent(text: 'REENVIAR', onPressed: () => widget.resendcode()),
+                  ButtonWhiteComponent(
+                      text: 'REENVIAR', onPressed: () => widget.resendcode()),
                 ],
               ),
-            ButtonComponent(text: 'ENVIAR', onPressed: !widget.stateSendSms ? () => sendCode() : null),
+            ButtonComponent(
+                text: 'ENVIAR',
+                onPressed: !widget.stateSendSms ? () => sendCode() : null),
           ],
         ));
   }
@@ -122,9 +140,14 @@ class _CodeForgotPwdState extends State<CodeForgotPwd> with CodeAutoFill {
     FocusScope.of(context).unfocus();
     if (formKey.currentState!.validate()) {
       setState(() => btnAccess = false);
-      final Map<String, dynamic> body = {'username': widget.dni, 'code_to_update': codeCtrl.text, 'new_password': passwordCtrl.text.trim()};
+      final Map<String, dynamic> body = {
+        'username': widget.dni,
+        'code_to_update': codeCtrl.text,
+        'new_password': passwordCtrl.text.trim()
+      };
       if (!mounted) return;
-      var response = await serviceMethod(mounted, context, 'patch', body, serviceSendCodeOF(), false, true);
+      var response = await serviceMethod(
+          mounted, context, 'patch', body, serviceSendCodeOF(), false, true);
       setState(() => btnAccess = true);
       if (response != null) {
         widget.correct();
