@@ -73,149 +73,69 @@ class _ScreenLoginState extends State<ScreenLogin> {
     verifyBiometric();
   }
 
-  // Función para verificar si se debe realizar autenticación biométrica
-  Future<void> verifyBiometric() async {
-    // Obtenemos el AuthService a través del Provider sin escuchar cambios
+  verifyBiometric() async {
     final authService = Provider.of<AuthService>(context, listen: false);
 
-    // Leemos los datos biométricos guardados (probablemente desde SharedPreferences o almacenamiento local)
-    final biometricJson = await authService.readBiometric();
-
-    // Verificamos que la cadena JSON no esté vacía
-    if (biometricJson.isNotEmpty) {
-      // Convertimos el JSON en un modelo de datos (BiometricUserModel)
-      final biometricData = biometricUserModelFromJson(biometricJson);
-
-      // Si estamos en el estado "oficina virtual" y el usuario tiene biometría habilitada para ese modo
-      if (widget.stateOfficeVirtual &&
-          biometricData.biometricVirtualOfficine == true) {
-        // Ejecutamos el proceso de autenticación
-        _authenticate(biometricData);
-      }
-      // Si no estamos en oficina virtual y el usuario tiene biometría habilitada para complemento
-      else if (!widget.stateOfficeVirtual &&
-          biometricData.biometricComplement == true) {
-        // Ejecutamos el proceso de autenticación
-        _authenticate(biometricData);
+    if (await authService.readBiometric() != "") {
+      if (widget.stateOfficeVirtual) {
+        if (biometricUserModelFromJson(await authService.readBiometric())
+            .biometricVirtualOfficine!) {
+          //BIOMETICO OFICINA VIRTUAL
+          _authenticate();
+        }
+      } else {
+        debugPrint(
+            '${biometricUserModelFromJson(await authService.readBiometric()).biometricComplement}');
+        if (biometricUserModelFromJson(await authService.readBiometric())
+            .biometricComplement!) {
+          //BIOMETICO COMPLEMENTO
+          _authenticate();
+        }
       }
     }
   }
 
-// Función para autenticar al usuario con huella digital o reconocimiento facial
-  Future<void> _authenticate(BiometricUserModel biometric) async {
-    bool authenticated =
-        false; // Variable para saber si la autenticación fue exitosa
-
+  Future<void> _authenticate() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    bool authenticated = false;
     try {
-      // Mostramos el prompt de autenticación biométrica al usuario
       authenticated = await auth.authenticate(
-        localizedReason:
-            'MUSERPOL', // Mensaje que aparece en el diálogo biométrico
+        localizedReason: 'MUSERPOL',
         authMessages: [
           const AndroidAuthMessages(
-            signInTitle:
-                'Autenticación Biometrica requerida', // Título del diálogo
-            cancelButton: 'No Gracias', // Texto del botón para cancelar
-            biometricHint: 'Verificar Identidad', // Hint que aparece en la UI
+            signInTitle: 'Autenticación Biometrica requerida',
+            cancelButton: 'No Gracias',
+            biometricHint: 'Verificar Identidad',
           ),
         ],
-        options: const AuthenticationOptions(
-          stickyAuth:
-              true, // Mantiene la autenticación activa si la app se pausa
-          biometricOnly: true, // Solo se permite autenticación por biometría
-        ),
+        options:
+            const AuthenticationOptions(stickyAuth: true, biometricOnly: true),
       );
-
-      debugPrint('HECHO'); // Si pasa sin errores, imprimimos un log
+      debugPrint('HECHO');
     } on PlatformException catch (e) {
-      // Si ocurre algún error en el proceso (ej: el usuario cancela), lo mostramos
       debugPrint('$e');
       return;
     }
-
-    // Verificamos si el widget sigue montado (útil si la autenticación tomó tiempo y se deshizo el widget)
-    if (!mounted) return;
-
-    // Si la autenticación fue exitosa
+    if (!mounted) {
+      return;
+    }
     if (authenticated) {
-      setState(() {
-        // Dependiendo del tipo de sesión, rellenamos los campos del formulario con los datos almacenados
-        if (widget.stateOfficeVirtual) {
-          dniCtrl.text =
-              biometric.userVirtualOfficine?.identityCard ?? ''; // Cédula
-          passwordCtrl.text =
-              biometric.userVirtualOfficine?.password ?? ''; // Contraseña
-        } else {
-          dniCtrl.text = biometric.userComplement?.identityCard ??
-              ''; // Cédula para complemento
-          dateCtrlText = biometric.userComplement?.dateBirth ??
-              ''; // Fecha de nacimiento para complemento
-        }
-      });
-
-      // Iniciamos la sesión con los datos llenados automáticamente
+      final biometric =
+          biometricUserModelFromJson(await authService.readBiometric());
+      if (widget.stateOfficeVirtual) {
+        setState(() {
+          dniCtrl.text = biometric.userVirtualOfficine!.identityCard!;
+          passwordCtrl.text = biometric.userVirtualOfficine!.password!;
+        });
+      } else {
+        setState(() {
+          dniCtrl.text = biometric.userComplement!.identityCard!;
+          dateCtrlText = biometric.userComplement!.dateBirth!;
+        });
+      }
       initSession();
     }
   }
-
-  // verifyBiometric() async {
-  //   final authService = Provider.of<AuthService>(context, listen: false);
-
-  //   if (await authService.readBiometric() != "") {
-  //     if (widget.stateOfficeVirtual) {
-  //       if (biometricUserModelFromJson(await authService.readBiometric()).biometricVirtualOfficine!) {
-  //         //BIOMETICO OFICINA VIRTUAL
-  //         _authenticate();
-  //       }
-  //     } else {
-  //       debugPrint('${biometricUserModelFromJson(await authService.readBiometric()).biometricComplement}');
-  //       if (biometricUserModelFromJson(await authService.readBiometric()).biometricComplement!) {
-  //         //BIOMETICO COMPLEMENTO
-  //         _authenticate();
-  //       }
-  //     }
-  //   }
-  // }
-
-  // Future<void> _authenticate() async {
-  //   final authService = Provider.of<AuthService>(context, listen: false);
-  //   bool authenticated = false;
-  //   try {
-  //     authenticated = await auth.authenticate(
-  //       localizedReason: 'MUSERPOL',
-  //       authMessages: [
-  //         const AndroidAuthMessages(
-  //           signInTitle: 'Autenticación Biometrica requerida',
-  //           cancelButton: 'No Gracias',
-  //           biometricHint: 'Verificar Identidad',
-  //         ),
-  //       ],
-  //       options: const AuthenticationOptions(stickyAuth: true, biometricOnly: true),
-  //     );
-  //     debugPrint('HECHO');
-  //   } on PlatformException catch (e) {
-  //     debugPrint('$e');
-  //     return;
-  //   }
-  //   if (!mounted) {
-  //     return;
-  //   }
-  //   if (authenticated) {
-  //     final biometric = biometricUserModelFromJson(await authService.readBiometric());
-  //     if (widget.stateOfficeVirtual) {
-  //       setState(() {
-  //         dniCtrl.text = biometric.userVirtualOfficine!.identityCard!;
-  //         passwordCtrl.text = biometric.userVirtualOfficine!.password!;
-  //       });
-  //     } else {
-  //       setState(() {
-  //         dniCtrl.text = biometric.userComplement!.identityCard!;
-  //         dateCtrlText = biometric.userComplement!.dateBirth!;
-  //       });
-  //     }
-  //     initSession();
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {

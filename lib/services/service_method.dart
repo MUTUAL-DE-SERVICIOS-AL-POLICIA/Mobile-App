@@ -243,7 +243,7 @@ confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
 
   // Navega al inicio
   if (!mounted) return;
-  Navigator.pushReplacementNamed(context, 'newlogin');
+  Navigator.pushReplacementNamed(context, 'switch');
 }
 
 /// Verifica si hay una nueva versión de la app disponible y sugiere actualizar

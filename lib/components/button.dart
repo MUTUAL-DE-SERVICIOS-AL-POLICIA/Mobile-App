@@ -4,85 +4,39 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
 
-// class ButtonComponent extends StatelessWidget {
-//   final String text;
-//   final Function()? onPressed;
-//   final bool stateLoading;
-//   const ButtonComponent(
-//       {super.key,
-//       required this.text,
-//       required this.onPressed,
-//       this.stateLoading = false});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialButton(
-//         minWidth: 200,
-//         padding: const EdgeInsets.symmetric(vertical: 19),
-//         color: AdaptiveTheme.of(context).theme.primaryColor,
-//         disabledColor: Colors.grey,
-//         shape: RoundedRectangleBorder(
-//           borderRadius:
-//               BorderRadius.circular(50),
-//         ),
-//         onPressed: onPressed,
-//         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-//           stateLoading
-//               ? Center(
-//                   child: Image.asset(
-//                   'assets/images/load.gif',
-//                   fit: BoxFit.cover,
-//                   height: 20,
-//                 ))
-//               : Text(text,
-//                   style: TextStyle(
-//                     fontSize: 17.sp,
-//                     fontWeight: FontWeight.bold,
-//                     color: Colors.white,
-//                   )),
-//         ]));
-//   }
-// }
-
 class ButtonComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
   final bool stateLoading;
-
-  const ButtonComponent({
-    super.key,
-    required this.text,
-    required this.onPressed,
-    this.stateLoading = false,
-  });
+  const ButtonComponent(
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      this.stateLoading = false});
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: MaterialButton(
-        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 16),
+    return MaterialButton(
+        minWidth: 200,
+        padding: const EdgeInsets.symmetric(vertical: 19),
         color: AdaptiveTheme.of(context).theme.primaryColor,
         disabledColor: Colors.grey,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
-        ),
         onPressed: onPressed,
-        child: stateLoading
-            ? Image.asset(
-                'assets/images/load.gif',
-                fit: BoxFit.cover,
-                height: 20,
-              )
-            : Text(
-                text,
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-      ),
-    );
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          stateLoading
+              ? Center(
+                  child: Image.asset(
+                  'assets/images/load.gif',
+                  fit: BoxFit.cover,
+                  height: 20,
+                ))
+              : Text(text,
+                  style: TextStyle(
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  )),
+        ]));
   }
 }
 
@@ -177,16 +131,16 @@ class ButtonDate extends StatelessWidget {
         focusElevation: 0,
         onPressed: onPressed,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50.0),
+            borderRadius: BorderRadius.circular(8.0),
             side: const BorderSide(
-              color: Color(0xff419388),
+              color: Colors.grey,
               width: 2.0,
             )),
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Text(text,
               style: TextStyle(
-                fontSize: 15.sp,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.w600,
                 color: AdaptiveTheme.of(context).theme.primaryColor,
               )),
