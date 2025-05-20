@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
-import 'package:muserpol_pvt/components/paint.dart';
+// import 'package:muserpol_pvt/components/paint.dart';
 import 'package:muserpol_pvt/screens/access/formlogin.dart';
 
 class ScreenNewLogin extends StatefulWidget {
@@ -72,11 +72,14 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Image(
-                      image: AssetImage(
-                        AdaptiveTheme.of(context).mode.isDark
-                            ? 'assets/images/muserpol-logo.png'
-                            : 'assets/images/muserpol-logo2.png',
+                    Center(
+                      child: Image(
+                        image: AssetImage(
+                          AdaptiveTheme.of(context).mode.isDark
+                              ? 'assets/images/muserpol-logo.png'
+                              : 'assets/images/muserpol-logo2.png',
+                        ),
+                        width: 200.w,
                       ),
                     ),
                     SizedBox(
