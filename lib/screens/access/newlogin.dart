@@ -6,6 +6,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
 // import 'package:muserpol_pvt/components/paint.dart';
@@ -24,6 +25,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting();
     initPlatformState();
   }
 
@@ -87,7 +89,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                     ),
                     FadeIn(
                       animate: true,
-                      child: const ScreenFormLogin(),
+                      child: ScreenFormLogin(deviceId: deviceId ?? 'no-id'),
                     ),
                   ],
                 ))

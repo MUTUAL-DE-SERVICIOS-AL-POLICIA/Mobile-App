@@ -41,7 +41,7 @@ class _IdentityCardState extends State<IdentityCard> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.title),
+            Text(widget.title, style: TextStyle(fontSize: 15.sp, color: const Color.fromARGB(255, 0, 0, 0))),
             Row(
               children: <Widget>[
                 Flexible(
