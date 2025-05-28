@@ -403,22 +403,6 @@ class _NavigatorBarState extends State<NavigatorBar> {
     )..show(context: context);
   }
 
-  // Omitir tutorial
-  // Future<bool> onSkip() async {
-  //   setState(() => stateLoadTutorial = !stateLoadTutorial!);
-  //   if (await checkVersion(mounted, context)) {
-  //     if (widget.stateApp == StateAplication.complement) {
-  //       getEconomicComplement(true);
-  //       getEconomicComplement(false);
-  //     } else {
-  //       getContributions();
-  //       getLoans();
-  //     }
-  //   }
-  //   return true;
-  // }
-
-  // Omitir tutorial (sincrónico)
   bool onSkip() {
     setState(() => stateLoadTutorial = !stateLoadTutorial!);
     if (widget.stateApp == StateAplication.complement) {
