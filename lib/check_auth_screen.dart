@@ -5,6 +5,7 @@ import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
+import 'package:muserpol_pvt/screens/list_service.dart';
 import 'package:muserpol_pvt/screens/navigator_bar.dart';
 // import 'package:muserpol_pvt/screens/switch.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
@@ -98,16 +99,28 @@ class CheckAuthScreen extends StatelessWidget {
     UserModel user = userModelFromJson(await authService.readUser());
     userBloc.add(UpdateUser(user.user!));
     final stateApp = await authService.readStateApp();
+    debugPrint(stateApp);
+    //dependiendo el estado inicia la pantalla despues de actualizar o eliminar
     Future.microtask(() {
-      Navigator.pushReplacement(
+      if (stateApp == 'list_services') {
+        Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-              pageBuilder: (_, __, ___) => NavigatorBar(
-                  tutorial: false,
-                  stateApp: stateApp == 'complement'
-                      ? StateAplication.complement
-                      : StateAplication.virtualOficine),
-              transitionDuration: const Duration(seconds: 0)));
+            pageBuilder: (_, __, ___) => const ScreenListService(),
+            transitionDuration: const Duration(seconds: 0),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+                pageBuilder: (_, __, ___) => NavigatorBar(
+                    tutorial: false,
+                    stateApp: stateApp == 'complement'
+                        ? StateAplication.complement
+                        : StateAplication.virtualOficine),
+                transitionDuration: const Duration(seconds: 0)));
+      }
     });
   }
 

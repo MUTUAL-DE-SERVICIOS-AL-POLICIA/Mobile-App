@@ -83,4 +83,25 @@ class AuthService extends ChangeNotifier {
   Future<String> readFirstTime() async {
     return await storage.read(key: 'firstTime') ?? '';
   }
+
+  // Guarda el token del backend de Complemento Económico
+  Future writeTokenCE(String token) async {
+    await storage.write(key: 'token_ce', value: token);
+  }
+
+  // Lee el token del backend de Complemento Económico
+  Future<String> readTokenCE() async {
+    return await storage.read(key: 'token_ce') ?? '';
+  }
+
+  //Guarda el Id del dispositivo
+  Future writeDeviceId(String deviceId) async {
+    await storage.write(key: 'device_id', value: deviceId);
+  }
+
+  //Lee el id del device
+
+  Future<String> readDeviceId() async {
+    return await storage.read(key: 'device_id') ?? '';
+  }
 }

@@ -48,10 +48,11 @@ Future<dynamic> serviceMethod(
 
   try {
     // Verifica si hay conexión a internet
-    final result = await InternetAddress.lookup(
-        dotenv.env['STATE_PROD'] == 'true'
-            ? 'pvt.muserpol.gob.bo'
-            : 'google.com');
+    // final result = await InternetAddress.lookup(
+    //     dotenv.env['STATE_PROD'] == 'true'
+    //         ? 'pvt.muserpol.gob.bo'
+    //         : 'google.com');
+    final result = await InternetAddress.lookup('google.com');
 
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
       var url = Uri.parse(urlAPI);
@@ -95,7 +96,7 @@ Future<dynamic> serviceMethod(
               callDialogAction(context,
                   'Tenemos un problema con nuestro servidor, intente luego');
             } else if ('$err'.contains('connection')) {
-              callDialogAction(context, 'Verifique su conexión a Internet');
+              callDialogAction(context, 'Verifique su conexión a Internet1');
             } else {
               callDialogAction(
                   context, 'Lamentamos los inconvenientes, inténtalo de nuevo');
@@ -173,15 +174,15 @@ Future<dynamic> serviceMethod(
   } on SocketException catch (e) {
     debugPrint('errC $e');
     if (!mounted) return;
-    return callDialogAction(context, 'Verifique su conexión a Internet');
+    return callDialogAction(context, 'Verifique su conexión a Internet2');
   } on ClientException catch (e) {
     debugPrint('errD $e');
     if (!mounted) return;
-    return callDialogAction(context, 'Verifique su conexión a Internet');
+    return callDialogAction(context, 'Verifique su conexión a Internet3');
   } on MissingPluginException catch (e) {
     debugPrint('errF $e');
     if (!mounted) return;
-    return callDialogAction(context, 'Verifique su conexión a Internet');
+    return callDialogAction(context, 'Verifique su conexión a Internet4');
   } catch (e) {
     debugPrint('errG $e');
     if (!mounted) return;
@@ -243,16 +244,18 @@ confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
 
   // Navega al inicio
   if (!mounted) return;
-  Navigator.pushReplacementNamed(context, 'switch');
+  Navigator.pushReplacementNamed(context, 'newlogin');
 }
 
 /// Verifica si hay una nueva versión de la app disponible y sugiere actualizar
 Future<bool> checkVersion(bool mounted, BuildContext context) async {
   try {
-    final result = await InternetAddress.lookup(
-        dotenv.env['STATE_PROD'] == 'true'
-            ? 'pvt.muserpol.gob.bo'
-            : 'google.com');
+    // final result = await InternetAddress.lookup(
+    //     dotenv.env['STATE_PROD'] == 'true'
+    //         ? 'pvt.muserpol.gob.bo'
+    //         : 'google.com');
+
+    final result = await InternetAddress.lookup('google.com');
 
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
       // Prepara datos para el backend
@@ -300,7 +303,7 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
     }
   } on SocketException catch (e) {
     debugPrint('errC $e');
-    callDialogAction(context, 'Verifique su conexión a Internet');
+    callDialogAction(context, 'Verifique su conexión a Internet5');
     return false;
   } catch (e) {
     debugPrint('errG $e');

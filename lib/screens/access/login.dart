@@ -158,65 +158,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
     }
   }
 
-  // verifyBiometric() async {
-  //   final authService = Provider.of<AuthService>(context, listen: false);
-
-  //   if (await authService.readBiometric() != "") {
-  //     if (widget.stateOfficeVirtual) {
-  //       if (biometricUserModelFromJson(await authService.readBiometric()).biometricVirtualOfficine!) {
-  //         //BIOMETICO OFICINA VIRTUAL
-  //         _authenticate();
-  //       }
-  //     } else {
-  //       debugPrint('${biometricUserModelFromJson(await authService.readBiometric()).biometricComplement}');
-  //       if (biometricUserModelFromJson(await authService.readBiometric()).biometricComplement!) {
-  //         //BIOMETICO COMPLEMENTO
-  //         _authenticate();
-  //       }
-  //     }
-  //   }
-  // }
-
-  // Future<void> _authenticate() async {
-  //   final authService = Provider.of<AuthService>(context, listen: false);
-  //   bool authenticated = false;
-  //   try {
-  //     authenticated = await auth.authenticate(
-  //       localizedReason: 'MUSERPOL',
-  //       authMessages: [
-  //         const AndroidAuthMessages(
-  //           signInTitle: 'Autenticación Biometrica requerida',
-  //           cancelButton: 'No Gracias',
-  //           biometricHint: 'Verificar Identidad',
-  //         ),
-  //       ],
-  //       options: const AuthenticationOptions(stickyAuth: true, biometricOnly: true),
-  //     );
-  //     debugPrint('HECHO');
-  //   } on PlatformException catch (e) {
-  //     debugPrint('$e');
-  //     return;
-  //   }
-  //   if (!mounted) {
-  //     return;
-  //   }
-  //   if (authenticated) {
-  //     final biometric = biometricUserModelFromJson(await authService.readBiometric());
-  //     if (widget.stateOfficeVirtual) {
-  //       setState(() {
-  //         dniCtrl.text = biometric.userVirtualOfficine!.identityCard!;
-  //         passwordCtrl.text = biometric.userVirtualOfficine!.password!;
-  //       });
-  //     } else {
-  //       setState(() {
-  //         dniCtrl.text = biometric.userComplement!.identityCard!;
-  //         dateCtrlText = biometric.userComplement!.dateBirth!;
-  //       });
-  //     }
-  //     initSession();
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([

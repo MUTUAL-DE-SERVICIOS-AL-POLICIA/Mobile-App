@@ -14,33 +14,32 @@ import 'package:muserpol_pvt/screens/access/formlogin.dart';
 
 class ScreenNewLogin extends StatefulWidget {
   const ScreenNewLogin({super.key});
+
   @override
   State<ScreenNewLogin> createState() => _ScreenNewLoginState();
 }
 
 class _ScreenNewLoginState extends State<ScreenNewLogin> {
   String? deviceId;
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     initializeDateFormatting();
-    initPlatformState();
+    _initPlatformState();
   }
 
-  Future<void> initPlatformState() async {
+  Future<void> _initPlatformState() async {
     final deviceInfo = DeviceInfoPlugin();
     String? statusDeviceId;
 
     try {
       if (Platform.isAndroid) {
         final androidInfo = await deviceInfo.androidInfo;
-        statusDeviceId = androidInfo.id; // Obtiene el ID único en Android
+        statusDeviceId = androidInfo.id;
       } else if (Platform.isIOS) {
         final iosInfo = await deviceInfo.iosInfo;
-        statusDeviceId =
-            iosInfo.identifierForVendor; // Obtiene el ID único en iOS
+        statusDeviceId = iosInfo.identifierForVendor;
       } else {
         statusDeviceId = 'Plataforma no soportada';
       }
@@ -55,8 +54,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop:
-          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         bool exitApp = await _onBackPressed();
@@ -65,35 +63,39 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
         }
       },
       child: Scaffold(
-        body: Stack(
-          children: [
-            // const Formtop(),
-            // const FormButtom(),
-            Padding(
-                padding: const EdgeInsets.fromLTRB(15, 30, 15, 0),
+        resizeToAvoidBottomInset: true, // Muy importante para el teclado
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top,
+              ),
+              child: IntrinsicHeight(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Center(
-                      child: Image(
-                        image: AssetImage(
-                          AdaptiveTheme.of(context).mode.isDark
-                              ? 'assets/images/muserpol-logo.png'
-                              : 'assets/images/muserpol-logo2.png',
-                        ),
+                      child: Image.asset(
+                        AdaptiveTheme.of(context).mode.isDark
+                            ? 'assets/images/muserpol-logo.png'
+                            : 'assets/images/muserpol-logo2.png',
                         width: 200.w,
                       ),
                     ),
-                    SizedBox(
-                      height: 20.h,
-                    ),
+                    SizedBox(height: 30.h),
                     FadeIn(
                       animate: true,
                       child: ScreenFormLogin(deviceId: deviceId ?? 'no-id'),
                     ),
+                    const Spacer(),
+                    SizedBox(height: 10.h),
                   ],
-                ))
-          ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -101,16 +103,18 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
 
   Future<bool> _onBackPressed() async {
     return await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (BuildContext context) {
-          return ComponentAnimate(
-              child: DialogTwoAction(
-                  message:
-                      '¿Estás seguro de salir de la aplicación MUSERPOL PVT?',
-                  actionCorrect: () => SystemChannels.platform
-                      .invokeMethod('SystemNavigator.pop'),
-                  messageCorrect: 'Salir'));
-        });
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return ComponentAnimate(
+          child: DialogTwoAction(
+            message: '¿Estás seguro de salir de la aplicación MUSERPOL PVT?',
+            actionCorrect: () =>
+                SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
+            messageCorrect: 'Salir',
+          ),
+        );
+      },
+    );
   }
 }
