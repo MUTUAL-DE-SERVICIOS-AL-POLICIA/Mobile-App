@@ -93,7 +93,6 @@ class _ModalAceptTerminState extends State<ModalAceptTermin> {
     await authService.writeFirstTime(context);
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, 'switch');
-    // Navigator.pushReplacementNamed(context, 'newlogin');
   }
 }
 
