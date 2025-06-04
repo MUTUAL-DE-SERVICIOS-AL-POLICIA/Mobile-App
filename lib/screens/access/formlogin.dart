@@ -19,6 +19,7 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 // import 'package:local_auth_android/local_auth_android.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
+import 'package:muserpol_pvt/screens/RegisteUser/register_user.dart';
 import 'package:muserpol_pvt/screens/access/model_update_pwd.dart';
 import 'package:muserpol_pvt/screens/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
@@ -153,6 +154,17 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                         )),
                   ),
                 ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pushNamed(context, 'forgot'),
+                    child: Text('Ingresar con PIN',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          color: Colors.black,
+                        )),
+                  ),
+                ),
                 SizedBox(
                   height: 10.h,
                 ),
@@ -220,18 +232,14 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                 child: MiniCardButton(
                   icon: Icons.person_add,
                   label: 'Nuevo\nUsuario de la app',
-                  onTap: () => showAboutDialog(
-                    context: context,
-                    applicationName: 'MUSERPOL',
-                    applicationVersion: dotenv.env['version'] ?? '',
-                    applicationLegalese:
-                        'Aplicación de consulta de datos de la Policía Boliviana.',
-                    children: [
-                      const Text('Desarrollado por MUSERPOL'),
-                      const SizedBox(height: 10),
-                      const Text('Versión 1.0.0'),
-                    ],
-                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ScreenRegister(),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
