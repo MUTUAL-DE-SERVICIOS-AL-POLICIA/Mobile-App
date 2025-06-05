@@ -5,20 +5,22 @@ import 'package:animate_do/animate_do.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+// import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/containers.dart';
 import 'package:muserpol_pvt/components/paint.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
-import 'package:muserpol_pvt/model/qr_model.dart';
-import 'package:muserpol_pvt/screens/flowQR/flow.dart';
+// import 'package:muserpol_pvt/model/qr_model.dart';
+// import 'package:muserpol_pvt/screens/flowQR/flow.dart';
 import 'package:muserpol_pvt/screens/access/login.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 // import 'package:platform_device_id/platform_device_id.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:muserpol_pvt/services/services.dart';
+// import 'package:muserpol_pvt/services/services.dart';
 
 class ScreenSwitch extends StatefulWidget {
   const ScreenSwitch({super.key});
@@ -37,9 +39,9 @@ class ScreenSwitchState extends State<ScreenSwitch> {
 
   ScanResult? scanResult;
 
-  final _flashOnController = TextEditingController(text: 'CON FLASH');
-  final _flashOffController = TextEditingController(text: 'SIN FLASH');
-  final _cancelController = TextEditingController(text: 'ATRAS');
+  // final _flashOnController = TextEditingController(text: 'CON FLASH');
+  // final _flashOffController = TextEditingController(text: 'SIN FLASH');
+  // final _cancelController = TextEditingController(text: 'ATRAS');
 
   static final _possibleFormats = BarcodeFormat.values.toList()
     ..removeWhere((e) => e == BarcodeFormat.unknown);
@@ -142,6 +144,16 @@ class ScreenSwitchState extends State<ScreenSwitch> {
                                 animate: !statelogin,
                                 child: Column(
                                   children: [
+                                    const Padding(
+                                      padding: EdgeInsets.only(bottom: 20.0),
+                                      child: Text(
+                                        '¡Bienvenido!',
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
                                     optionTool(
                                       const Image(
                                         image: AssetImage(
@@ -164,20 +176,26 @@ class ScreenSwitchState extends State<ScreenSwitch> {
                                       () => setState(() => stateOF = true),
                                       false,
                                     ),
-                                    optionTool(
-                                      SvgPicture.asset(
-                                        'assets/icons/qr.svg',
-                                        height: 50.sp,
-                                        colorFilter: const ColorFilter.mode(
-                                          Color(0xff419388),
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                      'SEGUIMIENTO CON QR',
-                                      'Seguimiento de trámite de Préstamos y Beneficios Económicos con QR.',
-                                      () => scan(),
-                                      true,
+                                    SizedBox(
+                                      height: 10.h,
                                     ),
+                                    Center(
+                                        child: Text(
+                                            'Versión ${dotenv.env['version']}')),
+                                    // optionTool(
+                                    //   SvgPicture.asset(
+                                    //     'assets/icons/qr.svg',
+                                    //     height: 50.sp,
+                                    //     colorFilter: const ColorFilter.mode(
+                                    //       Color(0xff419388),
+                                    //       BlendMode.srcIn,
+                                    //     ),
+                                    //   ),
+                                    //   'SEGUIMIENTO CON QR',
+                                    //   'Seguimiento de trámite de Préstamos y Beneficios Económicos con QR.',
+                                    //   () => scan(),
+                                    //   true,
+                                    // ),
                                   ],
                                 ),
                               ),
@@ -194,48 +212,48 @@ class ScreenSwitchState extends State<ScreenSwitch> {
   }
 
   //Funciones relacionadas a la lectura de QR
-  Future scan() async {
-    try {
-      var options = ScanOptions(
-        strings: {
-          "cancel": _cancelController.text,
-          "flash_on": _flashOnController.text,
-          "flash_off": _flashOffController.text,
-        },
-        restrictFormat: selectedFormats,
-        useCamera: -1,
-        autoEnableFlash: false,
-        android: const AndroidOptions(
-          aspectTolerance: 0.00,
-          useAutoFocus: true,
-        ),
-      );
-      var result = await BarcodeScanner.scan(options: options);
-      setState(() => scanResult = result);
-      if (scanResult!.rawContent != '') {
-        debugPrint('scanResult!.rawContent ${scanResult!.rawContent}');
-        if (!mounted) return;
-        var response = await serviceMethod(mounted, context, 'get', null,
-            serviceGetQr(scanResult!.rawContent), false, false);
-        if (response != null) {
-          if (!mounted) return;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ScreenWorkFlow(
-                    qrModel: qrModelFromJson(response.body),
-                    stateFlow: scanResult!.rawContent)),
-          );
-        } else {
-          if (!mounted) return;
-          callDialogAction(context, 'No pudimos encontrar el trámite');
-        }
-      }
-    } on PlatformException catch (e) {
-      debugPrint('error $e ');
-      return;
-    }
-  }
+  // Future scan() async {
+  //   try {
+  //     var options = ScanOptions(
+  //       strings: {
+  //         "cancel": _cancelController.text,
+  //         "flash_on": _flashOnController.text,
+  //         "flash_off": _flashOffController.text,
+  //       },
+  //       restrictFormat: selectedFormats,
+  //       useCamera: -1,
+  //       autoEnableFlash: false,
+  //       android: const AndroidOptions(
+  //         aspectTolerance: 0.00,
+  //         useAutoFocus: true,
+  //       ),
+  //     );
+  //     var result = await BarcodeScanner.scan(options: options);
+  //     setState(() => scanResult = result);
+  //     if (scanResult!.rawContent != '') {
+  //       debugPrint('scanResult!.rawContent ${scanResult!.rawContent}');
+  //       if (!mounted) return;
+  //       var response = await serviceMethod(mounted, context, 'get', null,
+  //           serviceGetQr(scanResult!.rawContent), false, false);
+  //       if (response != null) {
+  //         if (!mounted) return;
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(
+  //               builder: (context) => ScreenWorkFlow(
+  //                   qrModel: qrModelFromJson(response.body),
+  //                   stateFlow: scanResult!.rawContent)),
+  //         );
+  //       } else {
+  //         if (!mounted) return;
+  //         callDialogAction(context, 'No pudimos encontrar el trámite');
+  //       }
+  //     }
+  //   } on PlatformException catch (e) {
+  //     debugPrint('error $e ');
+  //     return;
+  //   }
+  // }
 
   Future<bool> _onBackPressed() async {
     if (statelogin) {

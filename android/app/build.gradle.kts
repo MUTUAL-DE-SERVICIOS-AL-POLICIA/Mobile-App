@@ -1,44 +1,108 @@
+// Plugins necesarios para construir una app Android con Flutter y Kotlin
 plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id("dev.flutter.flutter-gradle-plugin")
+    id "com.android.application" // Plugin base para apps Android
+    id "kotlin-android"          // Para usar Kotlin
+    id "dev.flutter.flutter-gradle-plugin" // Plugin para compilar con Flutter
 }
 
-android {
-    namespace = "com.example.muserpol_pvt"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+// Cargar propiedades del archivo local.properties
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
 
+// Lectura de versionCode y versionName desde local.properties (si están definidos)
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+// Comentado: configuración antigua que fue reemplazada por plugins declarados arriba
+// apply plugin: 'com.android.application'
+// apply plugin: 'com.google.gms.google-services' // Firebase
+// apply plugin: 'kotlin-android'
+// apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+// apply plugin: 'com.huawei.agconnect' // Huawei services
+
+// Cargar propiedades del archivo key.properties (para firmar la app)
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+// Configuración del bloque android
+android {
+    namespace 'com.muserpol.pvt' // Identificador del paquete (importante para Play Console)
+    compileSdkVersion 35         // SDK de compilación (actualizado)
+    ndkVersion '27.0.12077973'   // Versión del NDK (para código nativo si se usa)
+
+    // Compatibilidad con Java
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin' // Código Kotlin se encuentra aquí
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.muserpol_pvt"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        applicationId "com.muserpol.pvt" // ID ÚNICO de la app (IMPORTANTE para Play Store)
+        minSdkVersion 21                 // Mínimo Android soportado
+        targetSdkVersion 35             // Target Android (recomendado: siempre lo último)
+        versionCode 58                  // Código de versión (debe INCREMENTAR en cada subida)
+        versionName "3.0.8"          // Nombre visible de la versión (para usuarios)
+        multiDexEnabled true            // Soporte para multidex si el método supera el límite
+    }
+
+    // Configuración de firma
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']          // Alias de la clave
+            keyPassword keystoreProperties['keyPassword']    // Contraseña de la clave
+            storeFile file(keystoreProperties['storeFile'])  // Ruta del archivo .jks
+            storePassword keystoreProperties['storePassword'] // Contraseña del almacén
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig signingConfigs.release // Firma la app en modo release
         }
+    }
+
+    // Evita errores por reglas de lint (solo en release)
+    lintOptions {
+        checkReleaseBuilds false
     }
 }
 
+// Ruta del código fuente de Flutter
 flutter {
-    source = "../.."
+    source '../..'
+}
+
+// Dependencias necesarias
+dependencies {
+    // Dependencias de Firebase
+    implementation platform('com.google.firebase:firebase-bom:30.3.2')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
+    // Soporte para multidex
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.google.mlkit:text-recognition:16.0.0'
+
 }
