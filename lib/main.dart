@@ -13,7 +13,9 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/access/forgot_password/forgot_pwd.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
+import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
 import 'package:muserpol_pvt/screens/inbox/notification.dart';
+import 'package:muserpol_pvt/screens/list_service.dart';
 // import 'package:muserpol_pvt/screens/switch.dart';
 import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/swipe/slider.dart';
@@ -180,6 +182,8 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
               'forgot': (_) => const ForgotPwd(),
               'contacts': (_) => const ScreenContact(),
               'message': (_) => const ScreenNotification(),
+              'sendmessage': (_) => const SendMessageLogin(),
+              'menu':(_)=> const ScreenListService(),
             }));
   }
 }

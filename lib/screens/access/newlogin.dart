@@ -29,6 +29,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
     _initPlatformState();
   }
 
+  //Tendria que cambiarse o buscar un nuevo codigo
   Future<void> _initPlatformState() async {
     final deviceInfo = DeviceInfoPlugin();
     String? statusDeviceId;

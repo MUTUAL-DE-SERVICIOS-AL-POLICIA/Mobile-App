@@ -72,7 +72,7 @@ class _ModalAceptTerminState extends State<ModalAceptTermin> {
                               child: GestureDetector(
                                 onTap: () => setState(() => stateNotificationsPush = !stateNotificationsPush),
                                 child: Text('Acepto que me envien notificaciones',
-                                    style: TextStyle(color: AdaptiveTheme.of(context).theme.primaryColorDark)),
+                                    style: TextStyle(fontSize: 17.sp, color: AdaptiveTheme.of(context).theme.primaryColorDark)),
                               ),
                             )
                           ],

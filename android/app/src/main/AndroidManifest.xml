@@ -4,20 +4,11 @@
 
     <!-- PERMISOS -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-
-    <!-- NUEVOS PERMISOS PARA ANDROID 13+ -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_DOCUMENTS"/>
-
-    <!-- COMPATIBILIDAD CON ANDROID <= 12 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
-    <!-- PERMISOS OBSOLETOS REMOVIDOS -->
-    <!-- WRITE_EXTERNAL_STORAGE eliminado -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
@@ -65,6 +56,15 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="com.muserpol.pvt"
+                    android:path="/oauth2redirect" />
             </intent-filter>
         </activity>
 

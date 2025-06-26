@@ -47,6 +47,8 @@ String servicePostVersion()=>'$hostPVT/$reazon/version';
 String serviceGetQr(String info)=> '$hostSTI/$reazonQr/procedure_qr/$info';
 // AUTH
 String serviceAuthSessionOF()=>'$hostSTI/$reazonAffiliate/auth';
+String createtosendmessage() =>'$hostSTI/$reazonAffiliate/sendcode';
+String verifytosendmessage() =>'$hostSTI/$reazonAffiliate/verifycode';
 // CHANGE PASSWORD
 String serviceChangePasswordOF()=>'$hostSTI/$reazonAffiliate/change_password';
 // FORGOT PASSWORD

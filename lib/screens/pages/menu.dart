@@ -194,7 +194,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
           biometricComplement: biometric.biometricComplement,
           biometricVirtualOfficine: state,
           affiliateId: biometric.affiliateId,
-          userComplement: biometric.userComplement,
+          userComplement: biometric.userComplement, 
           userVirtualOfficine: biometric.userVirtualOfficine);
     }
     if (!mounted) return;

@@ -1,35 +1,30 @@
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:installed_apps/index.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
-import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/components/inputs/identity_card.dart';
 import 'package:muserpol_pvt/components/card_login.dart';
-import 'package:muserpol_pvt/components/inputs/password.dart';
+// import 'package:muserpol_pvt/components/inputs/password.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:muserpol_pvt/database/db_provider.dart';
-import 'package:muserpol_pvt/model/biometric_user_model.dart';
+import 'package:muserpol_pvt/components/inputs/phone.dart';
+import 'package:muserpol_pvt/screens/access/WebScreen.dart';
 // import 'package:local_auth_android/local_auth_android.dart';
-import 'package:muserpol_pvt/provider/app_state.dart';
-import 'package:muserpol_pvt/screens/RegisteUser/register_user.dart';
-import 'package:muserpol_pvt/screens/access/model_update_pwd.dart';
-import 'package:muserpol_pvt/screens/list_service.dart';
-import 'package:muserpol_pvt/services/auth_service.dart';
-import 'package:muserpol_pvt/services/push_notifications.dart';
+import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
+
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
-import 'package:provider/provider.dart';
-import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:muserpol_pvt/model/user_model.dart';
+// import 'package:flutter_web_auth/flutter_web_auth.dart';
+// import 'package:webview_flutter/webview_flutter.dart';
 
 class ScreenFormLogin extends StatefulWidget {
   final String deviceId;
@@ -43,7 +38,7 @@ class ScreenFormLogin extends StatefulWidget {
 class _ScreenFormLoginState extends State<ScreenFormLogin> {
   TextEditingController dniCtrl = TextEditingController();
   TextEditingController dniComCtrl = TextEditingController();
-  TextEditingController passwordCtrl = TextEditingController();
+  TextEditingController phoneCtrl = TextEditingController();
   final LocalAuthentication auth = LocalAuthentication();
   final double containerWidth = 320.w;
 
@@ -124,7 +119,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                   height: 20.h,
                 ),
                 IdentityCard(
-                  title: 'Usuario / CI:',
+                  title: 'Cedula de Identidad:',
                   dniCtrl: dniCtrl,
                   dniComCtrl: dniComCtrl,
                   onEditingComplete: () => node.nextFocus(),
@@ -138,60 +133,72 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                 SizedBox(
                   height: 10.h,
                 ),
-                Password(
-                    passwordCtrl: passwordCtrl, onEditingComplete: () => ()),
-                SizedBox(
-                  height: 10.h,
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.pushNamed(context, 'forgot'),
-                    child: Text('¿Olvidaste tus credenciales?',
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          color: Colors.black,
-                        )),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.pushNamed(context, 'forgot'),
-                    child: Text('Ingresar con PIN',
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          color: Colors.black,
-                        )),
-                  ),
-                ),
+                PhoneNumber(phoneCtrl: phoneCtrl, onEditingComplete: () {}),
                 SizedBox(
                   height: 10.h,
                 ),
                 ButtonComponent(
-                    text: 'INGRESAR', onPressed: () => initSession()),
+                    text: 'INGRESAR', onPressed: () => sendCredentialsNew()),
                 SizedBox(
                   height: 20.h,
                 ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(50.r),
-                    onTap: () {},
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.fingerprint,
-                          size: 40.sp,
-                          color: Colors.black,
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Ingreso con biometría',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: Colors.black,
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(50.r),
+                          onTap: () {},
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.fingerprint,
+                                size: 40.sp,
+                                color: const Color(0xff419388),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'Ingreso con biometría',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: const Color(0xff419388),
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                      ),
+                    ]),
+                SizedBox(
+                  height: 20.h,
+                ),
+                SizedBox(
+                  width: 250,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      side:
+                          const BorderSide(color: Color(0xFF2B3486), width: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF2B3486),
+                      elevation: 0,
+                    ),
+                    onPressed: () => onAuthCiudadaniaDigital(),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/images/logoCiudadania.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'Ciudadania Digital',
+                          style: TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
@@ -227,21 +234,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: MiniCardButton(
-                  icon: Icons.person_add,
-                  label: 'Nuevo\nUsuario de la app',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ScreenRegister(),
-                      ),
-                    );
-                  },
-                ),
-              ),
             ],
           ),
         ),
@@ -257,123 +249,91 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                 ? const Color.fromARGB(255, 255, 255, 255)
                 : const Color(0xff419388),
           ),
-        ))
+        )),
       ],
     ))));
   }
 
-  initSession() async {
-    final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    final notificationBloc =
-        BlocProvider.of<NotificationBloc>(context, listen: false);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final tokenState = Provider.of<TokenState>(context, listen: false);
+  // onAuthCiudadaniaDigital() async {
+  //   final result = await Navigator.of(context)
+  //       .push(MaterialPageRoute(builder: (c) => Webscreen()));
+  // }
+
+  String generateCodeVerifier([int length = 64]) {
+    final random = Random.secure();
+    const charset =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
+  }
+
+  String generateCodeChallenge(String codeVerifier) {
+    final bytes = ascii.encode(codeVerifier);
+    final digest = sha256.convert(bytes);
+    return base64UrlEncode(digest.bytes).replaceAll('=', '');
+  }
+
+  onAuthCiudadaniaDigital() async {
+    const url = 'https://proveedor.ciudadania.demo.agetic.gob.bo';
+    const clientId = 'uHIB5dPNuYuKtRYx0GsBE';
+    // const clientSecret = 'a30d729ce83b7d662ade840677258e267a24ba6f';
+    const redirectUri = 'com.muserpol.pvt:/oauth2redirect';
+    const scope =
+        'openid profile offline_access fecha_nacimiento email celular';
+
+    final codeVerifier = generateCodeVerifier();
+    debugPrint(codeVerifier);
+    final codeChallenge = generateCodeChallenge(codeVerifier);
+    final authorizationUrl = '$url/auth?response_type=code&client_id=$clientId'
+        '&redirect_uri=$redirectUri'
+        '&scope=${Uri.encodeComponent(scope)}'
+        '&code_challenge=$codeChallenge'
+        '&code_challenge_method=S256';
+
+    debugPrint(authorizationUrl);
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (_) => Webscreen(initialUrl: authorizationUrl)),
+    );
+  }
+
+  sendCredentialsNew() async {
     FocusScope.of(context).unfocus();
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
     if (await checkVersion(mounted, context)) {
-      body['device_id'] = widget.deviceId;
-      await authService.writeDeviceId(widget.deviceId);
-      if (dotenv.env['storeAndroid'] == 'appgallery') {
-        body['firebase_token'] = '';
-      } else {
-        body['firebase_token'] =
-            await PushNotificationService.getTokenFirebase();
-      }
-      body['username'] =
+      final username =
           '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
-      body['password'] = passwordCtrl.text.trim();
+      final cellphone = phoneCtrl.text.trim();
+
+      body['username'] = username;
+      body['cellphone'] = cellphone;
+
+      debugPrint(body.toString());
       if (!mounted) return;
-
       var response = await serviceMethod(
-          mounted, context, 'post', body, serviceAuthSessionOF(), false, true);
-      setState(() => btnAccess = true);
-      debugPrint('response $response');
+          mounted, context, 'post', body, createtosendmessage(), false, true);
       if (response != null) {
-        await DBProvider.db.database;
-        if (json.decode(response.body)['data']['status'] != null &&
-            json.decode(response.body)['data']['status'] == 'Pendiente') {
-          return virtualOfficineUpdatePwd(
-              json.decode(response.body)['message']);
+        if (response.statusCode == 200) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const SendMessageLogin(),
+              transitionDuration: const Duration(milliseconds: 400),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SharedAxisTransition(
+                  animation: animation,
+                  secondaryAnimation: secondaryAnimation,
+                  transitionType: SharedAxisTransitionType.horizontal,
+                  child: child,
+                );
+              },
+            ),
+          );
         }
-        UserModel user =
-            userModelFromJson(json.encode(json.decode(response.body)['data']));
-        await authService.writeAuxtoken(user.apiToken!);
-        tokenState.updateStateAuxToken(true);
-        if (!mounted) return;
-        await authService.writeUser(context, userModelToJson(user));
-        userBloc.add(UpdateUser(user.user!));
-        final affiliateModel = AffiliateModel(idAffiliate: user.user!.id!);
-        await DBProvider.db.newAffiliateModel(affiliateModel);
-        notificationBloc.add(UpdateAffiliateId(user.user!.id!));
-
-        initSessionVirtualOfficine(
-            response,
-            UserVirtualOfficine(
-                identityCard: body['username'], password: body['password']),
-            user);
       }
     }
-  }
-
-  initSessionVirtualOfficine(dynamic response,
-      UserVirtualOfficine userVirtualOfficine, UserModel user) async {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final tokenState = Provider.of<TokenState>(context, listen: false);
-    tokenState.updateStateAuxToken(false);
-    final biometric = await authService.readBiometric();
-    final biometricUserModel = BiometricUserModel(
-        biometricVirtualOfficine: biometric == ''
-            ? false
-            : biometricUserModelFromJson(biometric).biometricVirtualOfficine,
-        biometricComplement: biometric == ''
-            ? false
-            : biometricUserModelFromJson(biometric).biometricComplement,
-        affiliateId: json.decode(response.body)['data']['user']['id'],
-        userComplement: biometric == ''
-            ? UserComplement()
-            : biometricUserModelFromJson(biometric).userComplement,
-        userVirtualOfficine: userVirtualOfficine);
-    if (!mounted) return;
-    await authService.writeBiometric(
-        context, biometricUserModelToJson(biometricUserModel));
-    if (!mounted) return;
-    await authService.writeStateApp(context, 'list_services');
-    if (!mounted) return;
-    await authService.writeToken(context, user.apiToken!);
-    tokenState.updateStateAuxToken(false);
-    if (!mounted) return;
-    return Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const ScreenListService(),
-            transitionDuration: const Duration(seconds: 0)));
-  }
-
-  virtualOfficineUpdatePwd(String message) {
-    return showBarModalBottomSheet(
-      expand: false,
-      enableDrag: false,
-      isDismissible: false,
-      context: context,
-      builder: (context) => ModalUpdatePwd(
-          message: message,
-          stateLoading: btnAccess,
-          onPressed: (password) async {
-            setState(() => btnAccess = false);
-            body['new_password'] = password;
-            var response = await serviceMethod(mounted, context, 'patch', body,
-                serviceChangePasswordOF(), false, true);
-
-            setState(() => btnAccess = true);
-            if (response != null) {
-              if (!mounted) return;
-              return showSuccessful(
-                  context, json.decode(response.body)['message'], () {
-                debugPrint('res ${response.body}');
-                setState(() => passwordCtrl.text = '');
-                Navigator.of(context).pop();
-              });
-            }
-          }),
-    );
   }
 }
