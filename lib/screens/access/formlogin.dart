@@ -320,7 +320,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           Navigator.pushReplacement(
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const SendMessageLogin(),
+              pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
               transitionDuration: const Duration(milliseconds: 400),
               transitionsBuilder: (_, animation, secondaryAnimation, child) {
                 return SharedAxisTransition(

@@ -4,16 +4,15 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/containers.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
+import 'package:muserpol_pvt/components/header_muserpol.dart';
 import 'package:muserpol_pvt/screens/pages/menu.dart';
-import 'package:muserpol_pvt/services/auth_service.dart';
-import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
-import 'package:provider/provider.dart';
 
 class ScreenListService extends StatefulWidget {
   const ScreenListService({super.key});
@@ -42,9 +41,6 @@ class ScreenListServiceState extends State<ScreenListService> {
 
   @override
   Widget build(BuildContext context) {
-    final userBloc =
-        BlocProvider.of<UserBloc>(context, listen: true).state.user;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -55,15 +51,7 @@ class ScreenListServiceState extends State<ScreenListService> {
         }
       },
       child: Scaffold(
-          appBar: AppBar(
-            title: Text('BIENVENIDO ${userBloc?.fullName ?? "Usuario"}'),
-            leading: Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-            ),
-          ),
+          appBar: const AppBarDualTitle(),
           drawer: const MenuDrawer(),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -96,7 +84,7 @@ class ScreenListServiceState extends State<ScreenListService> {
                   ),
                   'COMPLEMENTO ECONÓMICO',
                   'Creación y seguimiento de trámites de Complemento Económico.',
-                  () => loginComplement(),
+                  () => (),
                   false,
                 ),
                 optionTool(
@@ -127,11 +115,24 @@ class ScreenListServiceState extends State<ScreenListService> {
                       'assets/images/couple.png',
                     ),
                   ),
-                  'CALCULADORA VIRTUAL',
+                  'PRE - EVALUACION DE PRESTAMOS',
                   'Creación y seguimiento de trámites de Complemento Económico.',
                   () => (),
                   false,
                 ),
+                SizedBox(
+                  height: 20.h,
+                ),
+                Center(
+                    child: Text(
+                  'Versión ${dotenv.env['version']}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color.fromARGB(255, 255, 255, 255)
+                        : const Color(0xff419388),
+                  ),
+                )),
               ],
             ),
           )),
@@ -179,9 +180,8 @@ class ScreenListServiceState extends State<ScreenListService> {
         child: ContainerComponent(
           width: double.infinity,
           color: const Color(0xffd9e9e7),
-          margin: const EdgeInsets.symmetric(
-              horizontal: 16, vertical: 8), // 👈 margen responsivo
-          borderRadius: 16, // si tu ContainerComponent lo permite
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          borderRadius: 16,
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -223,20 +223,5 @@ class ScreenListServiceState extends State<ScreenListService> {
         ),
       ),
     );
-  }
-
-  Future loginComplement() async {
-    final userBloc =
-        BlocProvider.of<UserBloc>(context, listen: false).state.user;
-    final authService = Provider.of<AuthService>(context, listen: false);
-    if (userBloc == null) {
-      debugPrint('No hay datos del usuario en UserBloc');
-      return;
-    }
-
-    final deviceId = await authService.readDeviceId();
-    final firebaseToken = await PushNotificationService.getTokenFirebase();
-
-    debugPrint(deviceId);
   }
 }

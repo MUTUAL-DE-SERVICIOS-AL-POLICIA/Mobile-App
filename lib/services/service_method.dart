@@ -213,18 +213,20 @@ confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
   final processingState = Provider.of<ProcessingState>(context, listen: false);
 
   if (voluntary) {
-    final biometric =
-        biometricUserModelFromJson(await authService.readBiometric());
-    if (!mounted) return;
-    await serviceMethod(
-      mounted,
-      context,
-      'delete',
-      null,
-      serviceAuthSession(biometric.affiliateId!),
-      true,
-      false,
-    );
+    final biometricJson = await authService.readBiometric();
+    if (biometricJson.isNotEmpty) {
+      final biometric = biometricUserModelFromJson(biometricJson);
+      if (!mounted) return;
+      await serviceMethod(
+        mounted,
+        context,
+        'delete',
+        null,
+        serviceAuthSession(biometric.affiliateId!),
+        true,
+        false,
+      );
+    }
   }
 
   // Limpia archivos temporales

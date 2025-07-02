@@ -15,6 +15,7 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
+import 'package:muserpol_pvt/screens/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
@@ -24,7 +25,8 @@ import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:provider/provider.dart';
 
 class SendMessageLogin extends StatefulWidget {
-  const SendMessageLogin({super.key});
+  final Map<String, dynamic> body;
+  const SendMessageLogin({super.key, required this.body});
 
   @override
   State<SendMessageLogin> createState() => _SendMessageLogin();
@@ -283,8 +285,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       var response = await serviceMethod(mounted, context, 'post', requestBody,
           verifytosendmessage(), false, true);
 
-      debugPrint('response $response');
-
       if (response != null) {
         await DBProvider.db.database;
         UserModel user =
@@ -298,14 +298,46 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         await DBProvider.db.newAffiliateModel(affiliateModel);
         notificationBloc.add(UpdateAffiliateId(user.user!.id!));
 
-
+        initSessionUserApp(
+            response,
+            UserAppMobile(
+                identityCard: widget.body['username'],
+                numberPhone: widget.body['cellphone']),
+            user);
       }
     }
   }
 
-  initSessionUserApp(dynamic response, UserAppMobile userApp, UserModel user) async{
+  initSessionUserApp(
+      dynamic response, UserAppMobile userApp, UserModel user) async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    
+    final tokenState = Provider.of<TokenState>(context, listen: false);
+    tokenState.updateStateAuxToken(false);
+    // final biometric = await authService.readBiometric();
+    // final biometricUserModel = BiometricUserModel(
+    //     biometricVirtualOfficine: biometric == ''
+    //         ? false
+    //         : biometricUserModelFromJson(biometric).biometricVirtualOfficine,
+    //     biometricComplement: biometric == ''
+    //         ? false
+    //         : biometricUserModelFromJson(biometric).biometricComplement,
+    //     affiliateId: json.decode(response.body)['data']['user']['id'],
+    //     userComplement: biometric == ''
+    //         ? UserComplement()
+    //         : biometricUserModelFromJson(biometric).userComplement,
+    //     userVirtualOfficine: userVirtualOfficine);
+
+    //Revisar si o si para guardar un estado relacionado al metodo de ingreso a la aplicacion 
+    // if (!mounted) return;
+    // await authService.writeStateApp(context, 'virtualofficine');
+    if (!mounted) return;
+    await authService.writeToken(context, user.apiToken!);
+
+    return Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const ScreenListService(),
+            transitionDuration: const Duration(seconds: 0)));
   }
 
   void startCountdown() {
