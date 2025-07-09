@@ -8,7 +8,11 @@ class ButtonComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
   final bool stateLoading;
-  const ButtonComponent({super.key, required this.text, required this.onPressed, this.stateLoading = false});
+  const ButtonComponent(
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      this.stateLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +45,12 @@ class ButtonIconComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
   final bool stateLoading;
-  const ButtonIconComponent({super.key, required this.icon, required this.text, required this.onPressed, this.stateLoading = false});
+  const ButtonIconComponent(
+      {super.key,
+      required this.icon,
+      required this.text,
+      required this.onPressed,
+      this.stateLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +91,8 @@ class ButtonIconComponent extends StatelessWidget {
 class ButtonWhiteComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
-  const ButtonWhiteComponent({super.key, required this.text, required this.onPressed});
+  const ButtonWhiteComponent(
+      {super.key, required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +116,13 @@ class ButtonDate extends StatelessWidget {
   final FontWeight? fontWeight;
   final bool iconState;
   final Function() onPressed;
-  const ButtonDate({super.key, required this.text, required this.onPressed, this.iconState = false, this.colorText, this.fontWeight});
+  const ButtonDate(
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      this.iconState = false,
+      this.colorText,
+      this.fontWeight});
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +153,12 @@ class IconBtnComponent extends StatelessWidget {
   final String iconText;
   final Color? iconColor;
   final double? iconSize;
-  const IconBtnComponent({super.key, required this.onPressed, required this.iconText, this.iconColor, this.iconSize = 30});
+  const IconBtnComponent(
+      {super.key,
+      required this.onPressed,
+      required this.iconText,
+      this.iconColor,
+      this.iconSize = 30});
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +183,8 @@ class IconBtnComponent extends StatelessWidget {
 class Buttontoltip extends StatelessWidget {
   final JustTheController tooltipController;
   final Function(bool) onPressed;
-  const Buttontoltip({super.key, required this.tooltipController, required this.onPressed});
+  const Buttontoltip(
+      {super.key, required this.tooltipController, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -186,8 +208,10 @@ class Buttontoltip extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ButtonWhiteComponent(text: 'SI', onPressed: () => onPressed(true)),
-                        ButtonWhiteComponent(text: 'NO', onPressed: () => onPressed(false)),
+                        ButtonWhiteComponent(
+                            text: 'SI', onPressed: () => onPressed(true)),
+                        ButtonWhiteComponent(
+                            text: 'NO', onPressed: () => onPressed(false)),
                       ],
                     )
                   ],
@@ -210,7 +234,8 @@ class Buttontoltip extends StatelessWidget {
 class NumberComponent extends StatelessWidget {
   final String text;
   final bool iconColor;
-  const NumberComponent({super.key, required this.text, required this.iconColor});
+  const NumberComponent(
+      {super.key, required this.text, required this.iconColor});
 
   @override
   Widget build(BuildContext context) {
@@ -222,6 +247,66 @@ class NumberComponent extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(color: iconColor ? Colors.white : Colors.black),
+      ),
+    );
+  }
+}
+
+class CiudadaniaButtonComponent extends StatelessWidget {
+  final bool stateLoading;
+  final Function()? onPressed;
+
+  const CiudadaniaButtonComponent({
+    super.key,
+    this.stateLoading = false,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 250,
+      height: 56,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF2B3486),
+          elevation: 0,
+          side: const BorderSide(color: Color(0xFF2B3486), width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: EdgeInsets.zero,
+        ),
+        onPressed: stateLoading ? null : onPressed,
+        child: stateLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2B3486)),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/logoCiudadania.png',
+                    width: 30,
+                    height: 30,
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Ciudadania Digital',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF2B3486),
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

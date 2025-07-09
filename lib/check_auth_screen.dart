@@ -133,7 +133,7 @@
 //   }
 // }
 
-//Se esta eliminando la logica del auth y estado para cuando se actualiza la pantalla 
+//Se esta eliminando la logica del auth y estado para cuando se actualiza la pantalla
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -153,7 +153,6 @@ class CheckAuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context, listen: false);
-
     return Scaffold(
       body: Center(
         child: FutureBuilder(
@@ -226,7 +225,8 @@ class CheckAuthScreen extends StatelessWidget {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const ScreenListService(),
+        pageBuilder: (_, __, ___) =>
+            const ScreenListService(showTutorial: false),
         transitionDuration: const Duration(seconds: 0),
       ),
     );

@@ -7,17 +7,21 @@ String? hostPVT = stateApp()? dotenv.env['HOST_PVT_PROD']: dotenv.env['HOST_PVT_
 
 String? hostSTI = stateApp()? dotenv.env['HOST_STI_PROD']: dotenv.env['HOST_STI_DEV'];
 
+String? hostGATEWAY = stateApp()? dotenv.env['HOST_GATEWAY_PROD']: dotenv.env['HOST_GATEWAY_DEV'];
+
 String? reazon = dotenv.env['reazon'];//v1
 String? reazonAffiliate = dotenv.env['reazonAffiliate'];//affiliate
 String? reazonQr = dotenv.env['reazonQr'];//global
-
-
-
+String? reazonMovil = dotenv.env['reazonMovil'];//appmovil
 
 //AUTH
 String serviceAuthSession(int? affiliateId) => '$hostPVT/$reazon/auth/${affiliateId??''}';
 //CONTACTS
 String serviceGetContacts() => '$hostPVT/$reazon/city';
+//CREDENTIALS "CIUDADANIA DIGITAL"
+// String serviceGetCredentials() => '$hostGATEWAY/$reazonMovil/credentials';
+String serviceGetCredentials() => '$hostSTI/$reazonAffiliate/assignmentcredentials';
+String serviceVerificationCode() => '$hostSTI/$reazonAffiliate/verificationcode';
 //PRIVACY POLICY
 String serviceGetPrivacyPolicy() => 'https://www.muserpol.gob.bo/index.php/transparencia/terminos-y-condiciones-de-uso-aplicacion-movil';
 //HISTORY

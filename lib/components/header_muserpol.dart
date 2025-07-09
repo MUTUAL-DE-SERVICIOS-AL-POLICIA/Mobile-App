@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 
 class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuPressed;
+  final Key? keyMenuButton;
+  final bool showBackArrow;
+  final VoidCallback? onBackPressed;
 
-  const AppBarDualTitle({super.key, this.onMenuPressed});
+  const AppBarDualTitle(
+      {super.key,
+      this.onMenuPressed,
+      this.keyMenuButton,
+      this.showBackArrow = false,
+      this.onBackPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +42,24 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: onMenuPressed ?? () => Scaffold.of(context).openDrawer(),
-        ),
+        builder: (context) {
+          if (showBackArrow) {
+            // Si `showBackArrow` es verdadero, mostramos la flecha de retroceso
+            return IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed:
+                  onBackPressed ?? () => Navigator.pop(context), // Retroceder
+            );
+          } else {
+            // Si no, mostramos el ícono del menú
+            return IconButton(
+              key: keyMenuButton,
+              icon: const Icon(Icons.menu),
+              onPressed:
+                  onMenuPressed ?? () => Scaffold.of(context).openDrawer(),
+            );
+          }
+        },
       ),
     );
   }

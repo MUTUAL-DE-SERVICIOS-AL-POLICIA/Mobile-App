@@ -22,6 +22,7 @@ import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
+import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:provider/provider.dart';
 
 class SendMessageLogin extends StatefulWidget {
@@ -94,56 +95,27 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                       padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(25.r),
                         border: Border.all(
                           color: const Color(0xff419388),
                           width: 1.5,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white24
-                                    : Colors.black12,
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
                       ),
                       child: Column(
                         children: [
                           Text(
-                            "Ingrese el código enviado a su número",
+                            "Ingrese el codigo de verificacion",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
-                                fontSize: 18.sp),
+                                fontSize: 15.sp),
                           ),
                           SizedBox(height: 10.h),
                           Center(
-                            child: Container(
+                            child: SizedBox(
                               width: 180.w,
                               height: 280.h,
-                              decoration: BoxDecoration(
-                                color: Colors
-                                    .white, // Fondo para ver bien la sombra
-                                borderRadius: BorderRadius.circular(100.r),
-                                border: Border.all(
-                                  color: const Color(0xff419388),
-                                  width: 3,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black
-                                        .withAlpha((0.25 * 255).toInt()),
-                                    blurRadius: 12,
-                                    spreadRadius: 2,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                              ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(100.r),
+                                borderRadius: BorderRadius.circular(60.r),
                                 child: Image.asset(
                                   'assets/images/sendmesagge.png',
                                   fit: BoxFit.cover,
@@ -225,17 +197,29 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                           SizedBox(
                             height: 10.h,
                           ),
+                          // Center(
+                          //     child: Text(
+                          //   'Versión ${dotenv.env['version']}',
+                          //   style: TextStyle(
+                          //     fontSize: 12.sp,
+                          //     color: Theme.of(context).brightness ==
+                          //             Brightness.dark
+                          //         ? const Color.fromARGB(255, 255, 255, 255)
+                          //         : const Color(0xff419388),
+                          //   ),
+                          // ))
                           Center(
-                              child: Text(
-                            'Versión ${dotenv.env['version']}',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? const Color.fromARGB(255, 255, 255, 255)
-                                  : const Color(0xff419388),
+                            child: Text(
+                              'Version 4.0.1',
+                              style: TextStyle(
+                                fontSize: 12.sp, // Responsivo
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? const Color.fromARGB(255, 0, 0, 0)
+                                    : const Color.fromARGB(255, 0, 0, 0),
+                              ),
                             ),
-                          ))
+                          )
                         ],
                       ),
                     ),
@@ -286,6 +270,20 @@ class _SendMessageLogin extends State<SendMessageLogin> {
           verifytosendmessage(), false, true);
 
       if (response != null) {
+        final decoded = json.decode(response.body);
+
+        if (decoded['error'] == true) {
+          // Error del codigo al momento de ingresar un codigo de verificcion erroneo
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Código incorrecto, por favor intentá nuevamente'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
+        // Código correcto: continúa flujo normal
         await DBProvider.db.database;
         UserModel user =
             userModelFromJson(json.encode(json.decode(response.body)['data']));
@@ -304,7 +302,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                 identityCard: widget.body['username'],
                 numberPhone: widget.body['cellphone']),
             user);
-      }
+      } else {}
     }
   }
 
@@ -313,31 +311,38 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
     tokenState.updateStateAuxToken(false);
-    // final biometric = await authService.readBiometric();
-    // final biometricUserModel = BiometricUserModel(
-    //     biometricVirtualOfficine: biometric == ''
-    //         ? false
-    //         : biometricUserModelFromJson(biometric).biometricVirtualOfficine,
-    //     biometricComplement: biometric == ''
-    //         ? false
-    //         : biometricUserModelFromJson(biometric).biometricComplement,
-    //     affiliateId: json.decode(response.body)['data']['user']['id'],
-    //     userComplement: biometric == ''
-    //         ? UserComplement()
-    //         : biometricUserModelFromJson(biometric).userComplement,
-    //     userVirtualOfficine: userVirtualOfficine);
+    final biometricUserModel = BiometricUserModel(
+      affiliateId: json.decode(response.body)['data']['user']['id'],
+    );
+    if (!mounted) return;
+    await authService.writeBiometric(
+        context, biometricUserModelToJson(biometricUserModel));
 
-    //Revisar si o si para guardar un estado relacionado al metodo de ingreso a la aplicacion 
-    // if (!mounted) return;
-    // await authService.writeStateApp(context, 'virtualofficine');
     if (!mounted) return;
     await authService.writeToken(context, user.apiToken!);
 
-    return Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const ScreenListService(),
-            transitionDuration: const Duration(seconds: 0)));
+    if (!mounted) return;
+    await authService.writeToken(context, user.apiToken!);
+    tokenState.updateStateAuxToken(false);
+
+    if (!mounted) return;
+
+    showSuccessful(
+      context,
+      'Correcto, Usuario Correcto',
+      () {
+        // Luego de que el mensaje de éxito se cierre, navegamos a la siguiente pantalla
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const ScreenListService(
+              showTutorial: true,
+            ),
+            transitionDuration: const Duration(seconds: 0),
+          ),
+        );
+      },
+    );
   }
 
   void startCountdown() {

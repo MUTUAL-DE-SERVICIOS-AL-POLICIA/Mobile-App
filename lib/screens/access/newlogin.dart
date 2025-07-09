@@ -1,3 +1,5 @@
+
+
 import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
@@ -9,8 +11,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
-// import 'package:muserpol_pvt/components/paint.dart';
 import 'package:muserpol_pvt/screens/access/formlogin.dart';
+
+
 
 class ScreenNewLogin extends StatefulWidget {
   const ScreenNewLogin({super.key});
@@ -21,6 +24,7 @@ class ScreenNewLogin extends StatefulWidget {
 
 class _ScreenNewLoginState extends State<ScreenNewLogin> {
   String? deviceId;
+  final double containerWidth = 320.w;
 
   @override
   void initState() {
@@ -30,6 +34,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
   }
 
   //Tendria que cambiarse o buscar un nuevo codigo
+  //ID del dispositvo cambiar a una libreria mas reciente
   Future<void> _initPlatformState() async {
     final deviceInfo = DeviceInfoPlugin();
     String? statusDeviceId;
@@ -64,7 +69,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
         }
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: true, // Muy importante para el teclado
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
@@ -73,6 +78,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                 minHeight: MediaQuery.of(context).size.height -
                     MediaQuery.of(context).padding.top,
               ),
+              //LOGO DE LA MUSERPOL EN EL LOGIN INICIAL
               child: IntrinsicHeight(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -85,13 +91,12 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                         width: 200.w,
                       ),
                     ),
+                    //LLAMAMOS EL FORMULARIO DEL LOGIN
                     SizedBox(height: 30.h),
                     FadeIn(
                       animate: true,
-                      child: ScreenFormLogin(deviceId: deviceId ?? 'no-id'),
+                      child: const ScreenFormLogin(),
                     ),
-                    const Spacer(),
-                    SizedBox(height: 10.h),
                   ],
                 ),
               ),
@@ -101,6 +106,8 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
       ),
     );
   }
+
+  //FUNCION PARA SALIR DE LA APLICACION 
 
   Future<bool> _onBackPressed() async {
     return await showDialog(
@@ -119,3 +126,4 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
     );
   }
 }
+

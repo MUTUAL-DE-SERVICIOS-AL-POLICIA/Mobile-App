@@ -18,7 +18,10 @@ class PhoneNumber extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Número telefónico:',
           style: TextStyle(
-              fontSize: 15.sp, color: const Color.fromARGB(255, 0, 0, 0))),
+              fontSize: 15.sp,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)),
       InputComponent(
         stateAutofocus: focusState,
         textInputAction: TextInputAction.next,

@@ -41,7 +41,12 @@ class _IdentityCardState extends State<IdentityCard> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.title, style: TextStyle(fontSize: 15.sp, color: const Color.fromARGB(255, 0, 0, 0))),
+            Text(widget.title,
+                style: TextStyle(
+                    fontSize: 15.sp,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)),
             Row(
               children: <Widget>[
                 Flexible(
@@ -56,7 +61,10 @@ class _IdentityCardState extends State<IdentityCard> {
                         return 'Ingrese su cédula de indentidad';
                       }
                     },
-                    inputFormatters: [LengthLimitingTextInputFormatter(10), widget.formatter],
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(10),
+                      widget.formatter
+                    ],
                     keyboardType: widget.keyboardType,
                     textCapitalization: TextCapitalization.characters,
                     icon: Icons.person,
@@ -66,7 +74,8 @@ class _IdentityCardState extends State<IdentityCard> {
                 if (dniComplement)
                   Text(
                     '  _  ',
-                    style: TextStyle(fontSize: 15.sp, color: const Color(0xff419388)),
+                    style: TextStyle(
+                        fontSize: 15.sp, color: const Color(0xff419388)),
                   ),
                 if (dniComplement)
                   SizedBox(
@@ -75,7 +84,10 @@ class _IdentityCardState extends State<IdentityCard> {
                       focusNode: widget.textSecondFocusNode,
                       textInputAction: TextInputAction.next,
                       controllerText: widget.dniComCtrl,
-                      inputFormatters: [LengthLimitingTextInputFormatter(2), FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]"))],
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(2),
+                        FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]"))
+                      ],
                       onEditingComplete: () => widget.onEditingComplete(),
                       validator: (value) {
                         if (value.isNotEmpty) {
