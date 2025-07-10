@@ -10,7 +10,7 @@ TargetFocus targetMenuButton(GlobalKey keyTarget) {
         align: ContentAlign.bottom,
         child: const Text(
           "Este es el menú principal donde accedes a todas las secciones.",
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: Colors.black, fontSize: 18),
         ),
       ),
     ],

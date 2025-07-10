@@ -33,11 +33,22 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
       },
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
-              const Text('Mis Prestamos:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Mis Prestamos :',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                    fontSize: 18.sp,
+                  ),
+                ),
+              ),
               SizedBox(height: 20.h),
               loanBloc.state.existLoan
                   ? Column(

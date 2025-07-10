@@ -142,7 +142,7 @@ import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
-import 'package:muserpol_pvt/screens/list_service.dart';
+import 'package:muserpol_pvt/screens/list_services_menu/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/swipe/slider.dart';
 import 'package:provider/provider.dart';

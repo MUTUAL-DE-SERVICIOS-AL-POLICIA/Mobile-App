@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:muserpol_pvt/components/header_muserpol.dart';
 import 'package:muserpol_pvt/screens/navigator_down.dart';
+import 'package:muserpol_pvt/screens/pages/complement_pages/complement_page_new.dart';
 import 'package:muserpol_pvt/screens/pages/contributions_pages/contributions_page_new.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loans_page_new.dart';
 import 'package:muserpol_pvt/screens/pages/menu.dart';
@@ -16,6 +17,7 @@ class NavigatorBarGeneral extends StatefulWidget {
 
 class _NavigatorBarGeneralState extends State<NavigatorBarGeneral> {
   late int _currentIndex;
+  int _subIndex = 0;
 
   @override
   void initState() {
@@ -24,16 +26,16 @@ class _NavigatorBarGeneralState extends State<NavigatorBarGeneral> {
   }
 
   Widget get currentPage {
-    switch (_currentIndex) {
-      case 1:
-        return const ScreenContributionsNew();
-      case 2:
-        return const ScreenLoansNew();
-      case 3:
-        return const PlaceholderScreen(title: 'Complemento');
-      default:
-        return const PlaceholderScreen(title: 'Sin módulo');
+    if (_currentIndex == 0) {
+      if (_subIndex == 0) return const ScreenComplementNew();
+      if (_subIndex == 1)
+        return const PlaceholderScreen(title: 'Historial de Trámites');
+    } else if (_currentIndex == 1) {
+      return const ScreenContributionsNew();
+    } else if (_currentIndex == 2) {
+      return const ScreenLoansNew();
     }
+    return const PlaceholderScreen(title: 'Sin módulo');
   }
 
   @override
@@ -41,17 +43,16 @@ class _NavigatorBarGeneralState extends State<NavigatorBarGeneral> {
     return Scaffold(
       appBar: AppBarDualTitle(
         showBackArrow: _currentIndex != 0,
-        onBackPressed: () {
-          Navigator.pop(context); // Volver a la pantalla anterior
-        },
+        onBackPressed: () => Navigator.pop(context),
       ),
       drawer: const MenuDrawer(),
       body: currentPage,
       bottomNavigationBar: NavigationDown(
         currentIndex: _currentIndex,
-        onTap: (i) {
+        onTap: (mainIndex, subIndex) {
           setState(() {
-            _currentIndex = i;
+            _currentIndex = mainIndex;
+            _subIndex = subIndex ?? 0;
           });
         },
       ),

@@ -15,7 +15,7 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
-import 'package:muserpol_pvt/screens/list_service.dart';
+import 'package:muserpol_pvt/screens/list_services_menu/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
@@ -273,7 +273,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         final decoded = json.decode(response.body);
 
         if (decoded['error'] == true) {
-          // Error del codigo al momento de ingresar un codigo de verificcion erroneo
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Código incorrecto, por favor intentá nuevamente'),
@@ -285,8 +284,16 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         }
         // Código correcto: continúa flujo normal
         await DBProvider.db.database;
-        UserModel user =
-            userModelFromJson(json.encode(json.decode(response.body)['data']));
+        final dataJson = json.decode(response.body)['data'];
+
+        if (dataJson.containsKey('belongs_to_economic_complement') &&
+            dataJson['user'] is Map<String, dynamic>) {
+          dataJson['user']['belongs_to_economic_complement'] =
+              dataJson['belongs_to_economic_complement'];
+        }
+
+        UserModel user = userModelFromJson(json.encode(dataJson));
+
         await authService.writeAuxtoken(user.apiToken!);
         tokenState.updateStateAuxToken(true);
         if (!mounted) return;

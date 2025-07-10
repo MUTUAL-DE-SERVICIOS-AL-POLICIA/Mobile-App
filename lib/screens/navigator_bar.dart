@@ -306,8 +306,8 @@
 
 //     if (widget.stateApp == StateAplication.virtualOficine) {
 //       pageList = [
-//         ScreenContributions(keyNotification: keyNotification),
-//         ScreenPageLoans(keyNotification: keyNotification)
+//         // ScreenContributions(keyNotification: keyNotification),
+//         // ScreenPageLoans(keyNotification: keyNotification)
 //       ];
 //     }
 
@@ -336,13 +336,13 @@
 //               ],
 //             ),
 //             pageList.elementAt(_currentIndex),
-//             NavigationDown(
-//               stateApp: widget.stateApp,
-//               currentIndex: _currentIndex,
-//               keyBottomNavigation1: keyBottomNavigation1,
-//               keyBottomNavigation2: keyBottomNavigation2,
-//               onTap: (i) => setState(() => _currentIndex = i),
-//             ),
+//             // NavigationDown(
+//             //   // stateApp: widget.stateApp,
+//             //   // currentIndex: _currentIndex,
+//             //   // keyBottomNavigation1: keyBottomNavigation1,
+//             //   // keyBottomNavigation2: keyBottomNavigation2,
+//             //   // onTap: (i) => setState(() => _currentIndex = i),
+//             // ),
 //           ],
 //         ),
 //       ),

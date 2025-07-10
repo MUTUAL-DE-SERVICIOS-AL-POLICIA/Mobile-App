@@ -80,14 +80,14 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       if (authenticated) {
         // Si la autenticación es exitosa, puedes proceder a la siguiente acción
         // Aquí puedes realizar las acciones necesarias como navegar a otra pantalla
-        print("Autenticación exitosa.");
+        debugPrint("Autenticación exitosa.");
         // Puedes agregar el código para navegar o realizar alguna acción
       } else {
         // Si la autenticación falla
-        print("Autenticación fallida.");
+        debugPrint("Autenticación fallida.");
       }
     } catch (e) {
-      print("Error en la autenticación biométrica: $e");
+      debugPrint("Error en la autenticación biométrica: $e");
     }
   }
 
@@ -282,7 +282,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   //CIUDADANIA DIGITAL SOLO INICIARA POR MEDIO DE UNA PAGINA WEB Y NO ASI POR UNA CONEXION POR UNA APP EXTERNA
   //SE ESTA UTILIZANDO UN ESQUEMA DENTRO DE ANDROIDMANIFEST.XML PARA LA LLAMADA AL ESQUEMA "COM.MUSERPOL.PVT://OAUTHREDIRECT"
 
-  onAuthCiudadaniaDigital() async {
+  Future<void> onAuthCiudadaniaDigital() async {
     setState(() => isLoadingCiudadania = true);
 
     try {
@@ -305,7 +305,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           final scope = decoded['scope'];
 
           final codeVerifier = generateCodeVerifier();
-          final codeChallenge = generateCodeChallenge(codeVerifier);
+          final codeChallenge = (codeVerifier);
 
           final authorizationUrl = '$url/auth?response_type=code'
               '&client_id=$clientId'
@@ -313,6 +313,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
               '&scope=${Uri.encodeComponent(scope)}'
               '&code_challenge=$codeChallenge'
               '&code_challenge_method=S256';
+
+          // final authorizationUrl =
+          //     'http://192.168.2.90:8080/realms/aplicacion-movil/protocol/openid-connect/auth?client_id=muserpol-app&redirect_uri=com.muserpol.pvt:/oauth2redirect&response_type=code&scope=openid';
+
+          debugPrint('acceso a la URL es: . $authorizationUrl');
 
           if (!mounted) return;
           //RECIBIDO LAS CREDENCIALES DE CIUDADANIA DIGITAL INICIA LA PAGINA DE LOGIN DE CIUDADANIA DIGITAL
@@ -350,7 +355,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   }
 
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
-  sendCredentialsNew() async {
+  Future<void> sendCredentialsNew() async {
     FocusScope.of(context).unfocus();
     if (!formKey.currentState!.validate()) {
       return;

@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final userModel = userModelFromJson(jsonString);
-
 import 'dart:convert';
 
 UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
@@ -35,7 +31,7 @@ class UserModel {
 
   Map<String, dynamic> toJson() => {
         "api_token": apiToken,
-        "user": user!.toJson(),
+        "user": user?.toJson(),
       };
 }
 
@@ -50,6 +46,7 @@ class User {
     this.enrolled,
     this.verified,
     this.birthDay,
+    this.belongsToEconomicComplement,
   });
 
   int? id;
@@ -61,6 +58,7 @@ class User {
   bool? enrolled;
   bool? verified;
   String? birthDay;
+  bool? belongsToEconomicComplement;
 
   User copyWith({
     int? id,
@@ -72,6 +70,7 @@ class User {
     bool? enrolled,
     bool? verified,
     String? birthDay,
+    bool? belongsToEconomicComplement,
   }) =>
       User(
         id: id ?? this.id,
@@ -83,6 +82,8 @@ class User {
         enrolled: enrolled ?? this.enrolled,
         verified: verified ?? this.verified,
         birthDay: birthDay ?? this.birthDay,
+        belongsToEconomicComplement:
+            belongsToEconomicComplement ?? this.belongsToEconomicComplement,
       );
 
   factory User.fromJson(Map<String, dynamic> json) => User(
@@ -95,6 +96,7 @@ class User {
         enrolled: json["enrolled"],
         verified: json["verified"],
         birthDay: json["birth_day"],
+        belongsToEconomicComplement: json["belongs_to_economic_complement"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -107,5 +109,6 @@ class User {
         "enrolled": enrolled,
         "verified": verified,
         "birth_day": birthDay,
+        "belongs_to_economic_complement": belongsToEconomicComplement,
       };
 }

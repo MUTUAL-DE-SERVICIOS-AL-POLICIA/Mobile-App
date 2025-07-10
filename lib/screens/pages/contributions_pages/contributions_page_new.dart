@@ -28,8 +28,22 @@ class _ScreenContributionsStateNew extends State<ScreenContributionsNew> {
         BlocProvider.of<ContributionBloc>(context, listen: true).state;
     return Column(
       children: [
-        const Text('Mis Aportes:',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Mis Aportes: ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+                fontSize: 18.sp,
+              ),
+            ),
+          ),
+        ),
         SizedBox(
           height: 20.h,
         ),
