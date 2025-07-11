@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:muserpol_pvt/screens/list_services_menu/sevice_loader_complement.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -46,10 +47,13 @@ class _ScreenListServiceState extends State<ScreenListService> {
   }
 
   Future<void> _loadInitialData() async {
-    final userBloc = BlocProvider.of<UserBloc>(context, listen: false).state.user;
+    final userBloc =
+        BlocProvider.of<UserBloc>(context, listen: false).state.user;
 
     if (userBloc?.belongsToEconomicComplement == true) {
-      await loadEconomicComplementServices(context);
+      await loadGeneralServicesComplementEconomic(context);
+      await getEconomicComplement(context, current: true);
+      await getEconomicComplement(context, current: false);
     }
 
     await loadGeneralServices(context);
@@ -92,7 +96,8 @@ class _ScreenListServiceState extends State<ScreenListService> {
       builder: (_) => ComponentAnimate(
         child: DialogTwoAction(
           message: '¿Estás seguro de salir de la aplicación MUSERPOL PVT?',
-          actionCorrect: () => SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
+          actionCorrect: () =>
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
           messageCorrect: 'Salir',
         ),
       ),
@@ -124,7 +129,9 @@ class _ScreenListServiceState extends State<ScreenListService> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18.sp,
-                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                     ),
                   ),
                 ),
@@ -134,7 +141,8 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 key: keyComplemento,
                 image: 'assets/images/couple.png',
                 title: 'COMPLEMENTO ECONÓMICO',
-                description: 'Creación y seguimiento de trámites de Complemento Económico.',
+                description:
+                    'Creación y seguimiento de trámites de Complemento Económico.',
                 onPressed: () => _goToModule(0),
               ),
               ServiceOption(

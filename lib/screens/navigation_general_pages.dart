@@ -42,7 +42,7 @@ class _NavigatorBarGeneralState extends State<NavigatorBarGeneral> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBarDualTitle(
-        showBackArrow: _currentIndex != 0,
+        showBackArrow: _currentIndex != 4,
         onBackPressed: () => Navigator.pop(context),
       ),
       drawer: const MenuDrawer(),

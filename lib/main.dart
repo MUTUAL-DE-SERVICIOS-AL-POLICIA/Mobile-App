@@ -13,10 +13,7 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/access/forgot_password/forgot_pwd.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
-// import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
 import 'package:muserpol_pvt/screens/inbox/notification.dart';
-// import 'package:muserpol_pvt/screens/list_service.dart';
-// import 'package:muserpol_pvt/screens/switch.dart';
 import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/swipe/slider.dart';
 import 'package:muserpol_pvt/utils/style.dart';
@@ -123,6 +120,7 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
 
   @override
   void initState() {
+    //en el void initState siempre se colocan las funciones que funcionen primero
     WidgetsBinding.instance.addObserver(this);
     PushNotificationService.messagesStream.listen((message) {
       debugPrint('NO TI FI CA CION $message');
@@ -138,11 +136,13 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    //funciones para liberar la memoria
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   _updatebd() {
+    //actualiza la base de datos interna. (NOTIFICACIONES)
     Future.delayed(Duration.zero, () {
       final notificationBloc = BlocProvider.of<NotificationBloc>(context);
       DBProvider.db
@@ -153,6 +153,11 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    //Contruccion del Widgets
+    //Define el tema a la aplicacion
+    //La ruta de inicio de la aplicacion
+    //Siempre iniciara en "check_auth" -> Ruta que verifica si inicio la sesion para redirigirlo a la pagina correcta
+    //las otras rutas son abiertas dentro de la interfaz que puede navegarse sin estar autenticado
     return AdaptiveTheme(
         light: styleLigth(),
         dark: styleDark(),
@@ -178,15 +183,9 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
               'check_auth': (_) => const CheckAuthScreen(),
               'slider': (_) => const PageSlider(),
               'newlogin': (_) => const ScreenNewLogin(),
-              // 'switch': (_) => const ScreenSwitch(),
               'forgot': (_) => const ForgotPwd(),
               'contacts': (_) => const ScreenContact(),
               'message': (_) => const ScreenNotification(),
-              // 'sendmessage': (_) => const SendMessageLogin(),
-              // 'menu':(_)=> const ScreenListService(),
             }));
   }
 }
-
-
-

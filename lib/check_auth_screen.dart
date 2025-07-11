@@ -152,6 +152,7 @@ class CheckAuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //Widget que verifica que auth este con datos para redirigirlo 
     final authService = Provider.of<AuthService>(context, listen: false);
     return Scaffold(
       body: Center(
@@ -160,14 +161,18 @@ class CheckAuthScreen extends StatelessWidget {
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
             if (!snapshot.hasData) return const Text('');
             if (snapshot.data == '') {
+              //Primer Ingreso de la aplicacion
               Future.microtask(() {
                 return goFirstInto(context);
               });
             } else {
+              //lo redirijira al menu de servicios cargando todos los datos de la app
+              //del usuario del afiliado
               Future.microtask(() {
                 return getInfo(context);
               });
             }
+            //En caso de errores se cargara una pantalla vacia (Opcional)
             return const Scaffold(); // pantalla temporal vacía
           },
         ),
@@ -216,6 +221,8 @@ class CheckAuthScreen extends StatelessWidget {
         ),
       );
     }
+
+  
 
     await getNotifications(notificationBloc);
     UserModel user = userModelFromJson(userJson);
