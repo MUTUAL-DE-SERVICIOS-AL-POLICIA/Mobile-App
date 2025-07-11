@@ -16,7 +16,7 @@ class MiniCardButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final color =
-        isDarkMode ? const Color(0xff419388) : const Color(0xff419388);
+        isDarkMode ? const Color.fromARGB(255, 255, 255, 255) : const Color(0xff419388);
 
     return GestureDetector(
       onTap: onTap,

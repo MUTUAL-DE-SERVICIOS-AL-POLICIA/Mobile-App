@@ -21,6 +21,8 @@ class NavigationDown extends StatefulWidget {
 class _NavigationDownState extends State<NavigationDown> {
   int _selectedSubIndex = 0;
 
+  //Lista de NavBar Inferior
+
   List<CurvedNavigationBarItem> getItems() {
     switch (widget.currentIndex) {
       case 0:

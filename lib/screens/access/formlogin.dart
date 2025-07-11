@@ -93,6 +93,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final color = isDarkMode
+        ? const Color.fromARGB(255, 255, 255, 255)
+        : const Color(0xff419388);
+
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     final node = FocusScope.of(context);
@@ -178,14 +183,14 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                                   Icon(
                                     Icons.fingerprint,
                                     size: 40.sp,
-                                    color: const Color(0xff419388),
+                                    color: color
                                   ),
                                   SizedBox(height: 4.h),
                                   Text(
                                     'Ingreso con biometría',
                                     style: TextStyle(
                                       fontSize: 12.sp,
-                                      color: const Color(0xff419388),
+                                      color: color
                                     ),
                                   ),
                                 ],
@@ -244,9 +249,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                         'Version 4.0.1',
                         style: TextStyle(
                           fontSize: 12.sp, // Responsivo
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? const Color.fromARGB(255, 0, 0, 0)
-                              : const Color.fromARGB(255, 0, 0, 0),
+                          color: color
                         ),
                       ),
                     )

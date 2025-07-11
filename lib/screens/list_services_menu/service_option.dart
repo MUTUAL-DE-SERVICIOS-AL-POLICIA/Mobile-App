@@ -36,7 +36,7 @@ class ServiceOption extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Colors.black, // 👈 Aquí lo forzás a negro
+                    color: Colors.black, 
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -50,7 +50,7 @@ class ServiceOption extends StatelessWidget {
                         description,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.black, // 👈 También forzás negro aquí
+                          color: Colors.black, 
                         ),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,

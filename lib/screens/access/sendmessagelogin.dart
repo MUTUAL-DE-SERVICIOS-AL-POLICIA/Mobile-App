@@ -89,139 +89,128 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                       ),
                     ),
                     SizedBox(height: 10.h),
-                    Container(
-                      width: containerWidth,
-                      margin: EdgeInsets.symmetric(horizontal: 10.w),
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: const Color(0xff419388),
-                          width: 1.5,
+                    Column(
+                      children: [
+                        Text(
+                          'Revisa tu movil',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.sp,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            "Ingrese el codigo de verificacion",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontSize: 15.sp),
+                        SizedBox(height: 10.h),
+                        Center(
+                          child: SizedBox(
+                            width: 180.w,
+                            height: 280.h,
+                            child: ClipRRect(
+                              child: Image.asset(
+                                'assets/images/sendmesagge.png',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                          SizedBox(height: 10.h),
-                          Center(
-                            child: SizedBox(
-                              width: 180.w,
-                              height: 280.h,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(60.r),
-                                child: Image.asset(
-                                  'assets/images/sendmesagge.png',
-                                  fit: BoxFit.cover,
+                        ),
+                        SizedBox(height: 10.h),
+                        PinCodeTextField(
+                          appContext: context,
+                          length: 4,
+                          onChanged: (value) {},
+                          onCompleted: (value) => node.nextFocus(),
+                          controller: codeCtrl,
+                          focusNode: node,
+                          autoDisposeControllers: false,
+                          keyboardType: TextInputType.number,
+                          cursorColor: Colors.transparent,
+                          pinTheme: PinTheme(
+                            inactiveColor: const Color(0xff419388),
+                            activeColor: Colors.black,
+                            selectedColor: const Color(0xff419388),
+                            selectedFillColor: const Color(0xff419388),
+                            inactiveFillColor: Colors.transparent,
+                            shape: PinCodeFieldShape.box,
+                            borderRadius: BorderRadius.circular(5),
+                            activeFillColor: AdaptiveTheme.of(context)
+                                .theme
+                                .scaffoldBackgroundColor,
+                          ),
+                          animationDuration: const Duration(milliseconds: 300),
+                          enableActiveFill: true,
+                        ),
+                        SizedBox(height: 10.h),
+                        ButtonComponent(
+                          text: 'VERIFICAR',
+                          onPressed: () {
+                            final code = codeCtrl.text;
+                            if (code.length == 4) {
+                              verifyPinNew(code);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Por favor, ingresa los 4 dígitos'),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 2),
                                 ),
-                              ),
+                              );
+                            }
+                          },
+                        ),
+                        SizedBox(height: 10.h),
+                        ButtonComponent(
+                          text: 'REENVIAR CÓDIGO',
+                          onPressed: canResend
+                              ? () {
+                                  // Aquí llamás a la función para reenviar el SMS
+                                  startCountdown(); // reinicia cronómetro
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Código reenviado'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                }
+                              : null, // deshabilitado si no puede reenviar
+                        ),
+                        Text(
+                          canResend
+                              ? '¿No recibiste el código?'
+                              : 'Reintentar en ${remainingSeconds ~/ 60}:${(remainingSeconds % 60).toString().padLeft(2, '0')}',
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 6.h),
+                        SizedBox(
+                          height: 10.h,
+                        ),
+                        // Center(
+                        //     child: Text(
+                        //   'Versión ${dotenv.env['version']}',
+                        //   style: TextStyle(
+                        //     fontSize: 12.sp,
+                        //     color: Theme.of(context).brightness ==
+                        //             Brightness.dark
+                        //         ? const Color.fromARGB(255, 255, 255, 255)
+                        //         : const Color(0xff419388),
+                        //   ),
+                        // ))
+                        Center(
+                          child: Text(
+                            'Version 4.0.1',
+                            style: TextStyle(
+                              fontSize: 12.sp, // Responsivo
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? const Color.fromARGB(255, 0, 0, 0)
+                                  : const Color.fromARGB(255, 0, 0, 0),
                             ),
                           ),
-                          SizedBox(height: 10.h),
-                          PinCodeTextField(
-                            appContext: context,
-                            length: 4,
-                            onChanged: (value) {},
-                            onCompleted: (value) => node.nextFocus(),
-                            controller: codeCtrl,
-                            focusNode: node,
-                            autoDisposeControllers: false,
-                            keyboardType: TextInputType.number,
-                            cursorColor: Colors.transparent,
-                            pinTheme: PinTheme(
-                              inactiveColor: const Color(0xff419388),
-                              activeColor: Colors.black,
-                              selectedColor: const Color(0xff419388),
-                              selectedFillColor: const Color(0xff419388),
-                              inactiveFillColor: Colors.transparent,
-                              shape: PinCodeFieldShape.box,
-                              borderRadius: BorderRadius.circular(5),
-                              activeFillColor: AdaptiveTheme.of(context)
-                                  .theme
-                                  .scaffoldBackgroundColor,
-                            ),
-                            animationDuration:
-                                const Duration(milliseconds: 300),
-                            enableActiveFill: true,
-                          ),
-                          SizedBox(height: 10.h),
-                          ButtonComponent(
-                            text: 'VERIFICAR',
-                            onPressed: () {
-                              final code = codeCtrl.text;
-                              if (code.length == 4) {
-                                verifyPinNew(code);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Por favor, ingresa los 4 dígitos'),
-                                    backgroundColor: Colors.red,
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                          SizedBox(height: 10.h),
-                          ButtonComponent(
-                            text: 'REENVIAR CÓDIGO',
-                            onPressed: canResend
-                                ? () {
-                                    // Aquí llamás a la función para reenviar el SMS
-                                    startCountdown(); // reinicia cronómetro
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Código reenviado'),
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
-                                  }
-                                : null, // deshabilitado si no puede reenviar
-                          ),
-                          Text(
-                            canResend
-                                ? '¿No recibiste el código?'
-                                : 'Reintentar en ${remainingSeconds ~/ 60}:${(remainingSeconds % 60).toString().padLeft(2, '0')}',
-                            style:
-                                TextStyle(fontSize: 14.sp, color: Colors.grey),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 6.h),
-                          SizedBox(
-                            height: 10.h,
-                          ),
-                          // Center(
-                          //     child: Text(
-                          //   'Versión ${dotenv.env['version']}',
-                          //   style: TextStyle(
-                          //     fontSize: 12.sp,
-                          //     color: Theme.of(context).brightness ==
-                          //             Brightness.dark
-                          //         ? const Color.fromARGB(255, 255, 255, 255)
-                          //         : const Color(0xff419388),
-                          //   ),
-                          // ))
-                          Center(
-                            child: Text(
-                              'Version 4.0.1',
-                              style: TextStyle(
-                                fontSize: 12.sp, // Responsivo
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? const Color.fromARGB(255, 0, 0, 0)
-                                    : const Color.fromARGB(255, 0, 0, 0),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
+                        )
+                      ],
                     ),
                   ],
                 ),

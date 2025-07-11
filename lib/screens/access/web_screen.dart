@@ -45,7 +45,6 @@ class _WebScreenState extends State<Webscreen> {
         onNavigationRequest: (request) async {
           final url = request.url;
 
-          debugPrint('esto es lo qe semuestr : $url');
           if (url.startsWith('com.muserpol.pvt:/oauth2redirect')) {
             final uri = Uri.parse(url);
             final code = uri.queryParameters['code'];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 typedef LetIndexPage = bool Function(int value);
 
@@ -31,7 +32,8 @@ class CurvedNavigationBar extends StatefulWidget {
   CurvedNavigationBarState createState() => CurvedNavigationBarState();
 }
 
-class CurvedNavigationBarState extends State<CurvedNavigationBar> with SingleTickerProviderStateMixin {
+class CurvedNavigationBarState extends State<CurvedNavigationBar>
+    with SingleTickerProviderStateMixin {
   late double _startingPos;
   int _endingIndex = 0;
   late double _pos;
@@ -61,7 +63,8 @@ class CurvedNavigationBarState extends State<CurvedNavigationBar> with SingleTic
           _icon = widget.items[_endingIndex].icon;
           _label = widget.items[_endingIndex].label;
         }
-        _buttonHide = (1 - ((middle - _pos) / (_startingPos - middle)).abs()).abs();
+        _buttonHide =
+            (1 - ((middle - _pos) / (_startingPos - middle)).abs()).abs();
       });
     });
   }
@@ -73,7 +76,8 @@ class CurvedNavigationBarState extends State<CurvedNavigationBar> with SingleTic
       final newPosition = widget.index / _length;
       _startingPos = _pos;
       _endingIndex = widget.index;
-      _animationController.animateTo(newPosition, duration: widget.animationDuration, curve: widget.animationCurve);
+      _animationController.animateTo(newPosition,
+          duration: widget.animationDuration, curve: widget.animationCurve);
     }
   }
 
@@ -88,101 +92,120 @@ class CurvedNavigationBarState extends State<CurvedNavigationBar> with SingleTic
     _length = widget.items.length;
     Size size = MediaQuery.of(context).size;
 
+    // Aseguramos que el tamaño de los iconos se ajuste dinámicamente
+    // double iconSize = size.width < 600
+    //     ? 20.sp
+    //     : 25.sp; // Tamaño más pequeño para pantallas pequeñas
 
-
- _icon = widget.items[_endingIndex].icon;
-
+    _icon = widget.items[_endingIndex].icon;
 
     return SafeArea(
-      child:  Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.bottomCenter,
-          children: [
-            Positioned(
-              bottom: -40 - (75.0 - widget.height),
-              left: Directionality.of(context) == TextDirection.rtl ? null : _pos * size.width,
-              right: Directionality.of(context) == TextDirection.rtl ? _pos * size.width : null,
-              width: size.width / _length,
-              child: Center(
-                child: Transform.translate(
-                  offset: Offset(
-                    0,
-                    -(1 - _buttonHide) * 80,
-                  ),
-                  child: Material(
-                    color:  Theme.of(context).cardColor,
-                    type: MaterialType.circle,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: _icon,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Aseguramos que la altura de la barra sea adaptable
+          double navBarHeight = constraints.maxHeight > 600
+              ? 50.h
+              : 40.h; // Menor altura para pantallas pequeñas
+
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomCenter,
+            children: [
+              Positioned(
+                bottom: -40 - (75.0 - navBarHeight),
+                left: Directionality.of(context) == TextDirection.rtl
+                    ? null
+                    : _pos * size.width,
+                right: Directionality.of(context) == TextDirection.rtl
+                    ? _pos * size.width
+                    : null,
+                width: size.width / _length,
+                child: Center(
+                  child: Transform.translate(
+                    offset: Offset(0, -(1 - _buttonHide) * 80),
+                    child: Material(
+                      color: Theme.of(context).cardColor,
+                      type: MaterialType.circle,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: _icon,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            CustomPaint(
-              painter: NavCustomPainter(_pos, _length, Directionality.of(context)),
-              child: Container(
-                height: widget.height,
+              CustomPaint(
+                painter:
+                    NavCustomPainter(_pos, _length, Directionality.of(context)),
+                child: Container(
+                  height: navBarHeight,
+                ),
               ),
-            ),
-            Positioned(
-              left: Directionality.of(context) == TextDirection.rtl ? null : _pos * size.width,
-              right: Directionality.of(context) == TextDirection.rtl ? _pos * size.width : null,
-              width: size.width / _length,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    _label,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    maxLines: 1,
+              Positioned(
+                left: Directionality.of(context) == TextDirection.rtl
+                    ? null
+                    : _pos * size.width,
+                right: Directionality.of(context) == TextDirection.rtl
+                    ? _pos * size.width
+                    : null,
+                width: size.width / _length,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text(
+                      _label,
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: widget.height,
-              child: Row(
-                children: widget.items.map(
-                  (item) {
-                    return NavButton(
-                      onTap: _buttonTap,
-                      position: _pos,
-                      length: _length,
-                      index: widget.items.indexOf(item),
-                      height: widget.height,
-                      child: Center(
-                        child: Stack(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                child: item.icon,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Text(
-                                  item.label,
-                                  style: const TextStyle(color: Colors.white),
-                                  maxLines: 1,
+              SizedBox(
+                height: navBarHeight,
+                child: Row(
+                  children: widget.items.map(
+                    (item) {
+                      return NavButton(
+                        onTap: _buttonTap,
+                        position: _pos,
+                        length: _length,
+                        index: widget.items.indexOf(item),
+                        height: navBarHeight,
+                        child: Center(
+                          child: Stack(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: item.icon,
                                 ),
                               ),
-                            ),
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Text(
+                                    item.label,
+                                    style: const TextStyle(color: Colors.white),
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ).toList(),
+                      );
+                    },
+                  ).toList(),
+                ),
               ),
-            ),
-          ],
-        ));
+            ],
+          );
+        },
+      ),
+    );
   }
 
   setPage(int index) {
@@ -204,7 +227,8 @@ class CurvedNavigationBarState extends State<CurvedNavigationBar> with SingleTic
         _startingPos = _pos;
         _endingIndex = index;
         _currentIndex = index;
-        _animationController.animateTo(newPosition, duration: widget.animationDuration, curve: widget.animationCurve);
+        _animationController.animateTo(newPosition,
+            duration: widget.animationDuration, curve: widget.animationCurve);
       });
     }
   }
@@ -243,33 +267,39 @@ class NavButton extends StatelessWidget {
     final opacity = length * difference;
 
     return Expanded(
-      child:  _currentIndex != index
-            ? InkWell(
-                customBorder: const CircleBorder(), //const ContinuousRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
-                onTap: () {
-                  onTap(index);
-                },
-                child: SizedBox(
-                  height: height,
-                  child: Transform.translate(
-                    offset: Offset(0, difference < 1.0 / length ? verticalAlignment * 40 : 0),
-                    child: Opacity(opacity: difference < 1.0 / length * 0.99 ? opacity : 1.0, child: child),
-                  ),
-                ),
-              )
-            : GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  onTap(index);
-                },
-                child: SizedBox(
-                  height: height,
-                  child: Transform.translate(
-                    offset: Offset(0, difference < 1.0 / length ? verticalAlignment * 40 : 0),
-                    child: Opacity(opacity: difference < 1.0 / length * 0.99 ? opacity : 1.0, child: child),
-                  ),
+      child: _currentIndex != index
+          ? InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () {
+                onTap(index);
+              },
+              child: SizedBox(
+                height: height,
+                child: Transform.translate(
+                  offset: Offset(0,
+                      difference < 1.0 / length ? verticalAlignment * 40 : 0),
+                  child: Opacity(
+                      opacity: difference < 1.0 / length * 0.99 ? opacity : 1.0,
+                      child: child),
                 ),
               ),
+            )
+          : GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                onTap(index);
+              },
+              child: SizedBox(
+                height: height,
+                child: Transform.translate(
+                  offset: Offset(0,
+                      difference < 1.0 / length ? verticalAlignment * 40 : 0),
+                  child: Opacity(
+                      opacity: difference < 1.0 / length * 0.99 ? opacity : 1.0,
+                      child: child),
+                ),
+              ),
+            ),
     );
   }
 }
