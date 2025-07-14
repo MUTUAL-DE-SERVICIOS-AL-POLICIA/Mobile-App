@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:muserpol_pvt/components/header_muserpol.dart';
 import 'package:muserpol_pvt/screens/navigator_down.dart';
 import 'package:muserpol_pvt/screens/pages/complement_pages/complement_page_new.dart';
+import 'package:muserpol_pvt/screens/pages/complement_pages/history_complement.dart';
 import 'package:muserpol_pvt/screens/pages/contributions_pages/contributions_page_new.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loans_page_new.dart';
 import 'package:muserpol_pvt/screens/pages/menu.dart';
@@ -28,8 +29,7 @@ class _NavigatorBarGeneralState extends State<NavigatorBarGeneral> {
   Widget get currentPage {
     if (_currentIndex == 0) {
       if (_subIndex == 0) return const ScreenComplementNew();
-      if (_subIndex == 1)
-        return const PlaceholderScreen(title: 'Historial de Trámites');
+      if (_subIndex == 1) return const ScreenHistoryComplement();
     } else if (_currentIndex == 1) {
       return const ScreenContributionsNew();
     } else if (_currentIndex == 2) {

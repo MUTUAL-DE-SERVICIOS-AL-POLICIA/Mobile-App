@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:muserpol_pvt/screens/list_services_menu/pages_enrolled/enrolled_page.dart';
 import 'package:muserpol_pvt/screens/list_services_menu/sevice_loader_complement.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -50,10 +52,15 @@ class _ScreenListServiceState extends State<ScreenListService> {
     final userBloc =
         BlocProvider.of<UserBloc>(context, listen: false).state.user;
 
+    if (userBloc != null) {
+      debugPrint('Datos completos del userBloc:');
+      debugPrint(json.encode(userBloc.toJson()));
+    }
+
     if (userBloc?.belongsToEconomicComplement == true) {
       await loadGeneralServicesComplementEconomic(context);
       await getEconomicComplement(context, current: true);
-      await getEconomicComplement(context, current: false);
+      // await getEconomicComplement(context, current: false);
     }
 
     await loadGeneralServices(context);
@@ -80,7 +87,16 @@ class _ScreenListServiceState extends State<ScreenListService> {
     )..show(context: context);
   }
 
-  void _goToModule(int index) {
+  void _goToModule(int index) async {
+    if (index == 0) {
+      final userBloc =
+          BlocProvider.of<UserBloc>(context, listen: false).state.user;
+
+      if (userBloc?.enrolled == false) {
+        // Logica le pedira las fotos para enrolarse
+        // Redirigir a una
+      }
+    }
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -137,14 +153,56 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 ),
               ),
               SizedBox(height: 20.h),
+              //Llama la lista de servicios al afiliado
+              //Existiran 3 servicios generales -> APORTES, PRESTAMOS, PRE-EVALUACION
+              //Servicio unico para los beneficiarios -> COMPLEMENTO ECONOMICO
               ServiceOption(
                 key: keyComplemento,
                 image: 'assets/images/couple.png',
                 title: 'COMPLEMENTO ECONÓMICO',
                 description:
-                    'Creación y seguimiento de trámites de Complemento Económico.',
-                onPressed: () => _goToModule(0),
+                    'Creación e Historial de trámites de Complemento Económico.',
+                onPressed: () async {
+                  final userBloc =
+                      BlocProvider.of<UserBloc>(context, listen: false)
+                          .state
+                          .user;
+
+                  if (userBloc?.belongsToEconomicComplement == true) {
+                    // Si tiene acceso, Ingresa a Complemento Economico
+                    if (userBloc?.enrolled == false) {
+                      debugPrint("Enviarlo a modal de enrolamiento");
+                      //Se enviara al modal de enrolamiento para que se pueda guardar las fotografias correspoondientes
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const ScreenEnrolledService(),
+                        ),
+                      );
+                    } else {
+                      _goToModule(0);
+                    }
+                  } else {
+                    // Si no tiene acceso, mostrar el modal
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text("Acceso Denegado"),
+                        content: const Text(
+                            "Usted no es beneficiario del Complemento Económico."),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text("Cerrar"),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
               ),
+
               ServiceOption(
                 key: keyAportes,
                 image: 'assets/images/computer.png',
@@ -167,14 +225,25 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 onPressed: () {}, // A futuro
               ),
               SizedBox(height: 20.h),
+              // Center(
+              //   child: Text(
+              //     'Versión ${dotenv.env['version']}',
+              //     style: TextStyle(
+              //       fontSize: 12.sp,
+              //       color: Theme.of(context).brightness == Brightness.dark
+              //           ? Colors.white
+              //           : const Color.fromARGB(255, 0, 0, 0),
+              //     ),
+              //   ),
+              // ),
               Center(
                 child: Text(
-                  'Versión ${dotenv.env['version']}',
+                  'Versión 4.0.1',
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.white
-                        : const Color(0xff419388),
+                        : const Color.fromARGB(255, 0, 0, 0),
                   ),
                 ),
               ),

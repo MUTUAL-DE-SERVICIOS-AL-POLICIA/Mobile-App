@@ -1,7 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
@@ -133,8 +133,11 @@ class _MenuDrawerState extends State<MenuDrawer> {
                       icon: Icons.logout,
                       onTap: () => closeSession(context),
                     ),
-                    Center(
-                      child: Text('Versión ${dotenv.env['version']}'),
+                    // Center(
+                    //   child: Text('Versión ${dotenv.env['version']}'),
+                    // ),
+                    const Center(
+                      child: Text('Versión 4.0.1')
                     ),
                   ],
                 ),

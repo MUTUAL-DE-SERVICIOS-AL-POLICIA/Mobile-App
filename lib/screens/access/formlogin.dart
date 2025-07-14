@@ -156,7 +156,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     //COMPONENTE BUTTON
                     ButtonComponent(
                         text: 'INGRESAR',
-                        onPressed: () => sendCredentialsNew()),
+                        stateLoading: isLoading,
+                        onPressed: isLoading ? null : sendCredentialsNew),
                     SizedBox(
                       height: 10.h,
                     ),
@@ -180,18 +181,13 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                               onTap: _authenticateWithBiometrics,
                               child: Column(
                                 children: [
-                                  Icon(
-                                    Icons.fingerprint,
-                                    size: 40.sp,
-                                    color: color
-                                  ),
+                                  Icon(Icons.fingerprint,
+                                      size: 40.sp, color: color),
                                   SizedBox(height: 4.h),
                                   Text(
                                     'Ingreso con biometría',
                                     style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color: color
-                                    ),
+                                        fontSize: 12.sp, color: color),
                                   ),
                                 ],
                               ),
@@ -248,9 +244,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                       child: Text(
                         'Version 4.0.1',
                         style: TextStyle(
-                          fontSize: 12.sp, // Responsivo
-                          color: color
-                        ),
+                            fontSize: 12.sp, // Responsivo
+                            color: color),
                       ),
                     )
                   ],
@@ -358,43 +353,52 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   }
 
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
-  Future<void> sendCredentialsNew() async {
+  sendCredentialsNew() async {
     FocusScope.of(context).unfocus();
-    if (!formKey.currentState!.validate()) {
-      return;
-    }
-    if (await checkVersion(mounted, context)) {
-      final username =
-          '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
-      final cellphone = phoneCtrl.text.trim();
+    setState(() => isLoading = true);
 
-      body['username'] = username;
-      body['cellphone'] = cellphone;
+    try {
+      if (!formKey.currentState!.validate()) {
+        return;
+      }
+      if (await checkVersion(mounted, context)) {
+        final username =
+            '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
+        final cellphone = phoneCtrl.text.trim();
 
-      debugPrint(body.toString());
-      if (!mounted) return;
-      var response = await serviceMethod(
-          mounted, context, 'post', body, createtosendmessage(), false, true);
-      if (response != null) {
-        if (response.statusCode == 200) {
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
-              transitionDuration: const Duration(milliseconds: 400),
-              transitionsBuilder: (_, animation, secondaryAnimation, child) {
-                return SharedAxisTransition(
-                  animation: animation,
-                  secondaryAnimation: secondaryAnimation,
-                  transitionType: SharedAxisTransitionType.horizontal,
-                  child: child,
-                );
-              },
-            ),
-          );
+        body['username'] = username;
+        body['cellphone'] = cellphone;
+
+        debugPrint(body.toString());
+        if (!mounted) return;
+        var response = await serviceMethod(
+            mounted, context, 'post', body, createtosendmessage(), false, true);
+        if (response != null) {
+          if (response.statusCode == 200) {
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
+                transitionDuration: const Duration(milliseconds: 400),
+                transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                  return SharedAxisTransition(
+                    animation: animation,
+                    secondaryAnimation: secondaryAnimation,
+                    transitionType: SharedAxisTransitionType.horizontal,
+                    child: child,
+                  );
+                },
+              ),
+            );
+          }
         }
       }
+    } catch (e) {
+      debugPrint('Error: $e');
+      showError('Ocurrio un error al conectar con el servidor');
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 }

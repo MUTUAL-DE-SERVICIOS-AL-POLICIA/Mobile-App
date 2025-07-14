@@ -277,6 +277,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
         if (dataJson.containsKey('belongs_to_economic_complement') &&
             dataJson['user'] is Map<String, dynamic>) {
+              debugPrint("seeee");
           dataJson['user']['belongs_to_economic_complement'] =
               dataJson['belongs_to_economic_complement'];
         }
@@ -325,7 +326,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
     showSuccessful(
       context,
-      'Correcto, Usuario Correcto',
+      'Correcto, Autenticacion Exitosa',
       () {
         // Luego de que el mensaje de éxito se cierre, navegamos a la siguiente pantalla
         Navigator.pushReplacement(

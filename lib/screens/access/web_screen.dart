@@ -180,7 +180,7 @@ class _WebScreenState extends State<Webscreen> {
 
     showSuccessful(
       context,
-      'Correcto, Usuario Correcto',
+      'Correcto, Autenticacion Exitosa',
       () {
         // Luego de que el mensaje de éxito se cierre, navegamos a la siguiente pantalla
         Navigator.pushReplacement(
