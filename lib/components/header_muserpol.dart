@@ -5,13 +5,16 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
   final Key? keyMenuButton;
   final bool showBackArrow;
   final VoidCallback? onBackPressed;
+  final VoidCallback? onNotificationPressed;
 
-  const AppBarDualTitle(
-      {super.key,
-      this.onMenuPressed,
-      this.keyMenuButton,
-      this.showBackArrow = false,
-      this.onBackPressed});
+  const AppBarDualTitle({
+    super.key,
+    this.onMenuPressed,
+    this.keyMenuButton,
+    this.showBackArrow = false,
+    this.onBackPressed,
+    this.onNotificationPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,37 +24,50 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       centerTitle: true,
-      title: Column(
+      title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            "MUSERPOL",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: primaryTextColor,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset(
+              'assets/icons/favicon.png',
+              width: 32,
+              height: 32,
+              fit: BoxFit.cover,
             ),
           ),
-          Text(
-            "MUTUAL DE SERVICIOS AL POLICÍA",
-            style: TextStyle(
-              fontSize: 10,
-              color: secondaryTextColor,
-            ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "MUSERPOL",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: primaryTextColor,
+                ),
+              ),
+              Text(
+                "MUTUAL DE SERVICIOS AL POLICÍA",
+                style: TextStyle(
+                  fontSize: 10,
+                  color: secondaryTextColor,
+                ),
+              ),
+            ],
           ),
         ],
       ),
       leading: Builder(
         builder: (context) {
           if (showBackArrow) {
-            // Si `showBackArrow` es verdadero, mostramos la flecha de retroceso
             return IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed:
-                  onBackPressed ?? () => Navigator.pop(context), // Retroceder
+              onPressed: onBackPressed ?? () => Navigator.pop(context),
             );
           } else {
-            // Si no, mostramos el ícono del menú
             return IconButton(
               key: keyMenuButton,
               icon: const Icon(Icons.menu),
@@ -61,6 +77,19 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
           }
         },
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications),
+          onPressed: onNotificationPressed ??
+              () {
+                // Acción por defecto si no se pasa un callback
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text("Notificaciones aún no implementadas")),
+                );
+              },
+        ),
+      ],
     );
   }
 
