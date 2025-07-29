@@ -5,6 +5,7 @@ import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -16,6 +17,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/components/inputs/phone.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
+import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -369,7 +371,13 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
         body['username'] = username;
         body['cellphone'] = cellphone;
 
-        debugPrint(body.toString());
+        if (dotenv.env['storeAndroid'] == 'appgallery') {
+          body['firebase_token'] = '';
+        } else {
+          body['firebase_token'] =
+              await PushNotificationService.getTokenFirebase();
+        }
+
         if (!mounted) return;
         var response = await serviceMethod(
             mounted, context, 'post', body, createtosendmessage(), false, true);
@@ -391,6 +399,9 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                 },
               ),
             );
+          }
+          if (response.statusCode == 400) {
+            callDialogAction(context, 'Verifique su conexión a Internet1');
           }
         }
       }
