@@ -1,5 +1,3 @@
-
-
 import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
@@ -12,8 +10,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:muserpol_pvt/screens/access/formlogin.dart';
-
-
+import 'package:muserpol_pvt/services/service_method.dart';
 
 class ScreenNewLogin extends StatefulWidget {
   const ScreenNewLogin({super.key});
@@ -29,6 +26,8 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
   @override
   void initState() {
     super.initState();
+    //verificar la version de la aplicacion
+    checkVersion(mounted, context);
     initializeDateFormatting();
     _initPlatformState();
   }
@@ -107,7 +106,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
     );
   }
 
-  //FUNCION PARA SALIR DE LA APLICACION 
+  //FUNCION PARA SALIR DE LA APLICACION
 
   Future<bool> _onBackPressed() async {
     return await showDialog(
@@ -126,4 +125,3 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
     );
   }
 }
-

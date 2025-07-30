@@ -12,8 +12,9 @@ import 'package:muserpol_pvt/bloc/contribution/contribution_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/bloc/procedure/procedure_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
-import 'package:muserpol_pvt/components/animate.dart';
-import 'package:muserpol_pvt/components/dialog_action.dart';
+// import 'package:muserpol_pvt/components/animate.dart';
+import 'package:muserpol_pvt/components/button.dart';
+// import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
@@ -193,10 +194,35 @@ Future<dynamic> serviceMethod(
 // Muestra un cuadro de diálogo con mensaje de error
 void callDialogAction(BuildContext context, String message) {
   showDialog(
-    barrierDismissible: false,
-    context: context,
-    builder: (BuildContext context) => DialogAction(message: message),
-  );
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.warning_amber,
+                size: 40,
+                color: Colors.amber,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              ButtonComponent(
+                text: 'CERRAR',
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          ),
+        );
+      });
 }
 
 /// Cierra la sesión del usuario, limpia estados, tokens, y redirige al inicio
@@ -281,23 +307,39 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
         // Si hay nueva versión, muestra diálogo con botón para actualizar
         if (!mounted) return false;
         return await showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (context) => ComponentAnimate(
-            child: DialogOneFunction(
-              title: json.decode(response.body)['message'],
-              message:
-                  'Para mejorar la experiencia, Por favor actualiza la nueva versión',
-              textButton: 'Actualizar',
-              onPressed: () async {
-                launchUrl(
-                  Uri.parse(json.decode(response.body)['data']['url_store']),
-                  mode: LaunchMode.externalApplication,
-                );
-              },
-            ),
-          ),
-        );
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.warning_amber,
+                      size: 40,
+                      color: Colors.amber,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      json.decode(response.body)['message'],
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 20),
+                    ButtonComponent(
+                      text: 'ACTUALIZAR',
+                      onPressed: () async {
+                        launchUrl(
+                          Uri.parse(
+                              json.decode(response.body)['data']['url_store']),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
+                    )
+                  ],
+                ),
+              );
+            });
       }
       return true;
     } else {

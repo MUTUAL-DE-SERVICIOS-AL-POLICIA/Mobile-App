@@ -21,6 +21,7 @@ import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 
 class ScreenFormLogin extends StatefulWidget {
   const ScreenFormLogin({super.key});
@@ -358,6 +359,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   sendCredentialsNew() async {
     FocusScope.of(context).unfocus();
     setState(() => isLoading = true);
+    final signature = await SmsAutoFill().getAppSignature;
+    debugPrint("App Signature Hash: $signature");
 
     try {
       if (!formKey.currentState!.validate()) {
@@ -370,6 +373,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
         body['username'] = username;
         body['cellphone'] = cellphone;
+        body['signature'] = signature;
 
         if (dotenv.env['storeAndroid'] == 'appgallery') {
           body['firebase_token'] = '';
@@ -399,8 +403,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                 },
               ),
             );
-          }
-          if (response.statusCode == 400) {
+          } else if (response.statusCode == 401) {
             callDialogAction(context, 'Verifique su conexión a Internet1');
           }
         }
