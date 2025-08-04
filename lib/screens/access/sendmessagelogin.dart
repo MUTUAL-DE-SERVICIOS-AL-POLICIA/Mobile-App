@@ -57,6 +57,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         setState(() {
           codeCtrl.text = code;
         });
+        verifyPinNew(code);
       } else {
         debugPrint('No se capturó un código válido.');
       }
@@ -74,6 +75,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
   @override
   Widget build(BuildContext context) {
+    var numbercell = widget.body['cellphone'];
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(
@@ -99,17 +101,17 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                   SizedBox(height: 10.h),
                   Column(
                     children: [
-                      Center(
-                        child: SizedBox(
-                          width: 90.w,
-                          height: 190.h,
-                          child: ClipRRect(
-                            child: Image.asset(
-                              'assets/images/sendmesagge.png',
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Center(
+                      //   child: SizedBox(
+                      //     width: 90.w,
+                      //     height: 190.h,
+                      //     child: ClipRRect(
+                      //       child: Image.asset(
+                      //         'assets/images/sendmesagge.png',
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       SizedBox(height: 10.h),
                       Text(
                         'Verificación de Codigo',
@@ -121,6 +123,21 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                               : Colors.black,
                         ),
                       ),
+                      SizedBox(height: 10.h),
+                      Center(
+                        child: Text(
+                          'Esperando para detectar automáticamente el SMS\nenviado al +591 $numbercell',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
+                        ),
+                      ),
+
                       SizedBox(height: 20.h),
                       PinCodeTextField(
                         appContext: context,
@@ -134,7 +151,10 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                         cursorColor: Colors.transparent,
                         pinTheme: PinTheme(
                           inactiveColor: const Color(0xff419388),
-                          activeColor: Colors.black,
+                          activeColor:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
                           selectedColor: const Color(0xff419388),
                           selectedFillColor: const Color(0xff419388),
                           inactiveFillColor: Colors.transparent,
@@ -149,8 +169,19 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                         animationDuration: const Duration(milliseconds: 300),
                         enableActiveFill: true,
                       ),
-
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 10.h),
+                      Center(
+                        child: SizedBox(
+                          width: 90.w,
+                          height: 190.h,
+                          child: ClipRRect(
+                            child: Image.asset(
+                              'assets/images/sendmesagge.png',
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
                       ButtonComponent(
                         text: 'VERIFICAR',
                         onPressed: () {
@@ -236,7 +267,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                             fontSize: 12.sp, // Responsivo
                             color:
                                 Theme.of(context).brightness == Brightness.dark
-                                    ? const Color.fromARGB(255, 0, 0, 0)
+                                    ? const Color.fromARGB(255, 255, 255, 255)
                                     : const Color.fromARGB(255, 0, 0, 0),
                           ),
                         ),
@@ -265,7 +296,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         });
   }
 
-  verifyPinNew(code) async {
+  Future verifyPinNew(code) async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
     final notificationBloc =
         BlocProvider.of<NotificationBloc>(context, listen: false);
@@ -273,63 +304,82 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     final tokenState = Provider.of<TokenState>(context, listen: false);
     FocusScope.of(context).unfocus();
 
-    if (await checkVersion(mounted, context)) {
-      var requestBody = {
-        'code': code,
-      };
+    var requestBody = {
+      'code': code,
+    };
 
-      if (dotenv.env['storeAndroid'] == 'appgallery') {
-        requestBody['firebase_token'] = '';
-      } else {
-        requestBody['firebase_token'] =
-            await PushNotificationService.getTokenFirebase();
+    if (dotenv.env['storeAndroid'] == 'appgallery') {
+      requestBody['firebase_token'] = '';
+    } else {
+      requestBody['firebase_token'] =
+          await PushNotificationService.getTokenFirebase();
+    }
+    if (!mounted) return;
+    var response = await serviceMethod(mounted, context, 'post', requestBody,
+        verifytosendmessage(), false, true);
+
+    if (response != null) {
+      final decoded = json.decode(response.body);
+
+      if (decoded['error'] == true) {
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.warning_amber,
+                      size: 40,
+                      color: Colors.amber,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "PIN, Verifique el SMS",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 20),
+                    ButtonComponent(
+                      text: 'CERRAR',
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                ),
+              );
+            });
       }
+      // Código correcto: continúa flujo normal
+      await DBProvider.db.database;
+      final dataJson = json.decode(response.body)['data'];
+
+      if (dataJson.containsKey('belongs_to_economic_complement') &&
+          dataJson['user'] is Map<String, dynamic>) {
+        dataJson['user']['belongs_to_economic_complement'] =
+            dataJson['belongs_to_economic_complement'];
+      }
+
+      UserModel user = userModelFromJson(json.encode(dataJson));
+
+      await authService.writeAuxtoken(user.apiToken!);
+      tokenState.updateStateAuxToken(true);
       if (!mounted) return;
-      var response = await serviceMethod(mounted, context, 'post', requestBody,
-          verifytosendmessage(), false, true);
+      await authService.writeUser(context, userModelToJson(user));
+      userBloc.add(UpdateUser(user.user!));
+      final affiliateModel = AffiliateModel(idAffiliate: user.user!.id!);
+      await DBProvider.db.newAffiliateModel(affiliateModel);
+      notificationBloc.add(UpdateAffiliateId(user.user!.id!));
 
-      if (response != null) {
-        final decoded = json.decode(response.body);
-
-        if (decoded['error'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Código incorrecto, por favor intentá nuevamente'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2),
-            ),
-          );
-          return;
-        }
-        // Código correcto: continúa flujo normal
-        await DBProvider.db.database;
-        final dataJson = json.decode(response.body)['data'];
-
-        if (dataJson.containsKey('belongs_to_economic_complement') &&
-            dataJson['user'] is Map<String, dynamic>) {
-          debugPrint("seeee");
-          dataJson['user']['belongs_to_economic_complement'] =
-              dataJson['belongs_to_economic_complement'];
-        }
-
-        UserModel user = userModelFromJson(json.encode(dataJson));
-
-        await authService.writeAuxtoken(user.apiToken!);
-        tokenState.updateStateAuxToken(true);
-        if (!mounted) return;
-        await authService.writeUser(context, userModelToJson(user));
-        userBloc.add(UpdateUser(user.user!));
-        final affiliateModel = AffiliateModel(idAffiliate: user.user!.id!);
-        await DBProvider.db.newAffiliateModel(affiliateModel);
-        notificationBloc.add(UpdateAffiliateId(user.user!.id!));
-
-        initSessionUserApp(
-            response,
-            UserAppMobile(
-                identityCard: widget.body['username'],
-                numberPhone: widget.body['cellphone']),
-            user);
-      } else {}
+      initSessionUserApp(
+          response,
+          UserAppMobile(
+              identityCard: widget.body['username'],
+              numberPhone: widget.body['cellphone']),
+          user);
     }
   }
 
@@ -358,7 +408,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       context,
       'Correcto, Autenticacion Exitosa',
       () {
-        // Luego de que el mensaje de éxito se cierre, navegamos a la siguiente pantalla
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(

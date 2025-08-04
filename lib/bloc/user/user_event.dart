@@ -49,3 +49,8 @@ class UpdateVerifiedDocument extends UserEvent {
 
   UpdateVerifiedDocument(this.state);
 }
+
+class UpdateEnrolled extends UserEvent {
+  final bool enrolled;
+  UpdateEnrolled(this.enrolled);
+}

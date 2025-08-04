@@ -60,8 +60,7 @@ class _ScreenProceduresState extends State<ScreenProcedures> {
                   stateBell: true),
               observationState.messageObservation != ''
                   ? json.decode(
-                              observationState.messageObservation)['message'] !=
-                          ""
+                              observationState.messageObservation)['message'] != ""
                       ? const CardObservation()
                       : Container()
                   : Container(),

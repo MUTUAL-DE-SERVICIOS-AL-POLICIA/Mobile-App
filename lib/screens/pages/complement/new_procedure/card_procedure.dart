@@ -235,17 +235,22 @@ class _StepperProcedureState extends State<StepperProcedure> {
   }
 
   Future<bool> _onBackPressed() async {
-    return await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) => ComponentAnimate(
-            child: DialogTwoAction(
-                message: '¿DESEAS SALIR DEL PROCESO?',
-                actionCorrect: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                messageCorrect: 'Salir')));
+    final result = await showDialog<bool>(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => ComponentAnimate(
+        child: DialogTwoAction(
+          message: '¿DESEAS SALIR DEL PROCESO?',
+          actionCorrect: () {
+            Navigator.pop(context, true); // ✅ devuelve true
+          },
+          messageCorrect: 'Salir',
+        ),
+      ),
+    );
+
+    return result ??
+        false; // fallback por si alguien cierra el diálogo sin elegir
   }
 
   initCtrlLive() async {

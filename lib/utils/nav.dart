@@ -154,7 +154,7 @@ class CurvedNavigationBarState extends State<CurvedNavigationBar>
                     padding: const EdgeInsets.only(bottom: 2),
                     child: Text(
                       _label,
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
                       maxLines: 1,
                     ),

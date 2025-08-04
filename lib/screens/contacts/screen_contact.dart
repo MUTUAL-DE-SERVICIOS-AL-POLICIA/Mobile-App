@@ -14,6 +14,7 @@ class ScreenContact extends StatefulWidget {
 
 class _ScreenContactState extends State<ScreenContact> {
   ContactsModel? contact;
+
   @override
   void initState() {
     super.initState();
@@ -22,7 +23,14 @@ class _ScreenContactState extends State<ScreenContact> {
 
   getContacts() async {
     var response = await serviceMethod(
-        mounted, context, 'get', null, serviceGetContacts(), false, false);
+      mounted,
+      context,
+      'get',
+      null,
+      serviceGetContacts(),
+      false,
+      false,
+    );
     if (response != null) {
       setState(() => contact = contactsModelFromJson(response.body));
     }
@@ -31,24 +39,41 @@ class _ScreenContactState extends State<ScreenContact> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Padding(
-            padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-            child: Column(children: [
-              const HedersComponent(
-                  title: 'Contactos a nivel nacional'),
-              contact != null
-                  ? Expanded(
-                      child: SingleChildScrollView(
-                          child: Column(children: [
-                      for (var item in contact!.data!.cities!)
-                        CardContact(
-                          city: item,
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+        child: Column(
+          children: [
+            const HedersComponent(title: 'Contactos a nivel nacional'),
+            contact != null
+                ? Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: List.generate(
+                          contact!.data!.cities!.length,
+                          (index) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: CardContact(
+                              city: contact!.data!.cities![index],
+                            ),
+                          ),
                         ),
-                    ])))
-                  : Expanded(
-                      child: Center(
-                          child: Image.asset('assets/images/load.gif',
-                              fit: BoxFit.cover, height: 20))),
-            ])));
+                      ),
+                    ),
+                  )
+                : const Expanded(
+                    child: Center(
+                      child: SizedBox(
+                        height: 20,
+                        child: Image(
+                          image: AssetImage('assets/images/load.gif'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
   }
 }

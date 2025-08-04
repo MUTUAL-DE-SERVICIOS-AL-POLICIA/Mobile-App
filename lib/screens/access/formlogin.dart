@@ -5,7 +5,6 @@ import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -17,7 +16,6 @@ import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/components/inputs/phone.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
-import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -287,54 +285,49 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     setState(() => isLoadingCiudadania = true);
 
     try {
-      if (await checkVersion(mounted, context)) {
-        var response = await serviceMethod(
-          mounted,
-          context,
-          'get',
-          null,
-          serviceGetCredentials(),
-          false,
-          true,
-        );
+      var response = await serviceMethod(
+        mounted,
+        context,
+        'get',
+        null,
+        serviceGetCredentials(),
+        false,
+        true,
+      );
 
-        if (response != null && response.statusCode == 200) {
-          final decoded = jsonDecode(response.body);
-          final url = decoded['url'];
-          final clientId = decoded['clientID'];
-          final redirectUri = decoded['redirectURI'];
-          final scope = decoded['scope'];
+      if (response != null && response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final url = decoded['url'];
+        final clientId = decoded['clientID'];
+        final redirectUri = decoded['redirectURI'];
+        final scope = decoded['scope'];
 
-          final codeVerifier = generateCodeVerifier();
-          final codeChallenge = (codeVerifier);
+        final codeVerifier = generateCodeVerifier();
+        final codeChallenge = (codeVerifier);
 
-          final authorizationUrl = '$url/auth?response_type=code'
-              '&client_id=$clientId'
-              '&redirect_uri=$redirectUri'
-              '&scope=${Uri.encodeComponent(scope)}'
-              '&code_challenge=$codeChallenge'
-              '&code_challenge_method=S256';
+        final authorizationUrl = '$url/auth?response_type=code'
+            '&client_id=$clientId'
+            '&redirect_uri=$redirectUri'
+            '&scope=${Uri.encodeComponent(scope)}'
+            '&code_challenge=$codeChallenge'
+            '&code_challenge_method=S256';
 
-          // final authorizationUrl =
-          //     'http://192.168.2.90:8080/realms/aplicacion-movil/protocol/openid-connect/auth?client_id=muserpol-app&redirect_uri=com.muserpol.pvt:/oauth2redirect&response_type=code&scope=openid';
+        debugPrint('acceso a la URL es: . $authorizationUrl');
 
-          debugPrint('acceso a la URL es: . $authorizationUrl');
-
-          if (!mounted) return;
-          //RECIBIDO LAS CREDENCIALES DE CIUDADANIA DIGITAL INICIA LA PAGINA DE LOGIN DE CIUDADANIA DIGITAL
-          //PARA REALIZAR LAS CONSULTAS CORRESPONDIENTES AL SERVICIO DE CIUDADANIA DIGITAL SE DEBE ENVIAR EL CODE VERIFIER, IMPORTATE GUARDARLO
-          //SOLO PARA UN USO
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => Webscreen(
-                initialUrl: authorizationUrl,
-                codeVerifier: codeVerifier,
-              ),
+        if (!mounted) return;
+        //RECIBIDO LAS CREDENCIALES DE CIUDADANIA DIGITAL INICIA LA PAGINA DE LOGIN DE CIUDADANIA DIGITAL
+        //PARA REALIZAR LAS CONSULTAS CORRESPONDIENTES AL SERVICIO DE CIUDADANIA DIGITAL SE DEBE ENVIAR EL CODE VERIFIER, IMPORTATE GUARDARLO
+        //SOLO PARA UN USO
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => Webscreen(
+              initialUrl: authorizationUrl,
+              codeVerifier: codeVerifier,
             ),
-          );
-        } else {
-          showError('No se pudo obtener las credenciales.');
-        }
+          ),
+        );
+      } else {
+        showError('No se pudo obtener las credenciales.');
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -366,46 +359,38 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       if (!formKey.currentState!.validate()) {
         return;
       }
-      if (await checkVersion(mounted, context)) {
-        final username =
-            '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
-        final cellphone = phoneCtrl.text.trim();
 
-        body['username'] = username;
-        body['cellphone'] = cellphone;
-        body['signature'] = signature;
+      final identityCard =
+          '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
+      final cellphone = phoneCtrl.text.trim();
 
-        if (dotenv.env['storeAndroid'] == 'appgallery') {
-          body['firebase_token'] = '';
-        } else {
-          body['firebase_token'] =
-              await PushNotificationService.getTokenFirebase();
-        }
+      body['identityCard'] = identityCard;
+      body['cellphone'] = cellphone;
+      body['signature'] = signature;
 
-        if (!mounted) return;
-        var response = await serviceMethod(
-            mounted, context, 'post', body, createtosendmessage(), false, true);
-        if (response != null) {
-          if (response.statusCode == 200) {
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
-                transitionDuration: const Duration(milliseconds: 400),
-                transitionsBuilder: (_, animation, secondaryAnimation, child) {
-                  return SharedAxisTransition(
-                    animation: animation,
-                    secondaryAnimation: secondaryAnimation,
-                    transitionType: SharedAxisTransitionType.horizontal,
-                    child: child,
-                  );
-                },
-              ),
-            );
-          } else if (response.statusCode == 401) {
-            callDialogAction(context, 'Verifique su conexión a Internet1');
-          }
+      if (!mounted) return;
+      var response = await serviceMethod(
+          mounted, context, 'post', body, createtosendmessage(), false, true);
+      if (response != null) {
+        if (response.statusCode == 200) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
+              transitionDuration: const Duration(milliseconds: 400),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SharedAxisTransition(
+                  animation: animation,
+                  secondaryAnimation: secondaryAnimation,
+                  transitionType: SharedAxisTransitionType.horizontal,
+                  child: child,
+                );
+              },
+            ),
+          );
+        } else if (response.statusCode == 401) {
+          callDialogAction(context, 'Verifique su conexión a Internet1');
         }
       }
     } catch (e) {

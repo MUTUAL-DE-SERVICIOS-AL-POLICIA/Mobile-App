@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
+import 'package:badges/badges.dart' as badges;
+import 'package:muserpol_pvt/screens/inbox/screen_inbox.dart';
 
 class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuPressed;
@@ -21,6 +27,8 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final secondaryTextColor = isDark ? Colors.white70 : Colors.black54;
+    final notificationBloc =
+        BlocProvider.of<NotificationBloc>(context, listen: true).state;
 
     return AppBar(
       centerTitle: true,
@@ -78,19 +86,53 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
         },
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications),
-          onPressed: onNotificationPressed ??
-              () {
-                // Acción por defecto si no se pasa un callback
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text("Notificaciones aún no implementadas")),
-                );
-              },
-        ),
+        badgeNotification(context, notificationBloc),
       ],
     );
+  }
+
+  GestureDetector badgeNotification(
+      BuildContext context, NotificationState notificationBloc) {
+    final countNotification = notificationBloc.listNotifications.where((e) =>
+        e.read == false && e.idAffiliate == notificationBloc.affiliateId);
+    return GestureDetector(
+      onTap: () => dialogInbox(context),
+      child: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+        child: badges.Badge(
+          badgeStyle: badges.BadgeStyle(
+            badgeColor: notificationBloc.existNotifications
+                ? countNotification.isNotEmpty
+                    ? Colors.red
+                    : Colors.transparent
+                : Colors.transparent,
+            elevation: 0,
+          ),
+          badgeContent: notificationBloc.existNotifications &&
+                  countNotification.isNotEmpty
+              ? Text(
+                  '${countNotification.length}',
+                  style: const TextStyle(color: Colors.white),
+                )
+              : Container(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: SvgPicture.asset('assets/icons/bell.svg',
+                height: 25.sp,
+                colorFilter:
+                    const ColorFilter.mode(Color(0xff419388), BlendMode.srcIn)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  dialogInbox(BuildContext context) {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) => const ScreenInbox());
   }
 
   @override

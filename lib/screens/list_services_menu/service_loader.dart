@@ -25,28 +25,25 @@ Future<void> loadGeneralServicesComplementEconomic(BuildContext context) async {
 }
 
 Future<void> loadEconomicComplementServices(BuildContext context) async {
-  if (await checkVersion(true, context)) {
-    final observationState =
-        Provider.of<ObservationState>(context, listen: false);
-    final processingState =
-        Provider.of<ProcessingState>(context, listen: false);
-    final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+  final observationState =
+      Provider.of<ObservationState>(context, listen: false);
+  final processingState = Provider.of<ProcessingState>(context, listen: false);
+  final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
 
-    var response = await serviceMethod(
-      true,
-      context,
-      'get',
-      null,
-      serviceGetObservation(userBloc.state.user!.id!),
-      true,
-      true,
-    );
+  var response = await serviceMethod(
+    true,
+    context,
+    'get',
+    null,
+    serviceGetObservation(userBloc.state.user!.id!),
+    true,
+    true,
+  );
 
-    if (response != null) {
-      observationState.updateObservation(response.body);
-      if (json.decode(response.body)['data']['enabled']) {
-        processingState.updateStateProcessing(true);
-      }
+  if (response != null) {
+    observationState.updateObservation(response.body);
+    if (json.decode(response.body)['data']['enabled']) {
+      processingState.updateStateProcessing(true);
     }
   }
 }

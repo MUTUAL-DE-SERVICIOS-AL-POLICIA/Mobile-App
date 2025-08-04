@@ -89,7 +89,7 @@ class _NavigationDownState extends State<NavigationDown> {
       default:
         return [
           CurvedNavigationBarItem(
-            icon: Icon(Icons.error),
+            icon: const Icon(Icons.error),
             label: "Error",
           )
         ];

@@ -406,7 +406,7 @@
 //       enableDrag: false,
 //       isDismissible: false,
 //       context: context,
-//       builder: (context) => ModalInsideModal(
+//       builder: (context) => ModalInsideModal( //adaptar el modal 
 //           firebaseToken: firebaseToken,
 //           deviceId: widget.deviceId,
 //           stateFacialRecognition: facialRecognition,

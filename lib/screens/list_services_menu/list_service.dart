@@ -3,8 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:muserpol_pvt/screens/list_services_menu/pages_enrolled/enrolled_page.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:muserpol_pvt/components/button.dart';
+import 'package:muserpol_pvt/components/susessful.dart';
+// import 'package:muserpol_pvt/screens/list_services_menu/pages_enrolled/enrolled_page.dart';
 import 'package:muserpol_pvt/screens/list_services_menu/sevice_loader_complement.dart';
+import 'package:muserpol_pvt/screens/modal_enrolled/modal.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -60,11 +64,14 @@ class _ScreenListServiceState extends State<ScreenListService> {
     }
 
     if (userBloc?.belongsToEconomicComplement == true) {
+      if (!mounted) return;
       await loadGeneralServicesComplementEconomic(context);
+
+      if (!mounted) return;
       await getEconomicComplement(context, current: true);
-      // await getEconomicComplement(context, current: false);
     }
 
+    if (!mounted) return;
     await loadGeneralServices(context);
   }
 
@@ -173,34 +180,54 @@ class _ScreenListServiceState extends State<ScreenListService> {
                   if (userBloc?.belongsToEconomicComplement == true) {
                     // Si tiene acceso, Ingresa a Complemento Economico
                     if (userBloc?.enrolled == false) {
-                      debugPrint("Enviarlo a modal de enrolamiento");
-                      //Se enviara al modal de enrolamiento para que se pueda guardar las fotografias correspoondientes
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              const ScreenEnrolledService(),
-                        ),
-                      );
+                      return showBarModalBottomSheet(
+                          expand: false,
+                          enableDrag: false,
+                          isDismissible: false,
+                          context: context,
+                          builder: (contextModal) => ModalInsideModal(
+                                nextScreen: (message) {
+                                  return showSuccessful(context, message,
+                                      () async {
+                                    Navigator.pop(contextModal);
+                                    _goToModule(0);
+                                  });
+                                },
+                              ));
                     } else {
                       _goToModule(0);
                     }
                   } else {
-                    // Si no tiene acceso, mostrar el modal
                     showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text("Acceso Denegado"),
-                        content: const Text(
-                            "Usted no es beneficiario del Complemento Económico."),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text("Cerrar"),
-                          ),
-                        ],
-                      ),
-                    );
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.warning_amber,
+                                  size: 40,
+                                  color: Colors.amber,
+                                ),
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Usted no es beneficiario, contactarse con la MUSERPOL',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(height: 20),
+                                ButtonComponent(
+                                  text: 'OK',
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                )
+                              ],
+                            ),
+                          );
+                        });
                   }
                 },
               ),
@@ -224,7 +251,38 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 image: 'assets/images/couple.png',
                 title: 'PRE-EVALUACIÓN DE PRÉSTAMOS',
                 description: 'Verifica si puedes acceder a un préstamo.',
-                onPressed: () {}, // A futuro
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.access_alarm,
+                                size: 40,
+                                color: Colors.blueAccent,
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Pronto podra tener habilitada esta opción',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 20),
+                              ButtonComponent(
+                                text: 'OK',
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              )
+                            ],
+                          ),
+                        );
+                      });
+                }, // A futuro
               ),
               SizedBox(height: 20.h),
               // Center(
