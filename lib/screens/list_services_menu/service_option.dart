@@ -18,6 +18,8 @@ class ServiceOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return FadeIn(
       duration: const Duration(milliseconds: 500),
       child: GestureDetector(
@@ -27,6 +29,15 @@ class ServiceOption extends StatelessWidget {
           color: const Color(0xffd9e9e7),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           borderRadius: 16,
+          boxShadow: [
+            BoxShadow(
+                color: isDarkMode
+                    ? Colors.white.withAlpha((0.2 * 255).toInt())
+                    : Colors.black.withAlpha((0.4 * 255).toInt()),
+                blurRadius: 10,
+                spreadRadius: 1,
+                offset: const Offset(0, 4))
+          ],
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -36,7 +47,7 @@ class ServiceOption extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Colors.black, 
+                    color: Colors.black,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -50,7 +61,7 @@ class ServiceOption extends StatelessWidget {
                         description,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.black, 
+                          color: Colors.black,
                         ),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,

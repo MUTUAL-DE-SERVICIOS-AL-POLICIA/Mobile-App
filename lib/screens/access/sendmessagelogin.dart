@@ -11,6 +11,7 @@ import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
+import 'package:muserpol_pvt/main.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
@@ -391,6 +392,8 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     final biometricUserModel = BiometricUserModel(
       affiliateId: json.decode(response.body)['data']['user']['id'],
     );
+    prefs!.setBool('isDoblePerception',
+        json.decode(response.body)['data']['is_doble_perception']);
     if (!mounted) return;
     await authService.writeBiometric(
         context, biometricUserModelToJson(biometricUserModel));

@@ -10,6 +10,7 @@ class ContainerComponent extends StatelessWidget {
   final double borderRadius;
   final BoxBorder? border;
   final List<BoxShadow>? boxShadow;
+  final BoxDecoration? decoration;
 
   const ContainerComponent({
     super.key,
@@ -22,6 +23,7 @@ class ContainerComponent extends StatelessWidget {
     this.borderRadius = 8.0,
     this.border,
     this.boxShadow,
+    this.decoration,
   });
 
   @override

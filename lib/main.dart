@@ -47,6 +47,7 @@ void main() async {
   //recupera tema guardado oscuro o claro
   WidgetsFlutterBinding.ensureInitialized();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
+  //variable global que guardara los estados si tiene doble percepcion
   prefs = await SharedPreferences.getInstance();
   //inicializa firebase
   await Firebase.initializeApp(

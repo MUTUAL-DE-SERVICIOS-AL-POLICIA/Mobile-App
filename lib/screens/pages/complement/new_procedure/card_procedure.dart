@@ -242,15 +242,14 @@ class _StepperProcedureState extends State<StepperProcedure> {
         child: DialogTwoAction(
           message: '¿DESEAS SALIR DEL PROCESO?',
           actionCorrect: () {
-            Navigator.pop(context, true); // ✅ devuelve true
+            Navigator.pop(context, true);
           },
           messageCorrect: 'Salir',
         ),
       ),
     );
 
-    return result ??
-        false; // fallback por si alguien cierra el diálogo sin elegir
+    return result ?? false;
   }
 
   initCtrlLive() async {
@@ -322,6 +321,7 @@ class _StepperProcedureState extends State<StepperProcedure> {
   }
 
   confirmDoblePercetionAlert() async {
+    debugPrint("doble persepcion");
     final loadingState = Provider.of<LoadingState>(context, listen: false);
     return await showDialog(
         barrierDismissible: false,

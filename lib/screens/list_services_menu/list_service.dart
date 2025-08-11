@@ -37,7 +37,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
   final GlobalKey keyComplemento = GlobalKey();
   final GlobalKey keyAportes = GlobalKey();
   final GlobalKey keyPrestamos = GlobalKey();
-  final GlobalKey keyPreEvaluacion = GlobalKey();
 
   late TutorialCoachMark tutorialCoachMark;
 
@@ -82,7 +81,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
         keyComplemento: keyComplemento,
         keyAportes: keyAportes,
         keyPrestamos: keyPrestamos,
-        keyPreEvaluacion: keyPreEvaluacion,
       ),
       colorShadow: const Color(0xff419388),
       textSkip: "OMITIR",
@@ -167,7 +165,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
               //Servicio unico para los beneficiarios -> COMPLEMENTO ECONOMICO
               ServiceOption(
                 key: keyComplemento,
-                image: 'assets/images/couple.png',
+                image: 'assets/images/icon_complement_economic.png',
                 title: 'COMPLEMENTO ECONÓMICO',
                 description:
                     'Creación e Historial de trámites de Complemento Económico.',
@@ -234,55 +232,17 @@ class _ScreenListServiceState extends State<ScreenListService> {
 
               ServiceOption(
                 key: keyAportes,
-                image: 'assets/images/computer.png',
+                image: 'assets/images/icon_contributions.png',
                 title: 'APORTES',
                 description: 'Consulta de aportes individuales.',
                 onPressed: () => _goToModule(1),
               ),
               ServiceOption(
                 key: keyPrestamos,
-                image: 'assets/images/computer.png',
+                image: 'assets/images/icon_loans.png',
                 title: 'PRÉSTAMOS',
                 description: 'Consulta de historial de préstamos.',
                 onPressed: () => _goToModule(2),
-              ),
-              ServiceOption(
-                key: keyPreEvaluacion,
-                image: 'assets/images/couple.png',
-                title: 'PRE-EVALUACIÓN DE PRÉSTAMOS',
-                description: 'Verifica si puedes acceder a un préstamo.',
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.access_alarm,
-                                size: 40,
-                                color: Colors.blueAccent,
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Pronto podra tener habilitada esta opción',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 20),
-                              ButtonComponent(
-                                text: 'OK',
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              )
-                            ],
-                          ),
-                        );
-                      });
-                }, // A futuro
               ),
               SizedBox(height: 20.h),
               // Center(
