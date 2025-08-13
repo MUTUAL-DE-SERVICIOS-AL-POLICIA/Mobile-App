@@ -32,6 +32,7 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       centerTitle: true,
+      elevation: 4, // intensidad de la sombra (sube o baja el valor)
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -88,6 +89,13 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         badgeNotification(context, notificationBloc),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1.0),
+        child: Container(
+          color: Colors.grey.shade300,
+          height: 1.0,
+        ),
+      ),
     );
   }
 

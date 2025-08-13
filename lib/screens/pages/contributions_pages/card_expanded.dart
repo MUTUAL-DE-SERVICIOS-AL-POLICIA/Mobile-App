@@ -25,7 +25,7 @@ class _CardExpandedState extends State<CardExpanded> {
         Navigator.pop(context);
       },
       child: Scaffold(
-        backgroundColor: Colors.transparent.withOpacity(0.5),
+        backgroundColor: Colors.transparent.withValues(alpha: 0.5),
         body: GestureDetector(
           child: Center(
             child: Hero(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,7 +16,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
-import 'package:muserpol_pvt/components/animate.dart';
+
 import 'package:muserpol_pvt/screens/navigation_general_pages.dart';
 import 'package:muserpol_pvt/screens/pages/menu.dart';
 import 'package:muserpol_pvt/components/header_muserpol.dart';
@@ -38,7 +39,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
   final GlobalKey keyAportes = GlobalKey();
   final GlobalKey keyPrestamos = GlobalKey();
 
-  late TutorialCoachMark tutorialCoachMark;
+  TutorialCoachMark? tutorialCoachMark;
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
     _loadInitialData();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.showTutorial) {
+      if (widget.showTutorial && mounted) {
         _showTutorial();
       }
     });
@@ -65,8 +66,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
     if (userBloc?.belongsToEconomicComplement == true) {
       if (!mounted) return;
       await loadGeneralServicesComplementEconomic(context);
-
-      if (!mounted) return;
       await getEconomicComplement(context, current: true);
     }
 
@@ -75,6 +74,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
   }
 
   void _showTutorial() {
+    if (!mounted) return;
     tutorialCoachMark = TutorialCoachMark(
       targets: getTutorialTargets(
         keyMenuButton: keyMenuButton,
@@ -94,16 +94,17 @@ class _ScreenListServiceState extends State<ScreenListService> {
     )..show(context: context);
   }
 
-  void _goToModule(int index) async {
-    if (index == 0) {
-      final userBloc =
-          BlocProvider.of<UserBloc>(context, listen: false).state.user;
-
-      if (userBloc?.enrolled == false) {
-        // Logica le pedira las fotos para enrolarse
-        // Redirigir a una
+  void _closeTutorialIfActive() {
+    if (tutorialCoachMark != null && tutorialCoachMark!.isShowing) {
+      try {
+        tutorialCoachMark!.skip();
+      } catch (e) {
+        debugPrint("Error cerrando tutorial: $e");
       }
     }
+  }
+
+  void _goToModule(int index) async {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -112,19 +113,23 @@ class _ScreenListServiceState extends State<ScreenListService> {
     );
   }
 
-  Future<bool> _onBackPressed() async {
-    return await showDialog(
+  _onBackPressed() async {
+    return await showDialog<bool>(
       barrierDismissible: false,
       context: context,
-      builder: (_) => ComponentAnimate(
-        child: DialogTwoAction(
-          message: '¿Estás seguro de salir de la aplicación MUSERPOL PVT?',
-          actionCorrect: () =>
-              SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
-          messageCorrect: 'Salir',
-        ),
+      builder: (_) => DialogTwoAction(
+        message: '¿Estás seguro de salir de la aplicación MUSERPOL PVT?',
+        actionCorrect: () => Navigator.of(context).pop(true),
+        actionCancel: () => Navigator.of(context).pop(false),
+        messageCorrect: 'Salir',
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _closeTutorialIfActive();
+    super.dispose();
   }
 
   @override
@@ -139,9 +144,24 @@ class _ScreenListServiceState extends State<ScreenListService> {
       child: Scaffold(
         appBar: AppBarDualTitle(keyMenuButton: keyMenuButton),
         drawer: const MenuDrawer(),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
+        body: CustomMaterialIndicator(
+          onRefresh: () async {
+            await _loadInitialData();
+            await Future.delayed(const Duration(seconds: 2));
+          },
+          backgroundColor: const Color(0xff419388),
+          indicatorBuilder: (context, controller) {
+            return const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 3,
+              ),
+            );
+          },
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -160,9 +180,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 ),
               ),
               SizedBox(height: 20.h),
-              //Llama la lista de servicios al afiliado
-              //Existiran 3 servicios generales -> APORTES, PRESTAMOS, PRE-EVALUACION
-              //Servicio unico para los beneficiarios -> COMPLEMENTO ECONOMICO
               ServiceOption(
                 key: keyComplemento,
                 image: 'assets/images/icon_complement_economic.png',
@@ -229,7 +246,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
                   }
                 },
               ),
-
               ServiceOption(
                 key: keyAportes,
                 image: 'assets/images/icon_contributions.png',
@@ -245,17 +261,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 onPressed: () => _goToModule(2),
               ),
               SizedBox(height: 20.h),
-              // Center(
-              //   child: Text(
-              //     'Versión ${dotenv.env['version']}',
-              //     style: TextStyle(
-              //       fontSize: 12.sp,
-              //       color: Theme.of(context).brightness == Brightness.dark
-              //           ? Colors.white
-              //           : const Color.fromARGB(255, 0, 0, 0),
-              //     ),
-              //   ),
-              // ),
               Center(
                 child: Text(
                   'Versión 4.0.1',

@@ -65,7 +65,6 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
       _availableCameras = await availableCameras();
 
       if (_availableCameras == null || _availableCameras!.isEmpty) {
-        debugPrint('No se encontraron cámaras disponibles.');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('No se encontraron cámaras disponibles.')));
@@ -81,8 +80,6 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
       if (frontCameras.isNotEmpty) {
         newDescription = frontCameras.first;
       } else {
-        debugPrint(
-            'No se encontró cámara frontal, usando la primera disponible.');
         newDescription = _availableCameras!.first;
       }
 

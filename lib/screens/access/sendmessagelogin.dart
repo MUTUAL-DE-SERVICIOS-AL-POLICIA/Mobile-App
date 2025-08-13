@@ -77,211 +77,209 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   @override
   Widget build(BuildContext context) {
     var numbercell = widget.body['cellphone'];
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top,
-            ),
-            child: IntrinsicHeight(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Image.asset(
-                      AdaptiveTheme.of(context).mode.isDark
-                          ? 'assets/images/muserpol-logo.png'
-                          : 'assets/images/muserpol-logo2.png',
-                      width: 200.w,
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Column(
+    return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          await backAcction();
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Center(
-                      //   child: SizedBox(
-                      //     width: 90.w,
-                      //     height: 190.h,
-                      //     child: ClipRRect(
-                      //       child: Image.asset(
-                      //         'assets/images/sendmesagge.png',
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      SizedBox(height: 10.h),
-                      Text(
-                        'Verificación de Codigo',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.sp,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                      ),
-                      SizedBox(height: 10.h),
                       Center(
-                        child: Text(
-                          'Esperando para detectar automáticamente el SMS\nenviado al +591 $numbercell',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black,
-                          ),
+                        child: Image.asset(
+                          AdaptiveTheme.of(context).mode.isDark
+                              ? 'assets/images/muserpol-logo.png'
+                              : 'assets/images/muserpol-logo2.png',
+                          width: 200.w,
                         ),
                       ),
-
-                      SizedBox(height: 20.h),
-                      PinCodeTextField(
-                        appContext: context,
-                        length: 4,
-                        onChanged: (value) {},
-                        onCompleted: (value) => node.nextFocus(),
-                        controller: codeCtrl,
-                        focusNode: node,
-                        autoDisposeControllers: false,
-                        keyboardType: TextInputType.number,
-                        cursorColor: Colors.transparent,
-                        pinTheme: PinTheme(
-                          inactiveColor: const Color(0xff419388),
-                          activeColor:
-                              Theme.of(context).brightness == Brightness.dark
+                      SizedBox(height: 10.h),
+                      Column(
+                        children: [
+                          SizedBox(height: 10.h),
+                          Text(
+                            'Verificación de Codigo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20.sp,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
                                   ? Colors.white
                                   : Colors.black,
-                          selectedColor: const Color(0xff419388),
-                          selectedFillColor: const Color(0xff419388),
-                          inactiveFillColor: Colors.transparent,
-                          shape: PinCodeFieldShape.box,
-                          borderRadius: BorderRadius.circular(5),
-                          activeFillColor: AdaptiveTheme.of(context)
-                              .theme
-                              .scaffoldBackgroundColor,
-                          fieldHeight: 60,
-                          fieldWidth: 60,
-                        ),
-                        animationDuration: const Duration(milliseconds: 300),
-                        enableActiveFill: true,
-                      ),
-                      SizedBox(height: 10.h),
-                      Center(
-                        child: SizedBox(
-                          width: 90.w,
-                          height: 190.h,
-                          child: ClipRRect(
-                            child: Image.asset(
-                              'assets/images/sendmesagge.png',
                             ),
                           ),
-                        ),
-                      ),
-                      SizedBox(height: 10.h),
-                      ButtonComponent(
-                        text: 'VERIFICAR',
-                        onPressed: () {
-                          final code = codeCtrl.text;
-                          if (code.length == 4) {
-                            verifyPinNew(code);
-                          } else {
-                            showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.warning_amber,
-                                          size: 40,
-                                          color: Colors.amber,
+                          SizedBox(height: 10.h),
+                          Center(
+                            child: Text(
+                              'Esperando para detectar automáticamente el SMS\nenviado al +591 $numbercell',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: 20.h),
+                          PinCodeTextField(
+                            appContext: context,
+                            length: 4,
+                            onChanged: (value) {},
+                            onCompleted: (value) => node.nextFocus(),
+                            controller: codeCtrl,
+                            focusNode: node,
+                            autoDisposeControllers: false,
+                            keyboardType: TextInputType.number,
+                            cursorColor: Colors.transparent,
+                            pinTheme: PinTheme(
+                              inactiveColor: const Color(0xff419388),
+                              activeColor: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                              selectedColor: const Color(0xff419388),
+                              selectedFillColor: const Color(0xff419388),
+                              inactiveFillColor: Colors.transparent,
+                              shape: PinCodeFieldShape.box,
+                              borderRadius: BorderRadius.circular(5),
+                              activeFillColor: AdaptiveTheme.of(context)
+                                  .theme
+                                  .scaffoldBackgroundColor,
+                              fieldHeight: 60,
+                              fieldWidth: 60,
+                            ),
+                            animationDuration:
+                                const Duration(milliseconds: 300),
+                            enableActiveFill: true,
+                          ),
+                          SizedBox(height: 10.h),
+                          Center(
+                            child: SizedBox(
+                              width: 90.w,
+                              height: 190.h,
+                              child: ClipRRect(
+                                child: Image.asset(
+                                  'assets/images/sendmesagge.png',
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          ButtonComponent(
+                            text: 'VERIFICAR',
+                            onPressed: () {
+                              final code = codeCtrl.text;
+                              if (code.length == 4) {
+                                verifyPinNew(code);
+                              } else {
+                                showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.warning_amber,
+                                              size: 40,
+                                              color: Colors.amber,
+                                            ),
+                                            const SizedBox(height: 20),
+                                            const Text(
+                                              'Introduzca el pin de 4 digitos',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                            const SizedBox(height: 20),
+                                            ButtonComponent(
+                                              text: 'CERRAR',
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                            )
+                                          ],
                                         ),
-                                        const SizedBox(height: 20),
-                                        const Text(
-                                          'Introduzca el pin de 4 digitos',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        ButtonComponent(
-                                          text: 'CERRAR',
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                        )
-                                      ],
-                                    ),
-                                  );
-                                });
-                          }
-                        },
-                      ),
-                      SizedBox(height: 10.h),
-                      ButtonComponent(
-                        text: 'REENVIAR CÓDIGO',
-                        onPressed: canResend
-                            ? () {
-                                // Aquí llamás a la función para reenviar el SMS
-                                startCountdown(); // reinicia cronómetro
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Código reenviado'),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
+                                      );
+                                    });
                               }
-                            : null, // deshabilitado si no puede reenviar
-                      ),
-                      Text(
-                        canResend
-                            ? '¿No recibiste el código?'
-                            : 'Reintentar en ${remainingSeconds ~/ 60}:${(remainingSeconds % 60).toString().padLeft(2, '0')}',
-                        style: TextStyle(fontSize: 14.sp, color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 6.h),
-                      SizedBox(
-                        height: 10.h,
-                      ),
-                      // Center(
-                      //     child: Text(
-                      //   'Versión ${dotenv.env['version']}',
-                      //   style: TextStyle(
-                      //     fontSize: 12.sp,
-                      //     color: Theme.of(context).brightness ==
-                      //             Brightness.dark
-                      //         ? const Color.fromARGB(255, 255, 255, 255)
-                      //         : const Color(0xff419388),
-                      //   ),
-                      // ))
-                      Center(
-                        child: Text(
-                          'Version 4.0.1',
-                          style: TextStyle(
-                            fontSize: 12.sp, // Responsivo
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
+                            },
+                          ),
+                          SizedBox(height: 10.h),
+                          ButtonComponent(
+                            text: 'REENVIAR CÓDIGO',
+                            onPressed: canResend
+                                ? () {
+                                    // Aquí llamás a la función para reenviar el SMS
+                                    startCountdown(); // reinicia cronómetro
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Código reenviado'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                : null, // deshabilitado si no puede reenviar
+                          ),
+                          Text(
+                            canResend
+                                ? '¿No recibiste el código?'
+                                : 'Reintentar en ${remainingSeconds ~/ 60}:${(remainingSeconds % 60).toString().padLeft(2, '0')}',
+                            style:
+                                TextStyle(fontSize: 14.sp, color: Colors.grey),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 6.h),
+                          SizedBox(
+                            height: 10.h,
+                          ),
+                          // Center(
+                          //     child: Text(
+                          //   'Versión ${dotenv.env['version']}',
+                          //   style: TextStyle(
+                          //     fontSize: 12.sp,
+                          //     color: Theme.of(context).brightness ==
+                          //             Brightness.dark
+                          //         ? const Color.fromARGB(255, 255, 255, 255)
+                          //         : const Color(0xff419388),
+                          //   ),
+                          // ))
+                          Center(
+                            child: Text(
+                              'Version 4.0.1',
+                              style: TextStyle(
+                                fontSize: 12.sp, // Responsivo
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? const Color.fromARGB(255, 255, 255, 255)
                                     : const Color.fromARGB(255, 0, 0, 0),
-                          ),
-                        ),
-                      )
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   Future<bool> backAcction() async {

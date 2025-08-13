@@ -86,9 +86,39 @@ Future<dynamic> serviceMethod(
                 return value;
               default:
                 if (errorState) {
-                  return confirmDeleteSession(mounted, context, false);
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext dialogContext) {
+                      return AlertDialog(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.warning_amber,
+                              size: 40,
+                              color: Colors.amber,
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Tenemos problemas, vuelva a iniciar sesión en su dispositivo',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 20),
+                            ButtonComponent(
+                              text: 'CERRAR SESIÓN',
+                              onPressed: () {
+                                confirmDeleteSession(mounted, context, false);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                  return null; 
                 }
-                return null;
             }
           }).catchError((err) {
             // Manejo de errores de red
@@ -126,6 +156,7 @@ Future<dynamic> serviceMethod(
             return null;
           });
 
+        //Estos dos case son los que menos se usan ya que no se actualizar la informacion e iguakemte no se elinina desde la app
         case 'delete':
           return await http
               .delete(url, headers: headers)
@@ -175,14 +206,17 @@ Future<dynamic> serviceMethod(
   } on SocketException catch (e) {
     debugPrint('errC $e');
     if (!mounted) return;
+    //Sin conexion fisica a internet
     return callDialogAction(context, 'Verifique su conexión a Internet2');
   } on ClientException catch (e) {
     debugPrint('errD $e');
     if (!mounted) return;
+    //Problema en la peticion HTTP o SSL
     return callDialogAction(context, 'Verifique su conexión a Internet3');
   } on MissingPluginException catch (e) {
     debugPrint('errF $e');
     if (!mounted) return;
+    //Falta un plugin nativo requerido
     return callDialogAction(context, 'Verifique su conexión a Internet4');
   } catch (e) {
     debugPrint('errG $e');
@@ -347,6 +381,7 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
     }
   } on SocketException catch (e) {
     debugPrint('errC $e');
+    //Sin conexion al hacer lookup en checkVersion
     callDialogAction(context, 'Verifique su conexión a Internet5');
     return false;
   } catch (e) {
