@@ -8,7 +8,11 @@ class ButtonComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
   final bool stateLoading;
-  const ButtonComponent({super.key, required this.text, required this.onPressed, this.stateLoading = false});
+  const ButtonComponent(
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      this.stateLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +45,12 @@ class ButtonIconComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
   final bool stateLoading;
-  const ButtonIconComponent({super.key, required this.icon, required this.text, required this.onPressed, this.stateLoading = false});
+  const ButtonIconComponent(
+      {super.key,
+      required this.icon,
+      required this.text,
+      required this.onPressed,
+      this.stateLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +91,8 @@ class ButtonIconComponent extends StatelessWidget {
 class ButtonWhiteComponent extends StatelessWidget {
   final String text;
   final Function()? onPressed;
-  const ButtonWhiteComponent({super.key, required this.text, required this.onPressed});
+  const ButtonWhiteComponent(
+      {super.key, required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +116,13 @@ class ButtonDate extends StatelessWidget {
   final FontWeight? fontWeight;
   final bool iconState;
   final Function() onPressed;
-  const ButtonDate({super.key, required this.text, required this.onPressed, this.iconState = false, this.colorText, this.fontWeight});
+  const ButtonDate(
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      this.iconState = false,
+      this.colorText,
+      this.fontWeight});
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +153,12 @@ class IconBtnComponent extends StatelessWidget {
   final String iconText;
   final Color? iconColor;
   final double? iconSize;
-  const IconBtnComponent({super.key, required this.onPressed, required this.iconText, this.iconColor, this.iconSize = 30});
+  const IconBtnComponent(
+      {super.key,
+      required this.onPressed,
+      required this.iconText,
+      this.iconColor,
+      this.iconSize = 30});
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +183,8 @@ class IconBtnComponent extends StatelessWidget {
 class Buttontoltip extends StatelessWidget {
   final JustTheController tooltipController;
   final Function(bool) onPressed;
-  const Buttontoltip({super.key, required this.tooltipController, required this.onPressed});
+  const Buttontoltip(
+      {super.key, required this.tooltipController, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -186,8 +208,10 @@ class Buttontoltip extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ButtonWhiteComponent(text: 'SI', onPressed: () => onPressed(true)),
-                        ButtonWhiteComponent(text: 'NO', onPressed: () => onPressed(false)),
+                        ButtonWhiteComponent(
+                            text: 'SI', onPressed: () => onPressed(true)),
+                        ButtonWhiteComponent(
+                            text: 'NO', onPressed: () => onPressed(false)),
                       ],
                     )
                   ],
@@ -210,7 +234,8 @@ class Buttontoltip extends StatelessWidget {
 class NumberComponent extends StatelessWidget {
   final String text;
   final bool iconColor;
-  const NumberComponent({super.key, required this.text, required this.iconColor});
+  const NumberComponent(
+      {super.key, required this.text, required this.iconColor});
 
   @override
   Widget build(BuildContext context) {

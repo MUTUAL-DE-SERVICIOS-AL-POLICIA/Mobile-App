@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Acceso seguro a la carpeta de descargas -->
+    <external-path
+        name="download_files"
+        path="Download/" />
+
+    <!-- Acceso general para compartir documentos desde almacenamiento externo -->
+    <external-files-path
+        name="documents"
+        path="Documents/" />
+
+    <!-- Acceso a almacenamiento general si necesitas acceder más ampliamente -->
+    <external-path
+        name="external"
+        path="." />
+
+</paths>

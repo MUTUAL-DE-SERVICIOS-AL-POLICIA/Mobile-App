@@ -61,7 +61,7 @@ class SectiontitleSwitchComponent extends StatelessWidget {
         style: TextStyle(fontSize: 15.sp),
       ),
       trailing: CupertinoSwitch(
-        activeColor: AdaptiveTheme.of(context).theme.primaryColor,
+        activeTrackColor: AdaptiveTheme.of(context).theme.primaryColor,
         value: valueSwitch,
         onChanged: onChangedSwitch,
       ),

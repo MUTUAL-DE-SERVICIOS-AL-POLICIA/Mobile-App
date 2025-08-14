@@ -40,47 +40,51 @@ class _PageSliderState extends State<PageSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: () async {
-          return false;
-        },
-        child: Scaffold(
-          body: Stack(
-            children: [
-              LiquidSwipe(
-                pages: liquidPages,
-                positionSlideIcon: 0.8,
-              slideIconWidget: const Icon(Icons.arrow_back_ios,color: Colors.white,),
+    return PopScope(
+      canPop:
+          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            LiquidSwipe(
+              pages: liquidPages,
+              positionSlideIcon: 0.8,
+              slideIconWidget:
+                  const Icon(Icons.arrow_back_ios, color: Colors.white),
               onPageChangeCallback: pageChangeCallback,
               waveType: WaveType.liquidReveal,
               fullTransitionValue: 880,
-              // enableSideReveal: true,
               enableLoop: true,
               ignoreUserGestureWhileAnimating: true,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: <Widget>[
-                    const Expanded(child: SizedBox()),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List<Widget>.generate(liquidPages.length, _buildDot),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showModalInside(),
-            label: const Text(
-              'EMPEZAR',
-              style: TextStyle(color: Colors.white,  fontWeight: FontWeight.w500),
             ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: <Widget>[
+                  const Expanded(child: SizedBox()),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children:
+                        List<Widget>.generate(liquidPages.length, _buildDot),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showModalInside(),
+          label: const Text(
+            'EMPEZAR',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        ));
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ),
+    );
   }
 
   pageChangeCallback(int lpage) {

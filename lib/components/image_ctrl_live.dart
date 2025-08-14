@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
 
@@ -24,6 +23,7 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
   bool? isCameraReady;
   Future<void>? _initializeControllerFuture;
   double mirror = 0;
+
   @override
   void initState() {
     super.initState();
@@ -34,13 +34,12 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    controllerCam!.dispose();
+    controllerCam?.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // App state changed before we got the chance to initialize.
     if (controllerCam == null || !controllerCam!.value.isInitialized) {
       return;
     }
@@ -53,12 +52,48 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
     }
   }
 
+  // Future<void> _getAvailableCameras() async {
+  //   _availableCameras = await availableCameras();
+  //   CameraDescription newDescription;
+  //   newDescription = _availableCameras!.firstWhere((description) =>
+  //       description.lensDirection == CameraLensDirection.front);
+  //   _initCamera(newDescription);
+  // }
+
   Future<void> _getAvailableCameras() async {
-    _availableCameras = await availableCameras();
-    CameraDescription newDescription;
-    newDescription = _availableCameras!.firstWhere((description) =>
-        description.lensDirection == CameraLensDirection.front);
-    _initCamera(newDescription);
+    try {
+      _availableCameras = await availableCameras();
+
+      if (_availableCameras == null || _availableCameras!.isEmpty) {
+        debugPrint('No se encontraron cámaras disponibles.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('No se encontraron cámaras disponibles.')));
+        }
+        return;
+      }
+      CameraDescription newDescription;
+      final frontCameras = _availableCameras!
+          .where((description) =>
+              description.lensDirection == CameraLensDirection.front)
+          .toList();
+
+      if (frontCameras.isNotEmpty) {
+        newDescription = frontCameras.first;
+      } else {
+        debugPrint(
+            'No se encontró cámara frontal, usando la primera disponible.');
+        newDescription = _availableCameras!.first;
+      }
+
+      _initCamera(newDescription);
+    } catch (e) {
+      debugPrint('Error al obtener las cámaras: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al inicializar la cámara.')));
+      }
+    }
   }
 
   Future<void> _initCamera(CameraDescription description) async {
@@ -66,9 +101,7 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
     controllerCam = CameraController(description, ResolutionPreset.high,
         enableAudio: false);
     _initializeControllerFuture = controllerCam!.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       controllerCam!.setFlashMode(FlashMode.off);
       controllerCam!.addListener(() {
         if (mounted) setState(() {});
@@ -108,7 +141,12 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
                 left: 0,
                 child: Transform(
                     alignment: Alignment.center,
-                    transform: Matrix4.rotationY(mirror),
+                    transform: Matrix4.rotationY(controllerCam!
+                                .description.lensDirection ==
+                            CameraLensDirection.front
+                        ? math
+                            .pi // Aplica el espejo solo para la cámara frontal
+                        : 0), // No aplicar nada para la cámara trasera
                     child: CameraPreview(
                       controllerCam!,
                     ))),
@@ -140,7 +178,7 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
             'assets/images/load.gif',
             fit: BoxFit.cover,
             height: 20,
-          )); // Otherwise, display a loading indicator.
+          ));
         }
       },
     );
@@ -159,19 +197,18 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
     try {
       if (userBloc.state.stateBtntoggleCameraLens) {
         userBloc.add(UpdateStateCam(false));
-        final picture = await controllerCam!.takePicture();
-        ImageProperties properties = await FlutterNativeImage.getImageProperties(picture.path);
-        File compressedFile = await FlutterNativeImage.compressImage(
-          picture.path,
-          quality: 70,
-          targetWidth: properties.height! > properties.width! ? 240 : 320,
-          targetHeight: properties.height! > properties.width! ? 320 : 240,
-        );
-        String base64 = base64Encode(compressedFile.readAsBytesSync());
-        widget.sendImage(base64);
+
+        if (controllerCam != null && controllerCam!.value.isInitialized) {
+          final XFile image = await controllerCam!.takePicture();
+          File imageFile = File(image.path);
+
+          // Convertir imagen a Base64
+          String base64 = base64Encode(await imageFile.readAsBytes());
+          widget.sendImage(base64);
+        }
       }
-    } catch (_) {
-      debugPrint('paso paso algo');
+    } catch (e) {
+      debugPrint('Ocurrió un error al capturar la imagen: $e');
     }
   }
 

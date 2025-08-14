@@ -25,7 +25,6 @@ class CheckAuthScreen extends StatelessWidget {
           //verificamos si el usuario está autenticado
           future: authService.readToken(),
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-            
             if (!snapshot.hasData) return const Text('');
             if (snapshot.data == '') {
               Future.microtask(() {
@@ -46,14 +45,22 @@ class CheckAuthScreen extends StatelessWidget {
   goFirstInto(BuildContext context) async {
     final authService = Provider.of<AuthService>(context, listen: false);
     if (await authService.readFirstTime() == '') {
+      if (!context.mounted) return;
       Future.microtask(() {
         Navigator.pushReplacement(
-            context, PageRouteBuilder(pageBuilder: (_, __, ___) => const PageSlider(), transitionDuration: const Duration(seconds: 0)));
+            context,
+            PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const PageSlider(),
+                transitionDuration: const Duration(seconds: 0)));
       });
     } else {
+      if (!context.mounted) return;
       Future.microtask(() {
         Navigator.pushReplacement(
-            context, PageRouteBuilder(pageBuilder: (_, __, ___) => const ScreenSwitch(), transitionDuration: const Duration(seconds: 0)));
+            context,
+            PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const ScreenSwitch(),
+                transitionDuration: const Duration(seconds: 0)));
       });
     }
   }
@@ -67,10 +74,13 @@ class CheckAuthScreen extends StatelessWidget {
       debugPrint('no hay usuario');
       return Future.microtask(() {
         Navigator.pushReplacement(
-            context, PageRouteBuilder(pageBuilder: (_, __, ___) => const ScreenSwitch(), transitionDuration: const Duration(seconds: 0)));
+            context,
+            PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const ScreenSwitch(),
+                transitionDuration: const Duration(seconds: 0)));
       });
     }
-    
+
     await getNotifications(notificationBloc);
     UserModel user = userModelFromJson(await authService.readUser());
     userBloc.add(UpdateUser(user.user!));
@@ -79,12 +89,20 @@ class CheckAuthScreen extends StatelessWidget {
       Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-              pageBuilder: (_, __, ___) => NavigatorBar(tutorial: false, stateApp: stateApp=='complement'?StateAplication.complement:StateAplication.virtualOficine), transitionDuration: const Duration(seconds: 0)));
+              pageBuilder: (_, __, ___) => NavigatorBar(
+                  tutorial: false,
+                  stateApp: stateApp == 'complement'
+                      ? StateAplication.complement
+                      : StateAplication.virtualOficine),
+              transitionDuration: const Duration(seconds: 0)));
     });
   }
 
   getNotifications(NotificationBloc notificationBloc) async {
-    await DBProvider.db.getAllNotificationModel().then((res) => notificationBloc.add(UpdateNotifications(res)));
-    await DBProvider.db.getAllAffiliateModel().then((res) => notificationBloc.add(UpdateAffiliateId(res[0].idAffiliate)));
+    await DBProvider.db
+        .getAllNotificationModel()
+        .then((res) => notificationBloc.add(UpdateNotifications(res)));
+    await DBProvider.db.getAllAffiliateModel().then(
+        (res) => notificationBloc.add(UpdateAffiliateId(res[0].idAffiliate)));
   }
 }
