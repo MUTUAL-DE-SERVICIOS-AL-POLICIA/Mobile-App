@@ -34,21 +34,28 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
 
 SharedPreferences? prefs;
 void main() async {
+  //carga las variales de entorno
   await dotenv.load(fileName: ".env");
+  //recupera tema guardado oscuro o claro
   WidgetsFlutterBinding.ensureInitialized();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
   prefs = await SharedPreferences.getInstance();
+  //inicializa firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  //inicializa las notificaciones
   PushNotificationService.initializeapp();
   HttpOverrides.global = MyHttpOverrides();
+  //Arranca la app
   runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 
@@ -62,6 +69,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    // Proporciona múltiples BLoCs a toda la app (gestión del estado por eventos).
     return MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => UserBloc()),
@@ -80,11 +88,14 @@ class MyApp extends StatelessWidget {
               ChangeNotifierProvider(create: (_) => TabProcedureState()),
               ChangeNotifierProvider(create: (_) => ProcessingState()),
             ],
+            // Inicializa utilidades para diseño adaptable en distintos tamaños de pantalla
             child: ScreenUtilInit(
                 designSize: const Size(360, 690),
                 minTextAdapt: true,
                 splitScreenMode: true,
-                builder: (context, child) => Muserpol(savedThemeMode: savedThemeMode))));
+                // Carga el widget principal de la app: 'Muserpol'
+                builder: (context, child) =>
+                    Muserpol(savedThemeMode: savedThemeMode))));
   }
 }
 
@@ -98,7 +109,8 @@ class Muserpol extends StatefulWidget {
 
 class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  final GlobalKey<ScaffoldMessengerState> messengerKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> messengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   @override
   didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -130,40 +142,42 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
   _updatebd() {
     Future.delayed(Duration.zero, () {
       final notificationBloc = BlocProvider.of<NotificationBloc>(context);
-      DBProvider.db.getAllNotificationModel().then((res) => notificationBloc.add(UpdateNotifications(res)));
+      DBProvider.db
+          .getAllNotificationModel()
+          .then((res) => notificationBloc.add(UpdateNotifications(res)));
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveTheme(
-      light: styleLigth(),
-      dark: styleDark(),
-      debugShowFloatingThemeButton: true,
-      initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
-      builder: (theme, darkTheme) => MaterialApp(
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('es', 'ES'), // Spanish
-          Locale('en', 'US'), // English
-        ],
-        debugShowCheckedModeBanner: true,
-        navigatorKey: navigatorKey,
-        theme: theme,
-        darkTheme: darkTheme,
-        title: 'MUSERPOL PVT',
-        initialRoute: 'check_auth',
-        routes: {
-          'check_auth': (_) => const CheckAuthScreen(),
-          'slider': (_) => const PageSlider(),
-          'switch': (_) => const ScreenSwitch(),
-          'forgot': (_) => const ForgotPwd(),
-          'contacts': (_) => const ScreenContact(),
-          'message': (_) => const ScreenNotification()
-        }));
+        light: styleLigth(),
+        dark: styleDark(),
+        debugShowFloatingThemeButton: false,
+        initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
+        builder: (theme, darkTheme) => MaterialApp(
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('es', 'ES'), // Spanish
+              Locale('en', 'US'), // English
+            ],
+            debugShowCheckedModeBanner: false,
+            navigatorKey: navigatorKey,
+            theme: theme,
+            darkTheme: darkTheme,
+            title: 'MUSERPOL PVT',
+            initialRoute: 'check_auth',
+            routes: {
+              'check_auth': (_) => const CheckAuthScreen(),
+              'slider': (_) => const PageSlider(),
+              'switch': (_) => const ScreenSwitch(),
+              'forgot': (_) => const ForgotPwd(),
+              'contacts': (_) => const ScreenContact(),
+              'message': (_) => const ScreenNotification()
+            }));
   }
 }

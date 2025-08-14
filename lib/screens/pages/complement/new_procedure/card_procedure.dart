@@ -69,108 +69,138 @@ class _StepperProcedureState extends State<StepperProcedure> {
     final filesState = Provider.of<FilesState>(context, listen: true);
     final userBloc =
         BlocProvider.of<UserBloc>(context, listen: true).state.user;
-    final tabProcedureState = Provider.of<TabProcedureState>(context, listen: true);
-    return WillPopScope(
-        onWillPop: _onBackPressed,
-        child: Scaffold(
-          body: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 15, 10, 0),
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  const HedersComponent(title: 'Nuevo trámite'),
-                  Expanded(
-                    child: Stepper(
-                      onStepTapped: (step) => tapped(step),
-                      type: stepperType,
-                      physics: const ScrollPhysics(),
-                      currentStep: tabProcedureState.indexTabProcedure,
-                      onStepContinue: nextPage,
-                      controlsBuilder:
-                          (BuildContext context, ControlsDetails details) {
-                        return tabProcedureState.indexTabProcedure > 0
-                            ? buttonStep(context, details)
-                            : Container();
-                      },
-                      steps: <Step>[
-                        Step(
-                          title: Text('Control de vivencia',
-                              style: TextStyle(
-                                color: AdaptiveTheme.of(context).theme.primaryColorDark
-                                      )),
-                          content: Stack(
-                            children: <Widget>[
-                              GestureDetector(
-                                  onTap: () => initCtrlLive(),
-                                  child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: Image.asset(
-                                        'assets/images/face.png',
-                                        fit: BoxFit.cover,
-                                        gaplessPlayback: true,
-                                        width: 200,
-                                        height: 200,
-                                      ))),
-                              Positioned(
-                                  bottom: 2,
-                                  right: 0,
-                                  child: IconBtnComponent(
-                                      iconText: 'assets/icons/camera.svg',
-                                      onPressed: () => initCtrlLive()))
-                            ],
+    final tabProcedureState =
+        Provider.of<TabProcedureState>(context, listen: true);
+    return PopScope(
+      canPop:
+          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        bool exitScreen = await _onBackPressed();
+        if (exitScreen) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 15, 10, 0),
+          child: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                const HedersComponent(title: 'Nuevo trámite'),
+                Expanded(
+                  child: Stepper(
+                    onStepTapped: (step) => tapped(step),
+                    type: stepperType,
+                    physics: const ScrollPhysics(),
+                    currentStep: tabProcedureState.indexTabProcedure,
+                    onStepContinue: nextPage,
+                    controlsBuilder:
+                        (BuildContext context, ControlsDetails details) {
+                      return tabProcedureState.indexTabProcedure > 0
+                          ? buttonStep(context, details)
+                          : Container();
+                    },
+                    steps: <Step>[
+                      Step(
+                        title: Text(
+                          'Control de vivencia',
+                          style: TextStyle(
+                            color: AdaptiveTheme.of(context)
+                                .theme
+                                .primaryColorDark,
                           ),
-                          isActive: tabProcedureState.indexTabProcedure >= 0,
-                          state: tabProcedureState.indexTabProcedure >= 0
-                              ? StepState.complete
-                              : StepState.disabled,
                         ),
-                        if (!userBloc!.verified!)
-                          for (var item in filesState.files)
-                            Step(
-                              title: Text('Documento:',
-                                  style: TextStyle(
-                                      color: AdaptiveTheme.of(context).theme.primaryColorDark
-                                          )),
-                              subtitle: Text(item.title!,
-                                  style: TextStyle(
-                                      color: AdaptiveTheme.of(context).theme.primaryColorDark
-                                          )),
-                              content: ImageInput(
-                                sizeImage: 250,
-                                onPressed: (img, file) =>
-                                    detectorText(img, file, item),
-                                itemFile: item,
+                        content: Stack(
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () => initCtrlLive(),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.asset(
+                                  'assets/images/face.png',
+                                  fit: BoxFit.cover,
+                                  gaplessPlayback: true,
+                                  width: 200,
+                                  height: 200,
+                                ),
                               ),
-                              isActive: tabProcedureState.indexTabProcedure >= 0,
-                              state: userBloc.verified!
-                                  ? StepState.complete
-                                  : item.imageFile != null
-                                      ? StepState.complete
-                                      : StepState.disabled,
                             ),
-                        Step(
-                          title: Text('Mis datos',
-                              style: TextStyle(
-                                  color: AdaptiveTheme.of(context).theme.primaryColorDark
-                                      )),
-                          content: TabInfoEconomicComplement(
-                            onEditingComplete: () => nextPage(),
-                            phoneCtrl: phoneCtrl,
-                          ),
-                          isActive: tabProcedureState.indexTabProcedure >= 0,
-                          state: tabProcedureState.indexTabProcedure > 2
-                              ? StepState.complete
-                              : StepState.disabled,
+                            Positioned(
+                              bottom: 2,
+                              right: 0,
+                              child: IconBtnComponent(
+                                iconText: 'assets/icons/camera.svg',
+                                onPressed: () => initCtrlLive(),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                        isActive: tabProcedureState.indexTabProcedure >= 0,
+                        state: tabProcedureState.indexTabProcedure >= 0
+                            ? StepState.complete
+                            : StepState.disabled,
+                      ),
+                      if (!userBloc!.verified!)
+                        for (var item in filesState.files)
+                          Step(
+                            title: Text(
+                              'Documento:',
+                              style: TextStyle(
+                                color: AdaptiveTheme.of(context)
+                                    .theme
+                                    .primaryColorDark,
+                              ),
+                            ),
+                            subtitle: Text(
+                              item.title!,
+                              style: TextStyle(
+                                color: AdaptiveTheme.of(context)
+                                    .theme
+                                    .primaryColorDark,
+                              ),
+                            ),
+                            content: ImageInput(
+                              sizeImage: 250,
+                              onPressed: (img, file) =>
+                                  detectorText(img, file, item),
+                              itemFile: item,
+                            ),
+                            isActive: tabProcedureState.indexTabProcedure >= 0,
+                            state: userBloc.verified!
+                                ? StepState.complete
+                                : item.imageFile != null
+                                    ? StepState.complete
+                                    : StepState.disabled,
+                          ),
+                      Step(
+                        title: Text(
+                          'Mis datos',
+                          style: TextStyle(
+                            color: AdaptiveTheme.of(context)
+                                .theme
+                                .primaryColorDark,
+                          ),
+                        ),
+                        content: TabInfoEconomicComplement(
+                          onEditingComplete: () => nextPage(),
+                          phoneCtrl: phoneCtrl,
+                        ),
+                        isActive: tabProcedureState.indexTabProcedure >= 0,
+                        state: tabProcedureState.indexTabProcedure > 2
+                            ? StepState.complete
+                            : StepState.disabled,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   Widget buttonStep(BuildContext context, ControlsDetails details) {
@@ -196,7 +226,8 @@ class _StepperProcedureState extends State<StepperProcedure> {
   tapped(int step) async {
     if (step == 0) return;
     final loadingState = Provider.of<LoadingState>(context, listen: false);
-    final tabProcedureState = Provider.of<TabProcedureState>(context, listen: false);
+    final tabProcedureState =
+        Provider.of<TabProcedureState>(context, listen: false);
     if (step <= tabProcedureState.indexTabProcedure) {
       await loadingState.updateStateLoadingProcedure(true);
       await tabProcedureState.updateTabProcedure(step);
@@ -221,7 +252,8 @@ class _StepperProcedureState extends State<StepperProcedure> {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false).state;
     final loadingState = Provider.of<LoadingState>(context, listen: false);
     final filesState = Provider.of<FilesState>(context, listen: false);
-    final tabProcedureState = Provider.of<TabProcedureState>(context, listen: false);
+    final tabProcedureState =
+        Provider.of<TabProcedureState>(context, listen: false);
     return showBarModalBottomSheet(
         enableDrag: false,
         isDismissible: false,
@@ -231,12 +263,15 @@ class _StepperProcedureState extends State<StepperProcedure> {
               return showSuccessful(context, message, () async {
                 if (userBloc.user!.verified!) {
                   await loadingState.updateStateLoadingProcedure(true);
-                  await tabProcedureState.updateTabProcedure(tabProcedureState.indexTabProcedure +
-                      (!userBloc.user!.verified! ? filesState.files.length : 0) +
-                      1);
+                  await tabProcedureState.updateTabProcedure(
+                      tabProcedureState.indexTabProcedure +
+                          (!userBloc.user!.verified!
+                              ? filesState.files.length
+                              : 0) +
+                          1);
                 } else {
-                  await tabProcedureState
-                      .updateTabProcedure(tabProcedureState.indexTabProcedure + 1);
+                  await tabProcedureState.updateTabProcedure(
+                      tabProcedureState.indexTabProcedure + 1);
                 }
                 if (!mounted) return;
                 Navigator.pop(context);
@@ -249,7 +284,8 @@ class _StepperProcedureState extends State<StepperProcedure> {
     final loadingState = Provider.of<LoadingState>(context, listen: false);
     final userBloc =
         BlocProvider.of<UserBloc>(context, listen: false).state.user;
-    final tabProcedureState = Provider.of<TabProcedureState>(context, listen: false);
+    final tabProcedureState =
+        Provider.of<TabProcedureState>(context, listen: false);
     FocusScope.of(context).unfocus();
     if (formKey.currentState!.validate() ||
         tabProcedureState.indexTabProcedure !=
@@ -263,12 +299,14 @@ class _StepperProcedureState extends State<StepperProcedure> {
         }
         return prepareDocuments();
       } else {
-        tabProcedureState.updateTabProcedure(tabProcedureState.indexTabProcedure + 1);
+        tabProcedureState
+            .updateTabProcedure(tabProcedureState.indexTabProcedure + 1);
         if (tabProcedureState.indexTabProcedure ==
             (!userBloc.verified! ? filesState.files.length : 0)) {
           await loadingState.updateStateLoadingProcedure(true);
         } else {
-          if (filesState.files[tabProcedureState.indexTabProcedure].imageFile != null) {
+          if (filesState.files[tabProcedureState.indexTabProcedure].imageFile !=
+              null) {
             await loadingState.updateStateLoadingProcedure(true);
           } else {
             await loadingState.updateStateLoadingProcedure(false);
@@ -303,7 +341,8 @@ class _StepperProcedureState extends State<StepperProcedure> {
     //VERIFICAMOS QUE LA IMAGEN COINCIDA CON LAS PALABRAS CLAVES
     final loadingState = Provider.of<LoadingState>(context, listen: false);
     final filesState = Provider.of<FilesState>(context, listen: false);
-    filesState.updateFile(item.id!, fileImage); //ACTUALIZAMOS LA IMAGEN CAPTURADA
+    filesState.updateFile(
+        item.id!, fileImage); //ACTUALIZAMOS LA IMAGEN CAPTURADA
     final recognizedText = await _textRecognizer
         .processImage(inputImage); //OBTENEMOS EL TEXTO DE LA IMAGEN
     if (item.wordsKey!.isNotEmpty) {
@@ -361,7 +400,8 @@ class _StepperProcedureState extends State<StepperProcedure> {
   sendInfo(List<Map<String, String>> info) async {
     final loadingState = Provider.of<LoadingState>(context, listen: false);
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false).state;
-    final processingState = Provider.of<ProcessingState>(context, listen: false);
+    final processingState =
+        Provider.of<ProcessingState>(context, listen: false);
     final Map<String, dynamic> data = {
       'eco_com_procedure_id': userBloc.procedureId,
       'cell_phone_number': phoneCtrl.text.trim(),

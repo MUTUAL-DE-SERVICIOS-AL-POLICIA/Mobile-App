@@ -63,8 +63,8 @@ android {
         applicationId "com.muserpol.pvt" // ID ÚNICO de la app (IMPORTANTE para Play Store)
         minSdkVersion 21                 // Mínimo Android soportado
         targetSdkVersion 35             // Target Android (recomendado: siempre lo último)
-        versionCode 61                  // Código de versión (debe INCREMENTAR en cada subida)
-        versionName "3.0.9"          // Nombre visible de la versión (para usuarios)
+        versionCode 58                  // Código de versión (debe INCREMENTAR en cada subida)
+        versionName "3.0.8"          // Nombre visible de la versión (para usuarios)
         multiDexEnabled true            // Soporte para multidex si el método supera el límite
     }
 

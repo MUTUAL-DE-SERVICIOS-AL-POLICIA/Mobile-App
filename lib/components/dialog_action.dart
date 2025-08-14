@@ -16,7 +16,10 @@ class DialogAction extends StatelessWidget {
         message,
         textAlign: TextAlign.center,
       ),
-      actions: <Widget>[ButtonComponent(text: 'Aceptar', onPressed: () => Navigator.pop(context))],
+      actions: <Widget>[
+        ButtonComponent(
+            text: 'Aceptar', onPressed: () => Navigator.pop(context))
+      ],
     ));
   }
 }
@@ -26,14 +29,22 @@ class DialogOneFunction extends StatelessWidget {
   final String message;
   final String textButton;
   final Function() onPressed;
-  const DialogOneFunction({super.key, required this.title, required this.message, required this.textButton, required this.onPressed});
+  const DialogOneFunction(
+      {super.key,
+      required this.title,
+      required this.message,
+      required this.textButton,
+      required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: _onBackPressed,
-        child: ComponentAnimate(
-            child: AlertDialog(
+    return PopScope(
+      canPop: false, // Bloquea el botón de retroceso
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+      },
+      child: ComponentAnimate(
+        child: AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           title: Column(
             children: [
@@ -42,21 +53,19 @@ class DialogOneFunction extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              SizedBox(
-                height: 20.h,
-              ),
+              SizedBox(height: 20.h),
               Text(
                 message,
                 textAlign: TextAlign.justify,
               ),
             ],
           ),
-          actions: <Widget>[ButtonComponent(text: textButton, onPressed: () => onPressed())],
-        )));
-  }
-
-  Future<bool> _onBackPressed() async {
-    return false;
+          actions: <Widget>[
+            ButtonComponent(text: textButton, onPressed: () => onPressed()),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -66,7 +75,12 @@ class DialogTwoAction extends StatefulWidget {
   final Function()? actionCancel;
   final String messageCorrect;
 
-  const DialogTwoAction({super.key, required this.message, required this.actionCorrect, this.actionCancel, required this.messageCorrect});
+  const DialogTwoAction(
+      {super.key,
+      required this.message,
+      required this.actionCorrect,
+      this.actionCancel,
+      required this.messageCorrect});
 
   @override
   State<DialogTwoAction> createState() => _DialogTwoActionState();
@@ -90,7 +104,9 @@ class _DialogTwoActionState extends State<DialogTwoAction> {
           children: [
             ButtonWhiteComponent(
               text: 'Cancelar',
-              onPressed: stateBottons ? widget.actionCancel ?? () => Navigator.of(context).pop() : () {},
+              onPressed: stateBottons
+                  ? widget.actionCancel ?? () => Navigator.of(context).pop()
+                  : () {},
             ),
             ButtonWhiteComponent(
                 text: widget.messageCorrect,

@@ -34,31 +34,39 @@ class _ForgotPwdState extends State<ForgotPwd> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: () => backAcction(),
-        child: Scaffold(
-            body: Padding(
-                padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-                child: Column(children: [
-                  const HedersComponent(title: 'Recuperar Contraseña'),
-                  Expanded(
-                      child: Center(
-                    child: SingleChildScrollView(
-                        child: Column(children: [
-                      btnAccess
-                          ? Form(
-                              key: formKey,
-                              child: Column(
-                                children: [
-                                  if (stateForgot == 'credentials')
-                                    CredentialForgotPwd(
+    return PopScope(
+      canPop:
+          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await backAcction(); // Llama a la acción de retroceso personalizada
+      },
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+          child: Column(
+            children: [
+              const HedersComponent(title: 'Recuperar Contraseña'),
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        btnAccess
+                            ? Form(
+                                key: formKey,
+                                child: Column(
+                                  children: [
+                                    if (stateForgot == 'credentials')
+                                      CredentialForgotPwd(
                                         dniCtrl: dniCtrl,
                                         dniComCtrl: dniComCtrl,
                                         phoneCtrl: phoneCtrl,
                                         dateState: dateState,
                                         currentDate: currentDate,
                                         dateCtrl: dateCtrl,
-                                        selectDate: (date, dateCurrent, dateFormat) {
+                                        selectDate:
+                                            (date, dateCurrent, dateFormat) {
                                           setState(() {
                                             dateCtrl = date;
                                             currentDate = dateCurrent;
@@ -66,32 +74,46 @@ class _ForgotPwdState extends State<ForgotPwd> {
                                             dateState = false;
                                           });
                                         },
-                                        sendCredentials: () => sendCredentials(),
-                                        stateAlphanumericFalse: () => setState(() => dniComCtrl.text = '')),
-                                  if (stateForgot == 'code')
-                                    CodeForgotPwd(
-                                      cellPhoneNumber: phoneCtrl.text,
-                                      dni: '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}',
-                                      stateSendSms: stateSendSms,
-                                      resendcode: () => sendCredentials(),
-                                      correct: () {
-                                        if (!mounted) return;
-                                        return showSuccessful(context, 'CORRECTO', () {
-                                          Navigator.of(context).pop();
-                                        });
-                                      },
-                                    ),
-                                ],
-                              ))
-                          : Center(
-                              child: Image.asset(
-                              'assets/images/load.gif',
-                              fit: BoxFit.cover,
-                              height: 20,
-                            )),
-                    ])),
-                  ))
-                ]))));
+                                        sendCredentials: () =>
+                                            sendCredentials(),
+                                        stateAlphanumericFalse: () => setState(
+                                            () => dniComCtrl.text = ''),
+                                      ),
+                                    if (stateForgot == 'code')
+                                      CodeForgotPwd(
+                                        cellPhoneNumber: phoneCtrl.text,
+                                        dni:
+                                            '${dniCtrl.text.trim()}${dniComCtrl.text.isEmpty ? '' : '-${dniComCtrl.text.trim()}'}',
+                                        stateSendSms: stateSendSms,
+                                        resendcode: () => sendCredentials(),
+                                        correct: () {
+                                          if (!mounted) return;
+                                          return showSuccessful(
+                                              context, 'CORRECTO', () {
+                                            Navigator.of(context).pop();
+                                          });
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              )
+                            : Center(
+                                child: Image.asset(
+                                  'assets/images/load.gif',
+                                  fit: BoxFit.cover,
+                                  height: 20,
+                                ),
+                              ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   sendCredentials() async {
@@ -100,7 +122,8 @@ class _ForgotPwdState extends State<ForgotPwd> {
     validateDate();
     if (formKey.currentState!.validate()) {
       final Map<String, dynamic> body = {
-        'ci': '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}',
+        'ci':
+            '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}',
         'birth_date': dateCtrlText,
         'cell_phone_number': phoneCtrl.text.trim()
       };
@@ -110,7 +133,8 @@ class _ForgotPwdState extends State<ForgotPwd> {
         stateSendSms = !stateSendSms;
       });
       if (!mounted) return;
-      var response = await serviceMethod(mounted, context, 'patch', body, serviceForgotPasswordOF(), false, true);
+      var response = await serviceMethod(mounted, context, 'patch', body,
+          serviceForgotPasswordOF(), false, true);
       setState(() => stateSendSms = !stateSendSms);
       if (response == null) {
         setState(() => stateForgot = 'credentials');
@@ -122,6 +146,7 @@ class _ForgotPwdState extends State<ForgotPwd> {
     if (dateCtrlText == null) return setState(() => dateState = true);
     return setState(() => dateState = false);
   }
+
   Future<bool> backAcction() async {
     return await showDialog(
         barrierDismissible: false,
@@ -130,7 +155,8 @@ class _ForgotPwdState extends State<ForgotPwd> {
           return ComponentAnimate(
               child: DialogTwoAction(
                   message: '¿Deseas salir de la actualización de contraseña?',
-                  actionCorrect: () => Navigator.pushNamed(context, 'check_auth'),
+                  actionCorrect: () =>
+                      Navigator.pushNamed(context, 'check_auth'),
                   messageCorrect: 'Salir'));
         });
   }
