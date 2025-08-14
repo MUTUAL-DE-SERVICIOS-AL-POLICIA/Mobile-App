@@ -14,11 +14,15 @@ import 'package:muserpol_pvt/components/card_login.dart';
 import 'package:muserpol_pvt/components/inputs/identity_card.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/components/inputs/phone.dart';
+import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
+import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:local_auth_android/local_auth_android.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
 class ScreenFormLogin extends StatefulWidget {
@@ -53,42 +57,42 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   void initState() {
     super.initState();
     initializeDateFormatting();
-    // _checkBiometrics();
+    // verifyBiometric();
   }
 
-  // Future<void> _checkBiometrics() async {
-  //   final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
-  //   if (canAuthenticateWithBiometrics) {
-  //     // Si el dispositivo es compatible, se habilita la opción de autenticación biométrica
-  //     print("El dispositivo soporta autenticación biométrica.");
-  //   } else {
-  //     // Si no es compatible
-  //     print("El dispositivo no soporta autenticación biométrica.");
-  //   }
-  // }
+  verifyBiometric() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
 
-  Future<void> _authenticateWithBiometrics() async {
+    if (await authService.readBiometric() != "") {
+      _authenticate();
+    }
+  }
+
+  Future<void> _authenticate() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    bool autenticated = false;
     try {
-      bool authenticated = await auth.authenticate(
-        localizedReason: 'Autenticación requerida para continuar',
-        options: const AuthenticationOptions(
-          biometricOnly: true, // Solo biometría
-          stickyAuth:
-              true, // Mantener la autenticación activa si la app se pausa
-        ),
-      );
-
-      if (authenticated) {
-        // Si la autenticación es exitosa, puedes proceder a la siguiente acción
-        // Aquí puedes realizar las acciones necesarias como navegar a otra pantalla
-        debugPrint("Autenticación exitosa.");
-        // Puedes agregar el código para navegar o realizar alguna acción
-      } else {
-        // Si la autenticación falla
-        debugPrint("Autenticación fallida.");
-      }
-    } catch (e) {
-      debugPrint("Error en la autenticación biométrica: $e");
+      autenticated = await auth.authenticate(
+          localizedReason: 'MUSERPOL',
+          authMessages: [
+            const AndroidAuthMessages(
+              signInTitle: 'Autenticación Biometrica requerida',
+              cancelButton: 'No Gracias',
+              biometricHint: 'Verificar Identidad',
+            ),
+          ],
+          options: const AuthenticationOptions(stickyAuth: true, biometricOnly: true));
+          debugPrint('HECHO');
+    } on PlatformException catch (e) {
+      debugPrint('$e');
+      return;
+    }
+    if(!mounted) return;
+    if(autenticated){
+      final biometric = biometricUserModelFromJson(await authService.readBiometric());
+      setState(() {
+        
+      });
     }
   }
 
@@ -179,7 +183,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(50.r),
-                              onTap: _authenticateWithBiometrics,
+                              onTap: verifyBiometric,
                               child: Column(
                                 children: [
                                   Icon(Icons.fingerprint,

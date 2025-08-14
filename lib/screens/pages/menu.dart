@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:local_auth/local_auth.dart';
 // import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/section_title.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
+import 'package:muserpol_pvt/model/biometric_user_model.dart';
+import 'package:muserpol_pvt/services/auth_service.dart';
 // import 'package:muserpol_pvt/model/biometric_user_model.dart';
 // import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
+import 'package:provider/provider.dart';
 // import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,7 +28,7 @@ class MenuDrawer extends StatefulWidget {
 
 class _MenuDrawerState extends State<MenuDrawer> {
   bool colorValue = false;
-  // bool biometricValue = false;
+  bool biometricValue = false;
   bool stateLoading = false;
 
   @override
@@ -36,18 +40,30 @@ class _MenuDrawerState extends State<MenuDrawer> {
       }
     });
 
-    // verifyBiometric(); // Comentado por ahora, se puede reactivar luego
+    verifyBiometric();
   }
 
   // Comentado: verificación de estado biométrico actual
-  /*
+
   verifyBiometric() async {
     final authService = Provider.of<AuthService>(context, listen: false);
+    await Future.delayed(const Duration(milliseconds: 50), () {});
+    debugPrint('estado ${await authService.readBiometric()}');
+
+    if (await authService.readBiometric() != "") {
+      final biometric = await authService.readBiometric();
+      setState(() => biometricValue =
+          biometricUserModelFromJson(biometric).biometricUser!);
+    }
+
     final biometricJson = await authService.readBiometric();
     biometricValue = biometricJson != '';
     setState(() {});
   }
-  */
+
+  bool status = true;
+  bool sendNotifications = true;
+  bool darkTheme = false;
 
   @override
   Widget build(BuildContext context) {
@@ -104,13 +120,13 @@ class _MenuDrawerState extends State<MenuDrawer> {
                       valueSwitch: colorValue,
                       onChangedSwitch: (v) => switchTheme(v),
                     ),
-                    /*
+
                     SectiontitleSwitchComponent(
                       title: 'Autenticación Biométrica',
                       valueSwitch: biometricValue,
                       onChangedSwitch: (v) => authBiometric(v),
                     ),
-                    */
+
                     Divider(height: 0.03.sh),
                     const Text('Configuración general',
                         style: TextStyle(fontWeight: FontWeight.bold)),
@@ -136,9 +152,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
                     // Center(
                     //   child: Text('Versión ${dotenv.env['version']}'),
                     // ),
-                    const Center(
-                      child: Text('Versión 4.0.1')
-                    ),
+                    const Center(child: Text('Versión 4.0.1')),
                   ],
                 ),
               ),
@@ -158,26 +172,40 @@ class _MenuDrawerState extends State<MenuDrawer> {
     }
   }
 
-  // Comentado: lógica para activar/desactivar biometría
-  /*
   void authBiometric(bool state) async {
     final authService = Provider.of<AuthService>(context, listen: false);
     setState(() => biometricValue = state);
+    debugPrint('$state');
+    debugPrint('HUELLA BIOMETRICA');
     final LocalAuthentication auth = LocalAuthentication();
 
     final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
-    final bool canAuthenticate =
-        canAuthenticateWithBiometrics || await auth.isDeviceSupported();
-
-    if (!canAuthenticate) return;
+    final bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+    debugPrint('puede $canAuthenticate');
 
     final List<BiometricType> availableBiometrics = await auth.getAvailableBiometrics();
+    debugPrint('availableBiometric $availableBiometrics');
+
     if (availableBiometrics.isNotEmpty) {
-      // Lógica para guardar estado biométrico futuro (cuando se implemente nuevamente)
-      await authService.writeBiometric(context, '{"enabled": $state}');
+      debugPrint("Algunos datos biometricos estan inscritos");
     }
+
+    if (availableBiometrics.contains(BiometricType.strong) ||
+        availableBiometrics.contains(BiometricType.face)) {
+      debugPrint("Hay tipos especificos de datos biometricos disponibles");
+    }
+
+    final biometric = biometricUserModelFromJson(await authService.readBiometric());
+
+    var biometricUserModel = BiometricUserModel();
+
+    biometricUserModel = BiometricUserModel(biometricUser: state, affiliateId: biometric.affiliateId);
+
+    if(!mounted) return;
+    debugPrint(biometricUserModelToJson(biometricUserModel));
+    if (!mounted) return;
+    await authService.writeBiometric(context, biometricUserModelToJson(biometricUserModel));
   }
-  */
 
   void closeSession(BuildContext context) async {
     showDialog(
