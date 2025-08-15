@@ -1,8 +1,7 @@
-# Define un target mínimo global para iOS
-platform :ios, '16.0'  # subir a 16 evita conflictos con MLKit, Firebase y otros pods modernos
+# Podfile para Apple Silicon + Flutter
+platform :ios, '16.0'
 $iOSVersion = '16.0'
 
-# Desactiva las estadísticas de CocoaPods para acelerar build
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -12,13 +11,13 @@ project 'Runner', {
 }
 
 def flutter_root
-  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), FILE)
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
     raise "#{generated_xcode_build_settings_path} must exist. Ejecuta 'flutter pub get' primero."
   end
 
   File.foreach(generated_xcode_build_settings_path) do |line|
-    matches = line.match(/FLUTTER_ROOT=(.)/)
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
     return matches[1].strip if matches
   end
   raise "FLUTTER_ROOT no encontrado en #{generated_xcode_build_settings_path}."
@@ -32,22 +31,18 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  flutter_install_all_ios_pods File.dirname(File.realpath(FILE))
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
-      # Excluir arm64 solo para el simulador
-      if config.name != 'Release'
-        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator]'] = 'arm64'
-      end
+      # Deployment target mínimo
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = $iOSVersion
+      # Excluir arm64 solo para simuladores
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
     end
-  end
-
-  # También aplica a todos los targets generados por Flutter
-  installer.pods_project.targets.each do |target|
+    # Configuración adicional de Flutter
     flutter_additional_ios_build_settings(target)
   end
 end
