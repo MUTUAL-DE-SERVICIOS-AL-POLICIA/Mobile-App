@@ -160,18 +160,4 @@ class _ForgotPwdState extends State<ForgotPwd> {
                   messageCorrect: 'Salir'));
         });
   }
-  // backAcction() async {
-  //   return await showDialog(
-  //       barrierDismissible: false,
-  //       context: context,
-  //       builder: (context) => ComponentAnimate(
-  //           child: DialogTwoAction(
-  //               message: '¿Deseas salir de la actualización de contraseña?',
-  //               actionCorrect: () {
-  //                 Navigator.pop(context);
-  //                 Navigator.pop(context);
-  //                 return true;
-  //               },
-  //               messageCorrect: 'Salir')));
-  // }
 }
