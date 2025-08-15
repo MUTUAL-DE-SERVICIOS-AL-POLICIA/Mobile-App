@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:barcode_scan2/barcode_scan2.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,15 +37,9 @@ class ScreenSwitchState extends State<ScreenSwitch> {
   int value = 0;
   // var deviceInfoo;
 
-  ScanResult? scanResult;
-
   // final _flashOnController = TextEditingController(text: 'CON FLASH');
   // final _flashOffController = TextEditingController(text: 'SIN FLASH');
   // final _cancelController = TextEditingController(text: 'ATRAS');
-
-  static final _possibleFormats = BarcodeFormat.values.toList()
-    ..removeWhere((e) => e == BarcodeFormat.unknown);
-  List<BarcodeFormat> selectedFormats = [..._possibleFormats];
 
   @override
   void initState() {
@@ -56,17 +50,6 @@ class ScreenSwitchState extends State<ScreenSwitch> {
     initPlatformState();
   }
 
-  // Future<void> initPlatformState() async {
-  //   String? statusDeviceId;
-  //   try {
-  //     statusDeviceId = await PlatformDeviceId.getDeviceId;
-  //   } on PlatformException {
-  //     statusDeviceId = 'Failed to get deviceId.';
-  //   }
-  //   if (!mounted) return;
-  //   setState(() => deviceId = statusDeviceId);
-  // }
-
   Future<void> initPlatformState() async {
     final deviceInfo = DeviceInfoPlugin();
     String? statusDeviceId;
@@ -74,11 +57,10 @@ class ScreenSwitchState extends State<ScreenSwitch> {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await deviceInfo.androidInfo;
-        statusDeviceId = androidInfo.id; // Obtiene el ID único en Android
+        statusDeviceId = androidInfo.id;
       } else if (Platform.isIOS) {
         final iosInfo = await deviceInfo.iosInfo;
-        statusDeviceId =
-            iosInfo.identifierForVendor; // Obtiene el ID único en iOS
+        statusDeviceId = iosInfo.identifierForVendor;
       } else {
         statusDeviceId = 'Plataforma no soportada';
       }
@@ -93,8 +75,7 @@ class ScreenSwitchState extends State<ScreenSwitch> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop:
-          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         bool exitApp = await _onBackPressed();
@@ -182,20 +163,6 @@ class ScreenSwitchState extends State<ScreenSwitch> {
                                     Center(
                                         child: Text(
                                             'Versión ${dotenv.env['version']}')),
-                                    // optionTool(
-                                    //   SvgPicture.asset(
-                                    //     'assets/icons/qr.svg',
-                                    //     height: 50.sp,
-                                    //     colorFilter: const ColorFilter.mode(
-                                    //       Color(0xff419388),
-                                    //       BlendMode.srcIn,
-                                    //     ),
-                                    //   ),
-                                    //   'SEGUIMIENTO CON QR',
-                                    //   'Seguimiento de trámite de Préstamos y Beneficios Económicos con QR.',
-                                    //   () => scan(),
-                                    //   true,
-                                    // ),
                                   ],
                                 ),
                               ),
@@ -210,50 +177,6 @@ class ScreenSwitchState extends State<ScreenSwitch> {
       ),
     );
   }
-
-  //Funciones relacionadas a la lectura de QR
-  // Future scan() async {
-  //   try {
-  //     var options = ScanOptions(
-  //       strings: {
-  //         "cancel": _cancelController.text,
-  //         "flash_on": _flashOnController.text,
-  //         "flash_off": _flashOffController.text,
-  //       },
-  //       restrictFormat: selectedFormats,
-  //       useCamera: -1,
-  //       autoEnableFlash: false,
-  //       android: const AndroidOptions(
-  //         aspectTolerance: 0.00,
-  //         useAutoFocus: true,
-  //       ),
-  //     );
-  //     var result = await BarcodeScanner.scan(options: options);
-  //     setState(() => scanResult = result);
-  //     if (scanResult!.rawContent != '') {
-  //       debugPrint('scanResult!.rawContent ${scanResult!.rawContent}');
-  //       if (!mounted) return;
-  //       var response = await serviceMethod(mounted, context, 'get', null,
-  //           serviceGetQr(scanResult!.rawContent), false, false);
-  //       if (response != null) {
-  //         if (!mounted) return;
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(
-  //               builder: (context) => ScreenWorkFlow(
-  //                   qrModel: qrModelFromJson(response.body),
-  //                   stateFlow: scanResult!.rawContent)),
-  //         );
-  //       } else {
-  //         if (!mounted) return;
-  //         callDialogAction(context, 'No pudimos encontrar el trámite');
-  //       }
-  //     }
-  //   } on PlatformException catch (e) {
-  //     debugPrint('error $e ');
-  //     return;
-  //   }
-  // }
 
   Future<bool> _onBackPressed() async {
     if (statelogin) {
