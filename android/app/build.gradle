@@ -42,7 +42,7 @@ if (keystorePropertiesFile.exists()) {
 // Configuración del bloque android
 android {
     namespace 'com.muserpol.pvt' // Identificador del paquete (importante para Play Console)
-    compileSdkVersion 35         // SDK de compilación (actualizado)
+    compileSdkVersion 36         // SDK de compilación (actualizado)
     ndkVersion '27.0.12077973'   // Versión del NDK (para código nativo si se usa)
 
     // Compatibilidad con Java
@@ -61,7 +61,7 @@ android {
 
     defaultConfig {
         applicationId "com.muserpol.pvt" // ID ÚNICO de la app (IMPORTANTE para Play Store)
-        minSdkVersion 21                 // Mínimo Android soportado
+        minSdkVersion flutter.minSdkVersion                 // Mínimo Android soportado
         targetSdkVersion 35             // Target Android (recomendado: siempre lo último)
         versionCode 54                  // Código de versión (debe INCREMENTAR en cada subida)
         versionName "3.0.8"             // Nombre visible de la versión (para usuarios)
