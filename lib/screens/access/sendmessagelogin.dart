@@ -297,8 +297,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
   Future verifyPinNew(code) async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    final notificationBloc =
-        BlocProvider.of<NotificationBloc>(context, listen: false);
+    final notificationBloc = BlocProvider.of<NotificationBloc>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
     FocusScope.of(context).unfocus();
@@ -314,8 +313,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
           await PushNotificationService.getTokenFirebase();
     }
     if (!mounted) return;
-    var response = await serviceMethod(mounted, context, 'post', requestBody,
-        verifytosendmessage(), false, true);
+    var response = await serviceMethod(mounted, context, 'post', requestBody, verifytosendmessage(), false, true);
 
     if (response != null) {
       final decoded = json.decode(response.body);
@@ -373,23 +371,33 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       await DBProvider.db.newAffiliateModel(affiliateModel);
       notificationBloc.add(UpdateAffiliateId(user.user!.id!));
 
+      debugPrint(widget.body['identityCard']);
+
       initSessionUserApp(
           response,
           UserAppMobile(
-              identityCard: widget.body['username'],
+              identityCard: widget.body['identityCard'],
               numberPhone: widget.body['cellphone']),
           user);
     }
   }
 
-  initSessionUserApp(
-      dynamic response, UserAppMobile userApp, UserModel user) async {
+  initSessionUserApp(dynamic response, UserAppMobile userApp, UserModel user) async {
+    debugPrint("entro1");
+    debugPrint(jsonEncode(userApp.toJson()));
+    debugPrint("entro2");
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
+    final biometric = await authService.readBiometric();
+
     tokenState.updateStateAuxToken(false);
+
     final biometricUserModel = BiometricUserModel(
+      biometricUser: biometric == '' ? false : biometricUserModelFromJson(biometric).biometricUser,
       affiliateId: json.decode(response.body)['data']['user']['id'],
+      userAppMobile: userApp
     );
+
     prefs!.setBool('isDoblePerception',
         json.decode(response.body)['data']['is_doble_perception']);
     if (!mounted) return;

@@ -15,8 +15,8 @@ import 'package:muserpol_pvt/components/inputs/identity_card.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/components/inputs/phone.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
-import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
+import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
@@ -65,6 +65,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
     if (await authService.readBiometric() != "") {
       _authenticate();
+    } else {
+      debugPrint("no tiene datos biometricos guardados");
     }
   }
 
@@ -76,23 +78,43 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           localizedReason: 'MUSERPOL',
           authMessages: [
             const AndroidAuthMessages(
-              signInTitle: 'Autenticación Biometrica requerida',
+              signInTitle: 'Autenticación Biometrica',
               cancelButton: 'No Gracias',
               biometricHint: 'Verificar Identidad',
             ),
           ],
-          options: const AuthenticationOptions(stickyAuth: true, biometricOnly: true));
-          debugPrint('HECHO');
+          options: const AuthenticationOptions(
+              stickyAuth: true, biometricOnly: true));
+      debugPrint('HECHO');
     } on PlatformException catch (e) {
       debugPrint('$e');
       return;
     }
-    if(!mounted) return;
-    if(autenticated){
+    if (!mounted) return;
+    if (autenticated) {
+      debugPrint("entro a esta opcion");
       final biometric = biometricUserModelFromJson(await authService.readBiometric());
-      setState(() {
-        
-      });
+      // setState(() {
+      //   dniCtrl.text = biometric.userAppMobile!.identityCard!;
+      //   phoneCtrl.text = biometric.userAppMobile!.numberPhone!;
+      // });
+
+      if (biometric.userAppMobile != null) {
+        debugPrint(jsonEncode(biometric.toJson()));
+        setState(() {
+          dniCtrl.text = biometric.userAppMobile?.identityCard ?? '';
+          phoneCtrl.text = biometric.userAppMobile?.numberPhone ?? '';
+        });
+
+        debugPrint(dniCtrl.text);
+        debugPrint(phoneCtrl.text);
+
+        sendCredentialsNew(isBiometric: true);
+      } else {
+        debugPrint("userAppMobile viene nulo en el JSON guardado");
+        showError(
+            "No hay datos biométricos válidos guardados, inicia sesión normal.");
+      }
     }
   }
 
@@ -162,7 +184,9 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     ButtonComponent(
                         text: 'INGRESAR',
                         stateLoading: isLoading,
-                        onPressed: isLoading ? null : sendCredentialsNew),
+                        onPressed: isLoading
+                            ? null
+                            : () => sendCredentialsNew(isBiometric: false)),
                     SizedBox(
                       height: 10.h,
                     ),
@@ -353,13 +377,13 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   }
 
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
-  sendCredentialsNew() async {
+  sendCredentialsNew({required bool isBiometric}) async {
     FocusScope.of(context).unfocus();
     setState(() => isLoading = true);
-    final signature = await SmsAutoFill().getAppSignature;
-    debugPrint("App Signature Hash: $signature");
 
     try {
+      final signature = await SmsAutoFill().getAppSignature;
+      debugPrint("App Signature Hash: $signature");
       if (!formKey.currentState!.validate()) {
         return;
       }
@@ -368,9 +392,13 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
       final cellphone = phoneCtrl.text.trim();
 
+      debugPrint(cellphone);  
+      debugPrint(identityCard);
+
       body['identityCard'] = identityCard;
       body['cellphone'] = cellphone;
       body['signature'] = signature;
+      body['isBiometric'] = isBiometric;
 
       if (!mounted) return;
       var response = await serviceMethod(
@@ -378,6 +406,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       if (response != null) {
         if (response.statusCode == 200) {
           if (!mounted) return;
+          debugPrint("entro aca despues de la biometria");
           Navigator.pushReplacement(
             context,
             PageRouteBuilder(

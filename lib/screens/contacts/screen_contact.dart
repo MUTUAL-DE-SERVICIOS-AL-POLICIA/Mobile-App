@@ -49,11 +49,11 @@ class _ScreenContactState extends State<ScreenContact> {
                     child: SingleChildScrollView(
                       child: Column(
                         children: List.generate(
-                          contact!.data!.cities!.length,
+                          contact!.data!.length,
                           (index) => Padding(
                             padding: const EdgeInsets.only(bottom: 10),
                             child: CardContact(
-                              city: contact!.data!.cities![index],
+                              city: contact!.data![index],
                             ),
                           ),
                         ),

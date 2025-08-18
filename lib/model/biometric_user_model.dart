@@ -12,29 +12,35 @@ class BiometricUserModel {
   BiometricUserModel({
     this.affiliateId,
     this.biometricUser = false,
+    this.userAppMobile,
   });
 
   int? affiliateId;
   bool? biometricUser;
+  UserAppMobile? userAppMobile;
 
   BiometricUserModel copyWith({
     int? affiliateId,
     bool? biometricUser,
+    UserAppMobile? userAppMobile,
   }) =>
       BiometricUserModel(
         affiliateId: affiliateId ?? this.affiliateId,
         biometricUser: biometricUser ?? this.biometricUser,
+        userAppMobile: userAppMobile ?? this.userAppMobile,
       );
 
   factory BiometricUserModel.fromJson(Map<String, dynamic> json) =>
       BiometricUserModel(
         biometricUser: json["biometric"],
         affiliateId: json["affiliate_id"],
+        userAppMobile: UserAppMobile.fromJson(json["user_app_mobile"])
       );
 
   Map<String, dynamic> toJson() => {
-        "biometricUser": biometricUser,
+        "biometric": biometricUser,
         "affiliate_id": affiliateId,
+        "user_app_mobile":userAppMobile!.toJson(),
       };
 }
 
@@ -64,5 +70,10 @@ class UserAppMobile {
   Map<String, dynamic> toJson() => {
         "identity_card": identityCard,
         "numberPhone": numberPhone,
-      };
+  };
+
+   @override
+  String toString() {
+    return 'UserAppMobile(identityCard: $identityCard, numberPhone: $numberPhone)';
+  }
 }

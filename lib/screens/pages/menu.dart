@@ -30,7 +30,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
   bool colorValue = false;
   bool biometricValue = false;
   bool stateLoading = false;
-
+  
   @override
   void initState() {
     super.initState();
@@ -43,8 +43,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
     verifyBiometric();
   }
 
-  // Comentado: verificación de estado biométrico actual
-
+  //Verificación si el dispositvo biometria
   verifyBiometric() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     await Future.delayed(const Duration(milliseconds: 50), () {});
@@ -52,24 +51,19 @@ class _MenuDrawerState extends State<MenuDrawer> {
 
     if (await authService.readBiometric() != "") {
       final biometric = await authService.readBiometric();
-      setState(() => biometricValue =
-          biometricUserModelFromJson(biometric).biometricUser!);
+
+      debugPrint(biometric);
+      setState(() => biometricValue = biometricUserModelFromJson(biometric).biometricUser!);
+      debugPrint('nuevo: $biometricValue');
+
     }
 
-    final biometricJson = await authService.readBiometric();
-    biometricValue = biometricJson != '';
-    setState(() {});
   }
-
-  bool status = true;
-  bool sendNotifications = true;
-  bool darkTheme = false;
 
   @override
   Widget build(BuildContext context) {
-    final userBloc =
-        BlocProvider.of<UserBloc>(context, listen: true).state.user;
-
+    debugPrint(biometricValue.toString());
+    final userBloc = BlocProvider.of<UserBloc>(context, listen: true).state.user;
     return Drawer(
       width: MediaQuery.of(context).size.width / 1.4,
       child: Padding(
@@ -175,12 +169,11 @@ class _MenuDrawerState extends State<MenuDrawer> {
   void authBiometric(bool state) async {
     final authService = Provider.of<AuthService>(context, listen: false);
     setState(() => biometricValue = state);
-    debugPrint('$state');
-    debugPrint('HUELLA BIOMETRICA');
-    final LocalAuthentication auth = LocalAuthentication();
 
+    final LocalAuthentication auth = LocalAuthentication();
     final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
     final bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+    
     debugPrint('puede $canAuthenticate');
 
     final List<BiometricType> availableBiometrics = await auth.getAvailableBiometrics();
@@ -199,7 +192,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
 
     var biometricUserModel = BiometricUserModel();
 
-    biometricUserModel = BiometricUserModel(biometricUser: state, affiliateId: biometric.affiliateId);
+    biometricUserModel = BiometricUserModel(biometricUser: state, affiliateId: biometric.affiliateId, userAppMobile: biometric.userAppMobile);
 
     if(!mounted) return;
     debugPrint(biometricUserModelToJson(biometricUserModel));

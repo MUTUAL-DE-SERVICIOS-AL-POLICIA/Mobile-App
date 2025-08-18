@@ -7,19 +7,20 @@ String? hostPVT = stateApp()? dotenv.env['HOST_PVT_PROD']: dotenv.env['HOST_PVT_
 
 String? hostSTI = stateApp()? dotenv.env['HOST_STI_PROD']: dotenv.env['HOST_STI_DEV'];
 
-// String? hostGATEWAY = stateApp()? dotenv.env['HOST_GATEWAY_PROD']: dotenv.env['HOST_GATEWAY_DEV'];
+String? hostGATEWAY = stateApp()? dotenv.env['HOST_GATEWAY_PROD']: dotenv.env['HOST_GATEWAY_DEV'];
 
 String? reazon = dotenv.env['reazon'];//v1
 String? reazonAffiliate = dotenv.env['reazonAffiliate'];//affiliate
 String? reazonQr = dotenv.env['reazonQr'];//global
 String? reazonMovil = dotenv.env['reazonMovil'];//appmovil
+String? auth = dotenv.env['auth'];
 
 //AUTH CERRAR SESION POR EL MOMENTO
 String serviceAuthSession(int? affiliateId) => '$hostPVT/$reazon/auth/${affiliateId??''}';
 
 //CONTACTS
-String serviceGetContacts() => '$hostPVT/$reazon/city';
-
+// String serviceGetContacts() => '$hostPVT/$reazon/city';
+String serviceGetContacts() => '$hostGATEWAY/$reazonMovil/globalCities';
 //PRIVACY POLICY
 String serviceGetPrivacyPolicy() => 'https://www.muserpol.gob.bo/index.php/transparencia/terminos-y-condiciones-de-uso-aplicacion-movil';
 
@@ -48,42 +49,31 @@ String servicePostVersion()=>'$hostPVT/$reazon/version';
 
 //AUTENTICACION DE USUARIO POR SMS 
 String createtosendmessage() =>'$hostSTI/$reazonAffiliate/sendcode';
+String loginAppMobile() => '$hostGATEWAY/$auth/loginAppMobile';
 String verifytosendmessage() =>'$hostSTI/$reazonAffiliate/verifycode';
-// OFICINA VIRTUAL 
-// QR
-// String serviceGetQr(String info)=> '$hostSTI/$reazonQr/procedure_qr/$info';
-// AUTH
-// String serviceAuthSessionOF()=>'$hostSTI/$reazonAffiliate/auth';
-// CHANGE PASSWORD
-// String serviceChangePasswordOF()=>'$hostSTI/$reazonAffiliate/change_password';
-// FORGOT PASSWORD
-// String serviceForgotPasswordOF()=>'$hostSTI/app/send_code_reset_password';
-// FORGOT PASSWORD SEND CODE
-// String serviceSendCodeOF()=>'$hostSTI/app/reset_password';
-
-
+String verifyPin() =>'$hostGATEWAY/$auth/verifyPin';
 // APORTES CON MICROSERVICIO "appMobile"
-// String serviceContributions(int affiliateId)=>'$hostGATEWAY/$reazonMovil/allContributions/$affiliateId';
-String serviceContributions(int affiliateId)=>'$hostSTI/app/all_contributions/$affiliateId';
+String serviceContributions(int affiliateId)=>'$hostGATEWAY/$reazonMovil/contributionsAll/$affiliateId';
+// String serviceContributions(int affiliateId)=>'$hostSTI/app/all_contributions/$affiliateId';
 //NO DIBUJA EL PDF
 //PRINT APORTES PASIVO
-// String servicePrintContributionPasive(int affiliateId)=>'$hostGATEWAY/$reazonMovil/contributionsPassive/$affiliateId';
-String servicePrintContributionPasive(int affiliateId)=>'$hostSTI/app/contributions_passive/$affiliateId';
+String servicePrintContributionPasive(int affiliateId)=>'$hostGATEWAY/$reazonMovil/contributionsPassive/$affiliateId';
+// String servicePrintContributionPasive(int affiliateId)=>'$hostSTI/app/contributions_passive/$affiliateId';
 //PRINT APORTES ACTIVO
-// String servicePrintContributionActive(int affiliateId)=>'$hostGATEWAY/$reazonMovil/contributionsActive/$affiliateId';
-String servicePrintContributionActive(int affiliateId)=>'$hostSTI/app/contributions_active/$affiliateId';
+String servicePrintContributionActive(int affiliateId)=>'$hostGATEWAY/$reazonMovil/contributionsActive/$affiliateId';
+// String servicePrintContributionActive(int affiliateId)=>'$hostSTI/app/contributions_active/$affiliateId';
 
 //PRESTAMOS CON MICROSERVICIO "appMobile"
 
-// String serviceLoans(int affiliateId)=> '$hostGATEWAY/$reazonMovil/informationLoan/$affiliateId';
-String serviceLoans(int affiliateId)=> '$hostSTI/app/get_information_loan/$affiliateId';
+String serviceLoans(int affiliateId)=> '$hostGATEWAY/$reazonMovil/loanInformation/$affiliateId';
+// String serviceLoans(int affiliateId)=> '$hostSTI/app/get_information_loan/$affiliateId';
 //No dibuja el documento PDF
 //PRINT PLAN DE PAGOS
-String servicePrintLoans(int loanId)=> '$hostSTI/app/loan/$loanId/print/plan';
-// String servicePrintLoans(int loanId)=> '$hostGATEWAY/$reazonMovil/loan/$loanId/printPlan';
+// String servicePrintLoans(int loanId)=> '$hostSTI/app/loan/$loanId/print/plan';
+String servicePrintLoans(int loanId)=> '$hostGATEWAY/$reazonMovil/loanPrintPlan/$loanId';
 //PRINT KARDEX
-String servicePrintKadex(int loanId)=>'$hostSTI/app/loan/$loanId/print/kardex';
-// String servicePrintKadex(int loanId)=> '$hostGATEWAY/$reazonMovil/loan/$loanId/printKardex';
+// String servicePrintKadex(int loanId)=>'$hostSTI/app/loan/$loanId/print/kardex';
+String servicePrintKadex(int loanId)=> '$hostGATEWAY/$reazonMovil/loanPrintKardex/$loanId';
 
 //CREDENTIALS "CIUDADANIA DIGITAL -SERVICIO DE AUTENTICACION"
 String serviceGetCredentials() => '$hostSTI/$reazonAffiliate/assignmentcredentials';
