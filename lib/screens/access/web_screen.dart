@@ -123,10 +123,10 @@ class _WebScreenState extends State<Webscreen> {
 
         userBloc.add(UpdateUser(user.user!));
 
-        final affiliateModel = AffiliateModel(idAffiliate: user.user!.id!);
+        final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
         await DBProvider.db.newAffiliateModel(affiliateModel);
 
-        notificationBloc.add(UpdateAffiliateId(user.user!.id!));
+        notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
 
         initSessionUserApp(
             response,

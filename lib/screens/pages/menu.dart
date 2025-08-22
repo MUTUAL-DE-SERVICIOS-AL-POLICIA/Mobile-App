@@ -43,19 +43,13 @@ class _MenuDrawerState extends State<MenuDrawer> {
     verifyBiometric();
   }
 
-  //Verificación si el dispositvo biometria
   verifyBiometric() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     await Future.delayed(const Duration(milliseconds: 50), () {});
-    debugPrint('estado ${await authService.readBiometric()}');
-
     if (await authService.readBiometric() != "") {
       final biometric = await authService.readBiometric();
 
-      debugPrint(biometric);
       setState(() => biometricValue = biometricUserModelFromJson(biometric).biometricUser!);
-      debugPrint('nuevo: $biometricValue');
-
     }
 
   }
@@ -168,6 +162,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
 
   void authBiometric(bool state) async {
     final authService = Provider.of<AuthService>(context, listen: false);
+  
     setState(() => biometricValue = state);
 
     final LocalAuthentication auth = LocalAuthentication();

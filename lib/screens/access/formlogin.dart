@@ -1,25 +1,32 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
+import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
+import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/components/card_login.dart';
 import 'package:muserpol_pvt/components/inputs/identity_card.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/components/inputs/phone.dart';
+import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
+import 'package:muserpol_pvt/model/user_model.dart';
+import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
+import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
+import 'package:muserpol_pvt/utils/auth_helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:local_auth_android/local_auth_android.dart';
@@ -85,19 +92,16 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           ],
           options: const AuthenticationOptions(
               stickyAuth: true, biometricOnly: true));
-      debugPrint('HECHO');
     } on PlatformException catch (e) {
       debugPrint('$e');
       return;
     }
+
     if (!mounted) return;
+
     if (autenticated) {
-      debugPrint("entro a esta opcion");
-      final biometric = biometricUserModelFromJson(await authService.readBiometric());
-      // setState(() {
-      //   dniCtrl.text = biometric.userAppMobile!.identityCard!;
-      //   phoneCtrl.text = biometric.userAppMobile!.numberPhone!;
-      // });
+      final biometric =
+          biometricUserModelFromJson(await authService.readBiometric());
 
       if (biometric.userAppMobile != null) {
         debugPrint(jsonEncode(biometric.toJson()));
@@ -106,14 +110,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           phoneCtrl.text = biometric.userAppMobile?.numberPhone ?? '';
         });
 
-        debugPrint(dniCtrl.text);
-        debugPrint(phoneCtrl.text);
-
         sendCredentialsNew(isBiometric: true);
-      } else {
-        debugPrint("userAppMobile viene nulo en el JSON guardado");
-        showError(
-            "No hay datos biométricos válidos guardados, inicia sesión normal.");
       }
     }
   }
@@ -286,25 +283,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       ),
     );
   }
-
-  //GENERA UN CODIGO VERIFICADOR
-
-  String generateCodeVerifier([int length = 64]) {
-    final random = Random.secure();
-    const charset =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
-        .join();
-  }
-
-  //GENERA UN CODIGO PARA EL CANJE DEL TOKEN
-
-  String generateCodeChallenge(String codeVerifier) {
-    final bytes = ascii.encode(codeVerifier);
-    final digest = sha256.convert(bytes);
-    return base64UrlEncode(digest.bytes).replaceAll('=', '');
-  }
-
   //HACE LLAMADA AL COMPONENTE PARA LLAMAR A LA PAGINA DE CIUDADANIA DIGITAL
   //CIUDADANIA DIGITAL SOLO INICIARA POR MEDIO DE UNA PAGINA WEB Y NO ASI POR UNA CONEXION POR UNA APP EXTERNA
   //SE ESTA UTILIZANDO UN ESQUEMA DENTRO DE ANDROIDMANIFEST.XML PARA LA LLAMADA AL ESQUEMA "COM.MUSERPOL.PVT://OAUTHREDIRECT"
@@ -330,8 +308,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
         final redirectUri = decoded['redirectURI'];
         final scope = decoded['scope'];
 
-        final codeVerifier = generateCodeVerifier();
-        final codeChallenge = (codeVerifier);
+        final codeVerifier = AuthHelpers.generateCodeVerifier();
+        final codeChallenge = AuthHelpers.generateCodeChallenge(codeVerifier);
 
         final authorizationUrl = '$url/auth?response_type=code'
             '&client_id=$clientId'
@@ -355,25 +333,15 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           ),
         );
       } else {
-        showError('No se pudo obtener las credenciales.');
+        AuthHelpers.showError(context, 'No se pudo obtener las credenciales.');
       }
     } catch (e) {
       debugPrint('Error: $e');
-      showError('Ocurrió un error al conectar con el servidor.');
+      AuthHelpers.showError(
+          context, 'Ocurrió un error al conectar con el servidor.');
     } finally {
       if (mounted) setState(() => isLoadingCiudadania = false);
     }
-  }
-
-  void showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
@@ -383,7 +351,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
     try {
       final signature = await SmsAutoFill().getAppSignature;
-      debugPrint("App Signature Hash: $signature");
       if (!formKey.currentState!.validate()) {
         return;
       }
@@ -392,43 +359,85 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
       final cellphone = phoneCtrl.text.trim();
 
-      debugPrint(cellphone);  
-      debugPrint(identityCard);
+      if (dotenv.env['storeAndroid'] == 'appgallery') {
+        body['firebase_token'] = '';
+      } else {
+        body['firebase_token'] =
+            await PushNotificationService.getTokenFirebase();
+      }
 
-      body['identityCard'] = identityCard;
+      body['username'] = identityCard;
       body['cellphone'] = cellphone;
       body['signature'] = signature;
-      body['isBiometric'] = isBiometric;
+      body['isBiometric'] = true;
 
       if (!mounted) return;
+      // var response = await serviceMethod(
+      //     mounted, context, 'post', body, createtosendmessage(), false, true);
       var response = await serviceMethod(
-          mounted, context, 'post', body, createtosendmessage(), false, true);
+          mounted, context, 'post', body, loginAppMobile(), false, true);
       if (response != null) {
-        if (response.statusCode == 200) {
-          if (!mounted) return;
-          debugPrint("entro aca despues de la biometria");
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
-              transitionDuration: const Duration(milliseconds: 400),
-              transitionsBuilder: (_, animation, secondaryAnimation, child) {
-                return SharedAxisTransition(
-                  animation: animation,
-                  secondaryAnimation: secondaryAnimation,
-                  transitionType: SharedAxisTransitionType.horizontal,
-                  child: child,
-                );
-              },
-            ),
-          );
-        } else if (response.statusCode == 401) {
-          callDialogAction(context, 'Verifique su conexión a Internet1');
+        debugPrint("entro aca");
+        // if (isBiometric) {
+        if (isBiometric) {
+          if (response.statusCode == 200) {
+            final authService = Provider.of<AuthService>(context, listen: false);
+            final tokenState = Provider.of<TokenState>(context, listen: false);
+            final notificationBloc = BlocProvider.of<NotificationBloc>(context, listen: false);
+            final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+            await DBProvider.db.database;
+            final dataJson = json.decode(response.body)['data'];
+
+            UserModel user = UserModel.fromJson({
+              "api_token": dataJson["apiToken"],
+              "user": dataJson["information"]
+            });
+
+            await authService.writeAuxtoken(user.apiToken!);
+            tokenState.updateStateAuxToken(true);
+            if (!mounted) return;
+            await authService.writeUser(context, userModelToJson(user));
+            userBloc.add(UpdateUser(user.user!));
+            final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
+            await DBProvider.db.newAffiliateModel(affiliateModel);
+            notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+
+            await AuthHelpers.initSessionUserApp(
+              context: context,
+              response: response,
+                userApp: UserAppMobile(
+                    identityCard: body['username'],
+                    numberPhone: body['cellphone']),
+                user: user);
+          }
+        } else {
+          //debo realizar un nueva interfaz para que vaya
+          if (response.statusCode == 200) {
+            final pinJson = json.decode(response.body);
+            body['messageId'] = pinJson['messageId'];
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
+                transitionDuration: const Duration(milliseconds: 400),
+                transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                  return SharedAxisTransition(
+                    animation: animation,
+                    secondaryAnimation: secondaryAnimation,
+                    transitionType: SharedAxisTransitionType.horizontal,
+                    child: child,
+                  );
+                },
+              ),
+            );
+          } 
         }
       }
     } catch (e) {
       debugPrint('Error: $e');
-      showError('Ocurrio un error al conectar con el servidor');
+      AuthHelpers.showError(
+          context, 'Ocurrio un error al conectar con el servidor');
     } finally {
       if (mounted) setState(() => isLoading = false);
     }

@@ -117,7 +117,7 @@ Future<dynamic> serviceMethod(
                       );
                     },
                   );
-                  return null; 
+                  return null;
                 }
             }
           }).catchError((err) {
@@ -145,6 +145,7 @@ Future<dynamic> serviceMethod(
             switch (value.statusCode) {
               case 200:
               case 201:
+                callDialogAction(context, json.decode(value.body)['message']);
                 return value;
               default:
                 callDialogAction(context, json.decode(value.body)['message']);
@@ -336,6 +337,15 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
         false,
         false,
       );
+      //   var response = await serviceMethod(
+      //   mounted,
+      //   context,
+      //   'post',
+      //   data,
+      //   serviceVersion(),
+      //   false,
+      //   false,
+      // );
 
       if (response != null && !json.decode(response.body)['error']) {
         // Si hay nueva versión, muestra diálogo con botón para actualizar
@@ -375,7 +385,7 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
               );
             });
       }
-      return true;
+      return true;  
     } else {
       return false;
     }

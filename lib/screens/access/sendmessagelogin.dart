@@ -4,25 +4,21 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
-import 'package:muserpol_pvt/main.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
-import 'package:muserpol_pvt/screens/list_services_menu/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
-import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
+import 'package:muserpol_pvt/utils/auth_helpers.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
-import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:provider/provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
@@ -76,7 +72,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
   @override
   Widget build(BuildContext context) {
-    var numbercell = widget.body['cellphone'];
+    var numbercell = widget.body['messageId'];
     return PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
@@ -297,23 +293,22 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
   Future verifyPinNew(code) async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    final notificationBloc = BlocProvider.of<NotificationBloc>(context, listen: false);
+    final notificationBloc =
+        BlocProvider.of<NotificationBloc>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
     FocusScope.of(context).unfocus();
 
     var requestBody = {
-      'code': code,
+      'pin': code,
+      'messageId': widget.body['messageId']
     };
 
-    if (dotenv.env['storeAndroid'] == 'appgallery') {
-      requestBody['firebase_token'] = '';
-    } else {
-      requestBody['firebase_token'] =
-          await PushNotificationService.getTokenFirebase();
-    }
     if (!mounted) return;
-    var response = await serviceMethod(mounted, context, 'post', requestBody, verifytosendmessage(), false, true);
+    // var response = await serviceMethod(mounted, context, 'post', requestBody,
+    //     verifytosendmessage(), false, true);
+
+    var response = await serviceMethod(mounted, context, 'post', requestBody, verifyPin(), false, true);
 
     if (response != null) {
       final decoded = json.decode(response.body);
@@ -351,83 +346,29 @@ class _SendMessageLogin extends State<SendMessageLogin> {
             });
       }
       // Código correcto: continúa flujo normal
-      await DBProvider.db.database;
+      // await DBProvider.db.database;
       final dataJson = json.decode(response.body)['data'];
+      debugPrint(dataJson.toString());
 
-      if (dataJson.containsKey('belongs_to_economic_complement') &&
-          dataJson['user'] is Map<String, dynamic>) {
-        dataJson['user']['belongs_to_economic_complement'] =
-            dataJson['belongs_to_economic_complement'];
-      }
+      // UserModel user = userModelFromJson(json.encode(dataJson));
 
-      UserModel user = userModelFromJson(json.encode(dataJson));
+      // await authService.writeAuxtoken(user.apiToken!);
+      // tokenState.updateStateAuxToken(true);
+      // if (!mounted) return;
+      // await authService.writeUser(context, userModelToJson(user));
+      // userBloc.add(UpdateUser(user.user!));
+      // final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
+      // await DBProvider.db.newAffiliateModel(affiliateModel);
+      // notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
 
-      await authService.writeAuxtoken(user.apiToken!);
-      tokenState.updateStateAuxToken(true);
-      if (!mounted) return;
-      await authService.writeUser(context, userModelToJson(user));
-      userBloc.add(UpdateUser(user.user!));
-      final affiliateModel = AffiliateModel(idAffiliate: user.user!.id!);
-      await DBProvider.db.newAffiliateModel(affiliateModel);
-      notificationBloc.add(UpdateAffiliateId(user.user!.id!));
-
-      debugPrint(widget.body['identityCard']);
-
-      initSessionUserApp(
-          response,
-          UserAppMobile(
-              identityCard: widget.body['identityCard'],
-              numberPhone: widget.body['cellphone']),
-          user);
+      // await AuthHelpers.initSessionUserApp(
+      //     context: context,
+      //     response: response,
+      //     userApp: UserAppMobile(
+      //         identityCard: widget.body['username'],
+      //         numberPhone: widget.body['cellphone']),
+      //     user: user);
     }
-  }
-
-  initSessionUserApp(dynamic response, UserAppMobile userApp, UserModel user) async {
-    debugPrint("entro1");
-    debugPrint(jsonEncode(userApp.toJson()));
-    debugPrint("entro2");
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final tokenState = Provider.of<TokenState>(context, listen: false);
-    final biometric = await authService.readBiometric();
-
-    tokenState.updateStateAuxToken(false);
-
-    final biometricUserModel = BiometricUserModel(
-      biometricUser: biometric == '' ? false : biometricUserModelFromJson(biometric).biometricUser,
-      affiliateId: json.decode(response.body)['data']['user']['id'],
-      userAppMobile: userApp
-    );
-
-    prefs!.setBool('isDoblePerception',
-        json.decode(response.body)['data']['is_doble_perception']);
-    if (!mounted) return;
-    await authService.writeBiometric(
-        context, biometricUserModelToJson(biometricUserModel));
-
-    if (!mounted) return;
-    await authService.writeToken(context, user.apiToken!);
-
-    if (!mounted) return;
-    await authService.writeToken(context, user.apiToken!);
-    tokenState.updateStateAuxToken(false);
-
-    if (!mounted) return;
-
-    showSuccessful(
-      context,
-      'Correcto, Autenticacion Exitosa',
-      () {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const ScreenListService(
-              showTutorial: true,
-            ),
-            transitionDuration: const Duration(seconds: 0),
-          ),
-        );
-      },
-    );
   }
 
   void startCountdown() {

@@ -36,79 +36,96 @@ class UserModel {
 }
 
 class User {
-  User({
-    this.id,
-    this.fullName,
-    this.degree,
-    this.identityCard,
-    this.pensionEntity,
-    this.category,
-    this.enrolled,
-    this.verified,
-    this.birthDay,
-    this.belongsToEconomicComplement,
-  });
+  User(
+      {
+      this.fullName,
+      this.isPolice,
+      this.kinship,
+      this.affiliateId,
+      this.identityCard,
+      this.pensionEntity,
+      this.degree,
+      this.category,
+      this.isDoblePerception,
+      this.isEconomicComplement,
+      this.messageEcoCom,
+      this.enrolled,
+      this.verified});
 
-  int? id;
   String? fullName;
-  String? degree;
+  bool? isPolice;
+  String? kinship;
+  int? affiliateId;
   String? identityCard;
   String? pensionEntity;
+  String? degree;
   String? category;
+  bool? isDoblePerception;
+  bool? isEconomicComplement;
+  String? messageEcoCom;
   bool? enrolled;
   bool? verified;
-  String? birthDay;
-  bool? belongsToEconomicComplement;
 
   User copyWith({
-    int? id,
     String? fullName,
-    String? degree,
+    bool? isPolice,
+    String? kinship,
+    int? affiliateId,
     String? identityCard,
     String? pensionEntity,
+    String? degree,
     String? category,
+    bool? isDoblePerception,
+    bool? isEconomicComplement,
+    String? messageEcoCom,
     bool? enrolled,
     bool? verified,
-    String? birthDay,
-    bool? belongsToEconomicComplement,
   }) =>
       User(
-        id: id ?? this.id,
         fullName: fullName ?? this.fullName,
-        degree: degree ?? this.degree,
+        isPolice: isPolice ?? this.isPolice,
+        kinship: kinship ?? this.kinship,
+        affiliateId: affiliateId ?? this.affiliateId,
         identityCard: identityCard ?? this.identityCard,
         pensionEntity: pensionEntity ?? this.pensionEntity,
+        degree: degree ?? this.degree,
         category: category ?? this.category,
+        isDoblePerception: isDoblePerception ?? this.isDoblePerception,
+        isEconomicComplement: isEconomicComplement ?? this.isEconomicComplement,
+        messageEcoCom: messageEcoCom ?? this.messageEcoCom,
         enrolled: enrolled ?? this.enrolled,
         verified: verified ?? this.verified,
-        birthDay: birthDay ?? this.birthDay,
-        belongsToEconomicComplement:
-            belongsToEconomicComplement ?? this.belongsToEconomicComplement,
       );
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json["id"],
-        fullName: json["full_name"],
+        fullName: json["fullName"],
+        isPolice: json['isPolice'],
+        kinship: json["kinship"],
+        affiliateId: json["affiliateId"],
+        identityCard: json["identityCard"],
+        pensionEntity: json["pensionEntity"],
         degree: json["degree"],
-        identityCard: json["identity_card"],
-        pensionEntity: json["pension_entity"],
         category: json["category"],
+        isDoblePerception: json["isDoblePerception"],
+        isEconomicComplement: json["isEconomicComplement"],
+        messageEcoCom: json["messageEcoCom"],
         enrolled: json["enrolled"],
         verified: json["verified"],
-        birthDay: json["birth_day"],
-        belongsToEconomicComplement: json["belongs_to_economic_complement"],
       );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "full_name": fullName,
+        "fullName": fullName,
+        "isPolice": isPolice,
+        "kinship": kinship,
+        "affiliateId": affiliateId,
+        "identityCard": identityCard,
+        "pensionEntity": pensionEntity,
         "degree": degree,
-        "identity_card": identityCard,
-        "pension_entity": pensionEntity,
         "category": category,
+        "isDoblePerception": isDoblePerception,
+        "isEconomicComplement": isEconomicComplement,
+        "messageEcoCom": messageEcoCom,
         "enrolled": enrolled,
         "verified": verified,
-        "birth_day": birthDay,
-        "belongs_to_economic_complement": belongsToEconomicComplement,
       };
 }

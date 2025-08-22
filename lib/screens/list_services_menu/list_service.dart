@@ -63,7 +63,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
       debugPrint(json.encode(userBloc.toJson()));
     }
 
-    if (userBloc?.belongsToEconomicComplement == true) {
+    if (userBloc?.isEconomicComplement == true) {
       if (!mounted) return;
       await loadGeneralServicesComplementEconomic(context);
       await getEconomicComplement(context, current: true);
@@ -192,7 +192,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
                           .state
                           .user;
 
-                  if (userBloc?.belongsToEconomicComplement == true) {
+                  if (userBloc?.isEconomicComplement == true) {
                     // Si tiene acceso, Ingresa a Complemento Economico
                     if (userBloc?.enrolled == false) {
                       return showBarModalBottomSheet(

@@ -46,6 +46,8 @@ String serviceEcoComProcedure(int ecoComId) => '$hostPVT/$reazon/eco_com_procedu
 //GET VERSION
 String servicePostVersion()=>'$hostPVT/$reazon/version';
 
+String serviceVersion()=>'$hostGATEWAY/$reazonMovil/version';
+
 
 //AUTENTICACION DE USUARIO POR SMS 
 String createtosendmessage() =>'$hostSTI/$reazonAffiliate/sendcode';

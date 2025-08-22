@@ -192,7 +192,7 @@ class _ScreenComplementNewState extends State<ScreenComplementNew> {
     final tabProcedureState =
         Provider.of<TabProcedureState>(context, listen: false);
     var response = await serviceMethod(mounted, context, 'get', null,
-        serviceGetProcessingPermit(userBloc.state.user!.id!), true, false);
+        serviceGetProcessingPermit(userBloc.state.user!.affiliateId!), true, false);
 
     if (response != null) {
       userBloc.add(UpdateCtrlLive(

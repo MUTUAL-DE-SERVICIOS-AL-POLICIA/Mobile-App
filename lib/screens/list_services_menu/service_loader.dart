@@ -35,7 +35,7 @@ Future<void> loadEconomicComplementServices(BuildContext context) async {
     context,
     'get',
     null,
-    serviceGetObservation(userBloc.state.user!.id!),
+    serviceGetObservation(userBloc.state.user!.affiliateId!),
     true,
     true,
   );
@@ -55,7 +55,7 @@ Future<void> getProcessingPermit(BuildContext context) async {
       Provider.of<TabProcedureState>(context, listen: false);
 
   var response = await serviceMethod(true, context, 'get', null,
-      serviceGetProcessingPermit(userBloc.state.user!.id!), true, false);
+      serviceGetProcessingPermit(userBloc.state.user!.affiliateId!), true, false);
 
   if (response != null) {
     var data = json.decode(response.body)['data'];

@@ -133,7 +133,6 @@ class _ModalInsideModalState extends State<ModalInsideModal>
   }
 
   sendImage(String image) async {
-    debugPrint("entro aca");
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
     final Map<String, dynamic> body = {
       // 'firebase_token': widget.firebaseToken, eliminar por el momento
