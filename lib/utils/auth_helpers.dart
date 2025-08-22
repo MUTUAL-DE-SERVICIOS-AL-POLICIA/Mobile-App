@@ -28,14 +28,12 @@ class AuthHelpers {
 
     final biometricUserModel = BiometricUserModel(
       biometricUser: biometric == '' ? false : biometricUserModelFromJson(biometric).biometricUser,
-      affiliateId: json.decode(response.body)['data']['user']['id'],
+      affiliateId: json.decode(response.body)['data']['information']['affiliateId'],
       userAppMobile: userApp,
     );
 
-    prefs!.setBool('isDoblePerception',
-        json.decode(response.body)['data']['is_doble_perception']);
-    await authService.writeBiometric(
-        context, biometricUserModelToJson(biometricUserModel));
+    prefs!.setBool('isDoblePerception', json.decode(response.body)['data']['information']['isDoblePerception']);
+    await authService.writeBiometric(context, biometricUserModelToJson(biometricUserModel));
 
     await authService.writeToken(context, user.apiToken!);
     tokenState.updateStateAuxToken(false);

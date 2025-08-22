@@ -72,7 +72,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
   @override
   Widget build(BuildContext context) {
-    var numbercell = widget.body['messageId'];
+    var numbercell = widget.body['cellphone'];
     return PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
@@ -299,16 +299,14 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     final tokenState = Provider.of<TokenState>(context, listen: false);
     FocusScope.of(context).unfocus();
 
-    var requestBody = {
-      'pin': code,
-      'messageId': widget.body['messageId']
-    };
+    var requestBody = {'pin': code, 'messageId': widget.body['messageId']};
 
     if (!mounted) return;
-    // var response = await serviceMethod(mounted, context, 'post', requestBody,
-    //     verifytosendmessage(), false, true);
+    var response = await serviceMethod(mounted, context, 'post', requestBody,
+        verifytosendmessage(), false, true);
 
-    var response = await serviceMethod(mounted, context, 'post', requestBody, verifyPin(), false, true);
+    // var response = await serviceMethod(
+    //     mounted, context, 'post', requestBody, verifyPin(), false, true);
 
     if (response != null) {
       final decoded = json.decode(response.body);
@@ -346,28 +344,29 @@ class _SendMessageLogin extends State<SendMessageLogin> {
             });
       }
       // Código correcto: continúa flujo normal
-      // await DBProvider.db.database;
+      await DBProvider.db.database;
       final dataJson = json.decode(response.body)['data'];
-      debugPrint(dataJson.toString());
 
-      // UserModel user = userModelFromJson(json.encode(dataJson));
+      UserModel user = UserModel.fromJson(
+          {"api_token": dataJson["apiToken"], "user": dataJson["information"]});
 
-      // await authService.writeAuxtoken(user.apiToken!);
-      // tokenState.updateStateAuxToken(true);
-      // if (!mounted) return;
-      // await authService.writeUser(context, userModelToJson(user));
-      // userBloc.add(UpdateUser(user.user!));
-      // final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
-      // await DBProvider.db.newAffiliateModel(affiliateModel);
-      // notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+      await authService.writeAuxtoken(user.apiToken!);
+      tokenState.updateStateAuxToken(true);
+      if (!mounted) return;
+      await authService.writeUser(context, userModelToJson(user));
+      userBloc.add(UpdateUser(user.user!));
+      final affiliateModel =
+          AffiliateModel(idAffiliate: user.user!.affiliateId!);
+      await DBProvider.db.newAffiliateModel(affiliateModel);
+      notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
 
-      // await AuthHelpers.initSessionUserApp(
-      //     context: context,
-      //     response: response,
-      //     userApp: UserAppMobile(
-      //         identityCard: widget.body['username'],
-      //         numberPhone: widget.body['cellphone']),
-      //     user: user);
+      await AuthHelpers.initSessionUserApp(
+          context: context,
+          response: response,
+          userApp: UserAppMobile(
+              identityCard: widget.body['username'],
+              numberPhone: widget.body['cellphone']),
+          user: user);
     }
   }
 

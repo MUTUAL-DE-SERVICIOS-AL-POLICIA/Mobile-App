@@ -372,13 +372,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       body['isBiometric'] = true;
 
       if (!mounted) return;
-      // var response = await serviceMethod(
-      //     mounted, context, 'post', body, createtosendmessage(), false, true);
       var response = await serviceMethod(
-          mounted, context, 'post', body, loginAppMobile(), false, true);
+          mounted, context, 'post', body, createtosendmessage(), false, true);
+      // var response = await serviceMethod(
+      //     mounted, context, 'post', body, loginAppMobile(), false, true);
       if (response != null) {
-        debugPrint("entro aca");
-        // if (isBiometric) {
         if (isBiometric) {
           if (response.statusCode == 200) {
             final authService = Provider.of<AuthService>(context, listen: false);

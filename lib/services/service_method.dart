@@ -65,12 +65,12 @@ Future<dynamic> serviceMethod(
       final http = IOClient(ioc);
 
       // Logs útiles para debug
-      // debugPrint('==========================================');
-      // debugPrint('== method $method');
-      // debugPrint('== url $url');
-      // debugPrint('== body $body');
-      // debugPrint('== headers $headers');
-      // debugPrint('==========================================');
+      debugPrint('==========================================');
+      debugPrint('== method $method');
+      debugPrint('== url $url');
+      debugPrint('== body $body');
+      debugPrint('== headers $headers');
+      debugPrint('==========================================');
 
       // Selección del método HTTP
       switch (method) {
@@ -145,7 +145,6 @@ Future<dynamic> serviceMethod(
             switch (value.statusCode) {
               case 200:
               case 201:
-                callDialogAction(context, json.decode(value.body)['message']);
                 return value;
               default:
                 callDialogAction(context, json.decode(value.body)['message']);
@@ -328,26 +327,26 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
 
       if (!mounted) return false;
 
-      var response = await serviceMethod(
-        mounted,
-        context,
-        'post',
-        data,
-        servicePostVersion(),
-        false,
-        false,
-      );
-      //   var response = await serviceMethod(
+      // var response = await serviceMethod(
       //   mounted,
       //   context,
       //   'post',
       //   data,
-      //   serviceVersion(),
+      //   servicePostVersion(),
       //   false,
       //   false,
       // );
+        var response = await serviceMethod(
+        mounted,
+        context,
+        'post',
+        data,
+        serviceVersion(),
+        false,
+        false,
+      );
 
-      if (response != null && !json.decode(response.body)['error']) {
+      if (response != null && json.decode(response.body)['error']) {
         // Si hay nueva versión, muestra diálogo con botón para actualizar
         if (!mounted) return false;
         return await showDialog(
@@ -364,10 +363,10 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
                       color: Colors.amber,
                     ),
                     const SizedBox(height: 20),
-                    Text(
-                      json.decode(response.body)['message'],
+                    const Text(
+                      'Actualiza la nueva versión',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 20),
                     ButtonComponent(
@@ -375,7 +374,7 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
                       onPressed: () async {
                         launchUrl(
                           Uri.parse(
-                              json.decode(response.body)['data']['url_store']),
+                              json.decode(response.body)['url']),
                           mode: LaunchMode.externalApplication,
                         );
                       },
