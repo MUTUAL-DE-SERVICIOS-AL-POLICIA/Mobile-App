@@ -10,6 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:muserpol_pvt/bloc/contribution/contribution_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
+import 'package:muserpol_pvt/model/register_number/files_state_veritify.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 // import 'package:muserpol_pvt/screens/access/forgot_password/forgot_pwd.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
@@ -88,6 +89,7 @@ class MyApp extends StatelessWidget {
               ChangeNotifierProvider(create: (_) => ObservationState()),
               ChangeNotifierProvider(create: (_) => TabProcedureState()),
               ChangeNotifierProvider(create: (_) => ProcessingState()),
+              ChangeNotifierProvider(create: (_) => FilesStateVeritify())
             ],
             // Inicializa utilidades para diseño adaptable en distintos tamaños de pantalla
             child: ScreenUtilInit(

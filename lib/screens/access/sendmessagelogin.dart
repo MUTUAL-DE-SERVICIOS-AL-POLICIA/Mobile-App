@@ -24,7 +24,8 @@ import 'package:sms_autofill/sms_autofill.dart';
 
 class SendMessageLogin extends StatefulWidget {
   final Map<String, dynamic> body;
-  const SendMessageLogin({super.key, required this.body});
+  final List<Map<String, String>>? fileIdentityCard;
+  const SendMessageLogin({super.key, required this.body, this.fileIdentityCard});
 
   @override
   State<SendMessageLogin> createState() => _SendMessageLogin();
@@ -38,6 +39,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   int remainingSeconds = 180;
   bool canResend = false;
   final SmsAutoFill _autoFill = SmsAutoFill();
+
 
   @override
   void initState() {
@@ -302,11 +304,11 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     var requestBody = {'pin': code, 'messageId': widget.body['messageId']};
 
     if (!mounted) return;
-    var response = await serviceMethod(mounted, context, 'post', requestBody,
-        verifytosendmessage(), false, true);
+    // var response = await serviceMethod(mounted, context, 'post', requestBody,
+    //     verifytosendmessage(), false, true);
 
-    // var response = await serviceMethod(
-    //     mounted, context, 'post', requestBody, verifyPin(), false, true);
+    var response = await serviceMethod(
+        mounted, context, 'post', requestBody, verifyPin(), false, true);
 
     if (response != null) {
       final decoded = json.decode(response.body);
@@ -347,18 +349,24 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       await DBProvider.db.database;
       final dataJson = json.decode(response.body)['data'];
 
-      UserModel user = UserModel.fromJson(
-          {"api_token": dataJson["apiToken"], "user": dataJson["information"]});
+      UserModel user = UserModel.fromJson({"api_token": dataJson["apiToken"], "user": dataJson["information"]});
 
       await authService.writeAuxtoken(user.apiToken!);
       tokenState.updateStateAuxToken(true);
       if (!mounted) return;
       await authService.writeUser(context, userModelToJson(user));
       userBloc.add(UpdateUser(user.user!));
-      final affiliateModel =
-          AffiliateModel(idAffiliate: user.user!.affiliateId!);
+      final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
       await DBProvider.db.newAffiliateModel(affiliateModel);
       notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+
+      if(widget.fileIdentityCard != null){
+        var newrequestBody = {'attachments': widget.fileIdentityCard};
+        var newrequest = await serviceMethod(mounted, context, 'post', newrequestBody, sendIdentityCard(), true, false);
+        if(newrequest != null){
+          debugPrint("envio la fotografia correctamentes");
+        }
+      }
 
       await AuthHelpers.initSessionUserApp(
           context: context,

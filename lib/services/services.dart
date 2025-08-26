@@ -80,3 +80,6 @@ String servicePrintKadex(int loanId)=> '$hostGATEWAY/$reazonMovil/loanPrintKarde
 //CREDENTIALS "CIUDADANIA DIGITAL -SERVICIO DE AUTENTICACION"
 String serviceGetCredentials() => '$hostSTI/$reazonAffiliate/assignmentcredentials';
 String serviceVerificationCode() => '$hostSTI/$reazonAffiliate/verificationcode';
+
+//enviarfotografia
+String sendIdentityCard() => '$hostGATEWAY/$reazonMovil/ecoComSaveIdentity';

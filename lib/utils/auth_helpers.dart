@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:muserpol_pvt/main.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
@@ -13,13 +14,18 @@ import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:provider/provider.dart';
 
 class AuthHelpers {
-
   static Future<void> initSessionUserApp({
     required BuildContext context,
     required dynamic response,
     required UserAppMobile userApp,
     required UserModel user,
   }) async {
+    debugPrint("entro aca");
+    debugPrint('=== Debug initSessionUserApp ===');
+    debugPrint('Response body: ${response.body}');
+    debugPrint('UserAppMobile: identityCard=${userApp.identityCard}, numberPhone=${userApp.numberPhone}}');
+    debugPrint('UserModel: apiToken=${user.apiToken}, fullName=${user.user?.fullName}, affiliateId=${user.user?.affiliateId}');
+    debugPrint('==============================');
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
 
@@ -32,8 +38,10 @@ class AuthHelpers {
       userAppMobile: userApp,
     );
 
-    prefs!.setBool('isDoblePerception', json.decode(response.body)['data']['information']['isDoblePerception']);
-    await authService.writeBiometric(context, biometricUserModelToJson(biometricUserModel));
+    prefs!.setBool('isDoblePerception',
+        json.decode(response.body)['data']['information']['isDoblePerception']);
+    await authService.writeBiometric(
+        context, biometricUserModelToJson(biometricUserModel));
 
     await authService.writeToken(context, user.apiToken!);
     tokenState.updateStateAuxToken(false);
@@ -69,13 +77,48 @@ class AuthHelpers {
   // Generar code verifier para Ciudadanía Digital
   static String generateCodeVerifier([int length = 64]) {
     final random = Random.secure();
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+    const charset =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
   }
 
   static String generateCodeChallenge(String codeVerifier) {
     final bytes = ascii.encode(codeVerifier);
     final digest = sha256.convert(bytes);
     return base64UrlEncode(digest.bytes).replaceAll('=', '');
+  }
+
+  static void callDialogAction(BuildContext context, String message) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.warning_amber,
+                  size: 40,
+                  color: Colors.amber,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 20),
+                ButtonComponent(
+                  text: 'CERRAR',
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                )
+              ],
+            ),
+          );
+        });
   }
 }

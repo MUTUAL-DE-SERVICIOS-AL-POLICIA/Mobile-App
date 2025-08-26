@@ -20,6 +20,7 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
+import 'package:muserpol_pvt/screens/access/register_num/verifity_identiity.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
@@ -369,19 +370,58 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       body['username'] = identityCard;
       body['cellphone'] = cellphone;
       body['signature'] = signature;
-      body['isBiometric'] = true;
+      body['isBiometric'] = isBiometric;
+
+      final confirm = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: const Text("Confirmar datos"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("¿Estás seguro que los datos son correctos?"),
+                const SizedBox(height: 10),
+                Text("CI: $identityCard"),
+                Text("Celular: $cellphone"),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text("Cancelar"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Confirmar"),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirm != true) {
+        setState(() => isLoading = false);
+        return;
+      }
 
       if (!mounted) return;
-      var response = await serviceMethod(
-          mounted, context, 'post', body, createtosendmessage(), false, true);
       // var response = await serviceMethod(
-      //     mounted, context, 'post', body, loginAppMobile(), false, true);
+      //     mounted, context, 'post', body, createtosendmessage(), false, true);
+      var response = await serviceMethod(
+          mounted, context, 'post', body, loginAppMobile(), false, true);
       if (response != null) {
         if (isBiometric) {
-          if (response.statusCode == 200) {
-            final authService = Provider.of<AuthService>(context, listen: false);
+          if (response != null) {
+            final authService =
+                Provider.of<AuthService>(context, listen: false);
             final tokenState = Provider.of<TokenState>(context, listen: false);
-            final notificationBloc = BlocProvider.of<NotificationBloc>(context, listen: false);
+            final notificationBloc =
+                BlocProvider.of<NotificationBloc>(context, listen: false);
             final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
             await DBProvider.db.database;
             final dataJson = json.decode(response.body)['data'];
@@ -396,13 +436,14 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
             if (!mounted) return;
             await authService.writeUser(context, userModelToJson(user));
             userBloc.add(UpdateUser(user.user!));
-            final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
+            final affiliateModel =
+                AffiliateModel(idAffiliate: user.user!.affiliateId!);
             await DBProvider.db.newAffiliateModel(affiliateModel);
             notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
 
             await AuthHelpers.initSessionUserApp(
-              context: context,
-              response: response,
+                context: context,
+                response: response,
                 userApp: UserAppMobile(
                     identityCard: body['username'],
                     numberPhone: body['cellphone']),
@@ -410,26 +451,43 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           }
         } else {
           //debo realizar un nueva interfaz para que vaya
-          if (response.statusCode == 200) {
-            final pinJson = json.decode(response.body);
-            body['messageId'] = pinJson['messageId'];
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
-                transitionDuration: const Duration(milliseconds: 400),
-                transitionsBuilder: (_, animation, secondaryAnimation, child) {
-                  return SharedAxisTransition(
-                    animation: animation,
-                    secondaryAnimation: secondaryAnimation,
-                    transitionType: SharedAxisTransitionType.horizontal,
-                    child: child,
-                  );
-                },
-              ),
-            );
-          } 
+          if (response != null) {
+            final dataJson = json.decode(response.body);
+            if (dataJson['error']) {
+              if (dataJson['message'] == 'Persona no encontrada') {
+                AuthHelpers.callDialogAction(context, dataJson['message']);
+              } else if (dataJson['message'] == 'Número de teléfono no registrado para esta persona.') {
+                debugPrint("debe entrar a la pagina para leer el carnet");
+                Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => RegisterIdentityScreen(body: body)
+                      ),
+                );
+              } else if (dataJson['message'] == 'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
+                AuthHelpers.callDialogAction(context, dataJson['message']);
+              }
+            } else {
+              body['messageId'] = dataJson['messageId'];
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
+                  transitionDuration: const Duration(milliseconds: 400),
+                  transitionsBuilder:
+                      (_, animation, secondaryAnimation, child) {
+                    return SharedAxisTransition(
+                      animation: animation,
+                      secondaryAnimation: secondaryAnimation,
+                      transitionType: SharedAxisTransitionType.horizontal,
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            }
+          }
         }
       }
     } catch (e) {

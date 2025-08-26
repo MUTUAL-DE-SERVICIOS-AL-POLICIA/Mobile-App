@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-BiometricUserModel biometricUserModelFromJson(String str) => BiometricUserModel.fromJson(json.decode(str));
+BiometricUserModel biometricUserModelFromJson(String str) =>
+    BiometricUserModel.fromJson(json.decode(str));
 
-String biometricUserModelToJson(BiometricUserModel data) => json.encode(data.toJson());
+String biometricUserModelToJson(BiometricUserModel data) =>
+    json.encode(data.toJson());
 
 class BiometricUserModel {
   BiometricUserModel({
@@ -32,15 +34,16 @@ class BiometricUserModel {
 
   factory BiometricUserModel.fromJson(Map<String, dynamic> json) =>
       BiometricUserModel(
-        biometricUser: json["biometric"],
-        affiliateId: json["affiliate_id"],
-        userAppMobile: UserAppMobile.fromJson(json["user_app_mobile"])
-      );
+          biometricUser: json["biometric"],
+          affiliateId: json["affiliate_id"],
+          userAppMobile: json["user_app_mobile"] != null
+              ? UserAppMobile.fromJson(json["user_app_mobile"])
+              : null);
 
   Map<String, dynamic> toJson() => {
         "biometric": biometricUser,
         "affiliate_id": affiliateId,
-        "user_app_mobile":userAppMobile!.toJson(),
+        "user_app_mobile": userAppMobile!.toJson(),
       };
 }
 
@@ -70,10 +73,5 @@ class UserAppMobile {
   Map<String, dynamic> toJson() => {
         "identity_card": identityCard,
         "numberPhone": numberPhone,
-  };
-
-   @override
-  String toString() {
-    return 'UserAppMobile(identityCard: $identityCard, numberPhone: $numberPhone)';
-  }
+      };
 }
