@@ -63,27 +63,6 @@ Future<void> getProcessingPermit(BuildContext context) async {
       true,
       false);
 
-  // if (response != null) {
-  //   var data = json.decode(response.body)['data'];
-  //   userBloc.add(UpdateCtrlLive(data['liveness_success']));
-  //   userBloc.add(UpdateProcedureId(data['procedure_id']));
-
-  //   if (data['cell_phone_number'].length > 0) {
-  //     userBloc.add(UpdatePhone(data['cell_phone_number'][0]));
-  //   }
-
-  //   if (data['liveness_success']) {
-  //     tabProcedureState.updateTabProcedure(1);
-  //     if (userBloc.state.user!.verified!) {
-  //       loadingState.updateStateLoadingProcedure(true);
-  //     } else {
-  //       loadingState.updateStateLoadingProcedure(false);
-  //     }
-  //   } else {
-  //     tabProcedureState.updateTabProcedure(0);
-  //     loadingState.updateStateLoadingProcedure(false);
-  //   }
-  // }
   if (response != null) {
     var body = json.decode(response.body);
     var data = body['data'];
@@ -109,7 +88,6 @@ Future<void> getProcessingPermit(BuildContext context) async {
         loadingState.updateStateLoadingProcedure(false);
       }
     } else {
-      debugPrint("⚠️ Data vacío o inválido: $data");
       loadingState.updateStateLoadingProcedure(false);
       tabProcedureState.updateTabProcedure(0);
     }

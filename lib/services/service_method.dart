@@ -55,12 +55,12 @@ Future<dynamic> serviceMethod(
       ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
       final http = IOClient(ioc);
       // Logs útiles para debug
-      // debugPrint('==========================================');
-      // debugPrint('== method $method');
-      // debugPrint('== url $url');
-      // debugPrint('== body $body');
-      // debugPrint('== headers $headers');
-      // debugPrint('==========================================');
+      debugPrint('==========================================');
+      debugPrint('== method $method');
+      debugPrint('== url $url');
+      debugPrint('== body $body');
+      debugPrint('== headers $headers');
+      debugPrint('==========================================');
       // Selección del método HTTP
       switch (method) {
         case 'get':

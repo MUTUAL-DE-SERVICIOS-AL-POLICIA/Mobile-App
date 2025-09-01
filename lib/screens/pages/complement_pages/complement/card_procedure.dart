@@ -21,7 +21,8 @@ import 'package:muserpol_pvt/model/files_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/modal_enrolled/modal.dart';
-import 'package:muserpol_pvt/screens/pages/complement/new_procedure/tab_info.dart';
+import 'package:muserpol_pvt/screens/pages/complement_pages/complement/tab_info.dart';
+
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:provider/provider.dart';

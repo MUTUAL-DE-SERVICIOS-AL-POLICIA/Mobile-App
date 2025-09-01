@@ -1,4 +1,5 @@
 // To parse this JSON data, do
+
 //
 //     final contributionModel = contributionModelFromJson(jsonString);
 
@@ -10,7 +11,7 @@ String contributionModelToJson(ContributionModel data) => json.encode(data.toJso
 
 class ContributionModel {
   ContributionModel({
-    required this.error,
+    required this.error,      
     required this.message,
     required this.payload,
   });
@@ -19,11 +20,11 @@ class ContributionModel {
   String message;
   Payload payload;
 
-  ContributionModel copyWith({
+  ContributionModel copyWith({                                                                
     String? error,
     String? message,
     Payload? payload,
-  }) =>
+  }) =>                        
       ContributionModel(
         error: error ?? this.error,
         message: message ?? this.message,

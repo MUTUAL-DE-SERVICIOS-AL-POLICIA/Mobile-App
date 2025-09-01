@@ -85,7 +85,6 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
 
       _initCamera(newDescription);
     } catch (e) {
-      debugPrint('Error al obtener las cámaras: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error al inicializar la cámara.')));

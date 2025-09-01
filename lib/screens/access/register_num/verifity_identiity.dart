@@ -29,7 +29,9 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
   bool _isCapturing = false;
   bool _showGuide = true;
   List<CameraDescription> cameras = [];
-  File? _lastCaptureImage;
+  bool _isFrontSide = true;
+
+  File? _frontImage;
 
   Future<void> initCameras() async {
     cameras = await availableCameras();
@@ -98,32 +100,27 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
       final cropHeight = (guideHeight * scaleY).toInt();
 
       // Recortar la imagen
-
-      final croppedImage = img.copyCrop(originalImage,
-          x: cropX, y: cropY, width: cropWidth, height: cropHeight);
-
+      final croppedImage = img.copyCrop(originalImage,x: cropX, y: cropY, width: cropWidth, height: cropHeight);
       // Guardar en archivo temporal
-      final croppedFile = File('${image.path}_cropped.png')
-        ..writeAsBytesSync(img.encodePng(croppedImage));
-
-      _lastCaptureImage = croppedFile;
+      final croppedFile = File('${image.path}_cropped.png')..writeAsBytesSync(img.encodePng(croppedImage));
 
       if (!mounted) return;
 
-      final inputImage = InputImage.fromFilePath(croppedFile.path);
-      final filesState =
-          Provider.of<FilesStateVeritify>(context, listen: false);
-      final item = filesState.getFileById('cianverso');
+      if (_isFrontSide) {
+        final inputImage = InputImage.fromFilePath(croppedFile.path);
+        final filesState = Provider.of<FilesStateVeritify>(context, listen: false);
+        final item = filesState.getFileById('cianverso');
 
-      final result = await TextDetector.detectText(
-        inputImage: inputImage,
-        fileImage: croppedFile,
-        item: item!,
-        filesState: filesState,
-        userInput: widget.body['username'],
-      );
+        final result = await TextDetector.detectText(
+          inputImage: inputImage,
+          fileImage: croppedFile,
+          item: item!,
+          filesState: filesState,
+          userInput: widget.body['username'],
+        );
 
-      if (mounted) {
+        if (!mounted) return;
+
         if (!result.isDocumentValid) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -138,39 +135,18 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
           return;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  result.match
-                      ? "Coincidencia encontrada!"
-                      : "No se encontraron coincidencias",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                if (result.match && result.matchedBlocks.isNotEmpty)
-                  Text(
-                    "Se encontró en ${result.matchedBlocks.length} ubicación(es)",
-                    style: const TextStyle(fontSize: 12),
-                  ),
-              ],
-            ),
-            backgroundColor: result.match ? Colors.green : Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-
         if (result.match) {
-          _showImagePreview(context, _lastCaptureImage!);
-        } else {
-          debugPrint("no debe dejar entrar");
+
+          _showImagePreview(context, croppedFile, isFront: true);
+
         }
+      } else {
+
+        _showImagePreview(context, croppedFile, isFront: false);
+
       }
     } catch (e) {
       if (mounted) {
-        debugPrint(e.toString());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al procesar imagen: $e')),
         );
@@ -182,72 +158,51 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     }
   }
 
-  void _showImagePreview(BuildContext context, File imageFile) {
+  void _showImagePreview(BuildContext context, File imageFile, {required bool isFront}) {
+    
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Previsualización de documento",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey, width: 1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      imageFile,
-                      fit: BoxFit.contain,
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      height: MediaQuery.of(context).size.height * 0.4,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Coincidencia verificada correctamente",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        widget.body["isRegisterCellphone"] = true;
-                        sendCredentialsNew(imageFile);
-                      },
-                      child: const Text("Continuar"),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
           ),
-        );
-      },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isFront ? "Anverso capturado" : "Reverso capturado",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Image.file(imageFile,
+                  width: 200, height: 150, fit: BoxFit.contain),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  if (isFront) {
+                    // Guardamos el anverso en una variable temporal
+                    _frontImage = imageFile;
+                    setState(() => _isFrontSide = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Ahora capture el reverso")),
+                    );
+                  } else {
+                    // Guardamos reverso y enviamos ambos como archivos
+                    widget.body["isRegisterCellphone"] = true;
+                    sendCredentialsNew(_frontImage!, imageFile);
+                  }
+                },
+                child: Text(isFront ? "Continuar con reverso" : "Finalizar"),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -263,15 +218,23 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     super.dispose();
   }
 
-  sendCredentialsNew(File imageFile) async {
+  sendCredentialsNew(File frontImage, File backImage) async {
     List<Map<String, String>> data = [];
 
-    final bytes = await imageFile.readAsBytes();
-    String base64 = base64Encode(bytes);
+    final frontbytes = await frontImage.readAsBytes();
+    String frontbase64 = base64Encode(frontbytes);
+
+    final backbytes = await frontImage.readAsBytes();
+    String backbase64 = base64Encode(backbytes);
 
     data.add({
       'filename': 'ci_anverso',
-      'content': base64,
+      'content': frontbase64,
+    });
+
+    data.add({
+      'filename': 'ci_reverso',
+      'content': backbase64,
     });
     if (_controller != null && _controller!.value.isInitialized) {
       await _controller!.dispose();
@@ -400,7 +363,7 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
         height: MediaQuery.of(context).size.height * 0.3,
         decoration: BoxDecoration(
           border: Border.all(
-            color: Colors.green,
+            color: const Color.fromARGB(255, 255, 255, 255),
             width: 3,
             strokeAlign: BorderSide.strokeAlignOutside,
           ),
@@ -413,10 +376,10 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
               left: 0,
               right: 0,
               child: Text(
-                "ANVERSO",
+                "CAPTURAR",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.green,
+                  color: Color.fromARGB(255, 255, 255, 255),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                   shadows: [Shadow(blurRadius: 10, color: Colors.black)],

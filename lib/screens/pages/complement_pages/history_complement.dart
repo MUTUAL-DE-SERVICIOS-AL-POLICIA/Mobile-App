@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/bloc/procedure/procedure_bloc.dart';
 import 'package:muserpol_pvt/model/procedure_model.dart';
-import 'package:muserpol_pvt/screens/pages/complement/card_economic_complement.dart';
+import 'package:muserpol_pvt/screens/pages/complement_pages/complement/card_economic_complement.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 

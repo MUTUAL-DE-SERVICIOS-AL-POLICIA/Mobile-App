@@ -18,10 +18,3 @@ class FileDocument {
 }
 
 enum StateAplication { virtualOficine, complement }
-
-// // Make a class
-// class StateAplication  {
-//   final state app;
-
-//   StateAplication(this.app);
-// }
