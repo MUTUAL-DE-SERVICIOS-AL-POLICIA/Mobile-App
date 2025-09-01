@@ -90,29 +90,4 @@ class AuthService extends ChangeNotifier {
     await storage.write(key: 'firstTime', value: 'true');
   }
 
-// Funciones que deberian ser eliminadas (no se usan en el nuevo sistema de login, pero pueden recuperarse si se desea)
-
-// Guarda el estado actual de la app (complemento, oficina virtual, etc.)
-
-  // Future<void> writeStateApp(BuildContext context, String value) async {
-  //   await storage.write(key: 'stateApp', value: value);
-  // }
-
-// Lee el estado actual de la app
-
-  // Future<String> readStateApp() async {
-  //   return await storage.read(key: 'stateApp') ?? '';
-  // }
-
-// Guarda el token del backend de Complemento Económico
-
-  Future<void> writeTokenCE(String token) async {
-    await storage.write(key: 'token_ce', value: token);
-  }
-
-// Lee el token del backend de Complemento Económico
-
-  Future<String> readTokenCE() async {
-    return await storage.read(key: 'token_ce') ?? '';
-  }
 }

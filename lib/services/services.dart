@@ -1,17 +1,16 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+//VERIFICA SI LA VARIBLE DE ENTORNO TIENE VALOR TRUE O FALSE 
+//PARA SABER CON QUE VARIABLE INGRESARA
 bool stateApp() => dotenv.env['STATE_PROD'] == 'true';
+//SI PREGUNTARA DEL BACKEND DE PRODUCCION O DE PRUEBAS
 String? hostSTI = stateApp() ? dotenv.env['HOST_STI_PROD'] : dotenv.env['HOST_STI_DEV'];
-
 String? hostGATEWAY = stateApp()
     ? dotenv.env['HOST_GATEWAY_PROD']
     : dotenv.env['HOST_GATEWAY_DEV'];
-
+//
 String? auth = dotenv.env['auth'];
-
 String? reazonAffiliate = dotenv.env['reazonAffiliate'];
 String? reazonMovil = dotenv.env['reazonMovil'];
-
 //VERIFICAR LA VERSION DE LA APLICACION
 String serviceVersion() => '$hostGATEWAY/$reazonMovil/version';
 //SOLICITUD DEL SMS

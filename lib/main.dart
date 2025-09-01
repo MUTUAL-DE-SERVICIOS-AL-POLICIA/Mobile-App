@@ -186,7 +186,6 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
               'check_auth': (_) => const CheckAuthScreen(),
               'slider': (_) => const PageSlider(),
               'newlogin': (_) => const ScreenNewLogin(),
-              // 'forgot': (_) => const ForgotPwd(),
               'contacts': (_) => const ScreenContact(),
               'message': (_) => const ScreenNotification(),
             }));
