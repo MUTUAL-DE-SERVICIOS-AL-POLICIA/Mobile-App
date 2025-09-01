@@ -79,6 +79,8 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
         throw Exception("No se pudo decodificar la imagen");
       }
 
+      if (!mounted) return;
+
       final screenWidth = MediaQuery.of(context).size.width;
       final screenHeight = MediaQuery.of(context).size.height;
 
@@ -105,6 +107,8 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
         ..writeAsBytesSync(img.encodePng(croppedImage));
 
       _lastCaptureImage = croppedFile;
+
+      if (!mounted) return;
 
       final inputImage = InputImage.fromFilePath(croppedFile.path);
       final filesState =
@@ -272,6 +276,7 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     if (_controller != null && _controller!.value.isInitialized) {
       await _controller!.dispose();
     }
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(

@@ -20,12 +20,6 @@ class AuthHelpers {
     required UserAppMobile userApp,
     required UserModel user,
   }) async {
-    debugPrint("entro aca");
-    debugPrint('=== Debug initSessionUserApp ===');
-    debugPrint('Response body: ${response.body}');
-    debugPrint('UserAppMobile: identityCard=${userApp.identityCard}, numberPhone=${userApp.numberPhone}}');
-    debugPrint('UserModel: apiToken=${user.apiToken}, fullName=${user.user?.fullName}, affiliateId=${user.user?.affiliateId}');
-    debugPrint('==============================');
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
 
@@ -33,11 +27,13 @@ class AuthHelpers {
     tokenState.updateStateAuxToken(false);
 
     final biometricUserModel = BiometricUserModel(
-      biometricUser: biometric == '' ? false : biometricUserModelFromJson(biometric).biometricUser,
-      affiliateId: json.decode(response.body)['data']['information']['affiliateId'],
+      biometricUser: biometric == ''
+          ? false
+          : biometricUserModelFromJson(biometric).biometricUser,
+      affiliateId: json.decode(response.body)['data']['information']
+          ['affiliateId'],
       userAppMobile: userApp,
     );
-
     prefs!.setBool('isDoblePerception',
         json.decode(response.body)['data']['information']['isDoblePerception']);
     await authService.writeBiometric(
