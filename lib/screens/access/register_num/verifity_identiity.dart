@@ -7,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:muserpol_pvt/model/register_number/files_state_veritify.dart';
 import 'package:muserpol_pvt/model/register_number/ocr_detector.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
-import 'package:muserpol_pvt/services/service_method.dart';
-import 'package:muserpol_pvt/services/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
@@ -161,9 +159,6 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
         );
 
         if (result.match) {
-          //revisar el carnet sera a cargo de las personas asignadas
-          //detalles importantes tienen que tener un interfaz donde lo van a verificar
-          // debugPrint(widget.body.toString());
           _showImagePreview(context, _lastCaptureImage!);
         } else {
           debugPrint("no debe dejar entrar");
@@ -271,33 +266,31 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     String base64 = base64Encode(bytes);
 
     data.add({
-      'filename': 'cianverso',
+      'filename': 'ci_anverso',
       'content': base64,
     });
-
-    var response = await serviceMethod(
-        mounted, context, 'post', widget.body, loginAppMobile(), false, true);
-
-    if (response != null) {
-      final dataJson = json.decode(response.body);
-      widget.body['messageId'] = dataJson['messageId'];
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => SendMessageLogin(body: widget.body, fileIdentityCard: data,),
-          transitionDuration: const Duration(milliseconds: 400),
-          transitionsBuilder: (_, animation, secondaryAnimation, child) {
-            return SharedAxisTransition(
-              animation: animation,
-              secondaryAnimation: secondaryAnimation,
-              transitionType: SharedAxisTransitionType.horizontal,
-              child: child,
-            );
-          },
-        ),
-      );
+    if (_controller != null && _controller!.value.isInitialized) {
+      await _controller!.dispose();
     }
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => SendMessageLogin(
+          body: widget.body,
+          fileIdentityCard: data,
+          activeloading: true,
+        ),
+        transitionDuration: const Duration(milliseconds: 400),
+        transitionsBuilder: (_, animation, secondaryAnimation, child) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            child: child,
+          );
+        },
+      ),
+    );
   }
 
   @override

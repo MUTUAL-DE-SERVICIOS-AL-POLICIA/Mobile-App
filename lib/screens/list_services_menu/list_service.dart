@@ -8,7 +8,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/components/susessful.dart';
 // import 'package:muserpol_pvt/screens/list_services_menu/pages_enrolled/enrolled_page.dart';
-import 'package:muserpol_pvt/screens/list_services_menu/sevice_loader_complement.dart';
+// import 'package:muserpol_pvt/screens/list_services_menu/sevice_loader_complement.dart';
 import 'package:muserpol_pvt/screens/modal_enrolled/modal.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
@@ -66,7 +66,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
     if (userBloc?.isEconomicComplement == true) {
       if (!mounted) return;
       await loadGeneralServicesComplementEconomic(context);
-      await getEconomicComplement(context, current: true);
     }
 
     if (!mounted) return;

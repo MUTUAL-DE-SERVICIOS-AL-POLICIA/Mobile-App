@@ -49,8 +49,11 @@ class _ModalInsideModalState extends State<ModalInsideModal>
 
   getMessage() async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    var response = await serviceMethod(mounted, context, 'get', null,
-        serviceProcessEnrolled(null), true, true);
+    // var response = await serviceMethod(mounted, context, 'get', null,
+    //     serviceProcessEnrolled(null), true, true);
+
+    var response = await serviceMethod(
+        mounted, context, 'get', null, serviceProcessEnrolled(), true, true);
     if (response != null) {
       userBloc.add(UpdateStateCam(true));
       setState(() {
@@ -119,17 +122,21 @@ class _ModalInsideModalState extends State<ModalInsideModal>
     );
   }
 
-  Future<bool> _onBackPressed() async {
-    return await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) => ComponentAnimate(
-            child: DialogTwoAction(
-                message: '¿DESEAS SALIR DEL $titleback?',
-                actionCorrect: () {
-                  Navigator.pop(context);
-                },
-                messageCorrect: 'Salir')));
+  _onBackPressed() async {
+    final result = await showDialog<bool>(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => ComponentAnimate(
+        child: DialogTwoAction(
+          message: '¿DESEAS SALIR DEL $titleback?',
+          actionCorrect: () {
+            Navigator.pop(context, true); 
+          },
+          messageCorrect: 'Salir',
+        ),
+      ),
+    );
+    return result ?? false; 
   }
 
   sendImage(String image) async {
@@ -140,8 +147,8 @@ class _ModalInsideModalState extends State<ModalInsideModal>
       'image': image
     };
 
-    var response = await serviceMethod(mounted, context, 'post', body,
-        serviceProcessEnrolled(null), true, true);
+    var response = await serviceMethod(
+        mounted, context, 'post', body, serviceProcessEnrolledPost(), true, true);
     userBloc.add(UpdateStateCam(true));
     if (response != null) {
       if (json.decode(response.body)['error']) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/components/input.dart';
+import 'package:muserpol_pvt/components/inputs/text_input_formarter.dart';
 
 class PhoneNumber extends StatelessWidget {
   final TextEditingController phoneCtrl;
@@ -35,8 +36,9 @@ class PhoneNumber extends StatelessWidget {
           }
         },
         inputFormatters: [
-          LengthLimitingTextInputFormatter(10),
-          FilteringTextInputFormatter.allow(RegExp("[0-9]"))
+          LengthLimitingTextInputFormatter(11),
+          // FilteringTextInputFormatter.allow(RegExp("[0-9]"))
+          PhoneNumberFormatter(),
         ],
         keyboardType: TextInputType.number,
         textCapitalization: TextCapitalization.characters,

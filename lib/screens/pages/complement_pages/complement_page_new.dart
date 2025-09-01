@@ -10,10 +10,9 @@ import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/components/card_observation.dart';
 import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:muserpol_pvt/main.dart';
+import 'package:muserpol_pvt/model/procedure_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
-// import 'package:muserpol_pvt/screens/list_services_menu/service_loader.dart';
-// import 'package:muserpol_pvt/screens/list_services_menu/sevice_loader_complement.dart';
 import 'package:muserpol_pvt/screens/pages/complement/card_economic_complement.dart';
 import 'package:muserpol_pvt/screens/pages/complement/new_procedure/card_procedure.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
@@ -36,6 +35,7 @@ class _ScreenComplementNewState extends State<ScreenComplementNew> {
   @override
   void initState() {
     super.initState();
+    getEconomicComplement();
     scroll = ScrollController();
   }
 
@@ -44,6 +44,31 @@ class _ScreenComplementNewState extends State<ScreenComplementNew> {
     scroll.dispose();
     super.dispose();
   }
+
+  getEconomicComplement({bool refresh = false}) async {
+  final procedureBloc = BlocProvider.of<ProcedureBloc>(context, listen: false);
+
+  final response = await serviceMethod(
+    mounted,
+    context,
+    'get',
+    null,
+    serviceGetEconomicComplements(1, true),
+    true,
+    true,
+  );
+
+  if (response != null) {
+    final data = procedureModelFromJson(response.body);
+
+    if (refresh) {
+      procedureBloc.add(UpdateCurrentProcedures(data.data!.data!));
+    } else {
+      procedureBloc.add(AddCurrentProcedures(data.data!.data!));
+    }
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +111,6 @@ class _ScreenComplementNewState extends State<ScreenComplementNew> {
                 text: 'CREAR TRÁMITE',
                 onPressed: stateBtn && processingState.stateProcessing
                     ? () => create()
-                    //si esta null el boton estara no disponible
                     : null),
           ),
         if (!stateBtn)
@@ -168,18 +192,15 @@ class _ScreenComplementNewState extends State<ScreenComplementNew> {
         tabProcedureState.updateTabProcedure(0);
         filesState.clearFiles();
       });
-
-      // await getEconomicComplement();
-      // await getObservations();
       procedureBloc.add(UpdateStateComplementInfo(false));
-      // return widget.reload!();
     });
   }
 
   controleVerified() async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    var response = await serviceMethod(
-        mounted, context, 'get', null, serviceGetMessageFace(), true, true);
+    String type = 'verified';
+    var response = await serviceMethod(mounted, context, 'get', null,
+        serviceGetMessageFaceType(type), true, true);
     if (response != null) {
       userBloc.add(UpdateVerifiedDocument(
           json.decode(response.body)['data']['verified']));
@@ -191,8 +212,14 @@ class _ScreenComplementNewState extends State<ScreenComplementNew> {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
     final tabProcedureState =
         Provider.of<TabProcedureState>(context, listen: false);
-    var response = await serviceMethod(mounted, context, 'get', null,
-        serviceGetProcessingPermit(userBloc.state.user!.affiliateId!), true, false);
+    var response = await serviceMethod(
+        mounted,
+        context,
+        'get',
+        null,
+        serviceGetProcessingPermit(userBloc.state.user!.affiliateId!),
+        true,
+        false);
 
     if (response != null) {
       userBloc.add(UpdateCtrlLive(
@@ -223,37 +250,13 @@ class _ScreenComplementNewState extends State<ScreenComplementNew> {
     }
   }
 
-// RELOAD recargar la pagina una vez realizada el proceso de tramites e igula implementear
-//refresh en acciones que tengan un post, recargar la base de datos interna
- //Se nesecita actualizar 
-  // refresh() async {
-  //   if (!mounted) return;
+ Widget stateInfo() {
+  return Center(
+    child: IconBtnComponent(
+      iconText: 'assets/icons/reload.svg',
+      onPressed: () => getEconomicComplement(refresh: true),
+    ),
+  );
+}
 
-  //   // Limpia estados y vuelve a cargar
-  //   final filesState = Provider.of<FilesState>(context, listen: false);
-  //   final tabProcedureState =
-  //       Provider.of<TabProcedureState>(context, listen: false);
-  //   final processingState =
-  //       Provider.of<ProcessingState>(context, listen: false);
-  //   final procedureBloc =
-  //       BlocProvider.of<ProcedureBloc>(context, listen: false);
-
-  //   tabProcedureState.updateTabProcedure(0);
-  //   for (var element in filesState.files) {
-  //     filesState.updateFile(element.id!, null);
-  //   }
-  //   processingState.updateStateProcessing(false);
-  //   procedureBloc.add(ClearProcedures());
-
-  //   await getProcessingPermit();
-  //   // await loadEconomicComplementServices();
-  //   // await getEconomicComplement(true);
-  //   // await getEconomicComplement(false);
-  // }
-
-  Widget stateInfo() {
-    return Center(
-        child: IconBtnComponent(
-            iconText: 'assets/icons/reload.svg', onPressed: () => ()));
-  }
 }

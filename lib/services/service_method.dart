@@ -15,7 +15,6 @@ import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 // import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/button.dart';
 // import 'package:muserpol_pvt/components/dialog_action.dart';
-import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
@@ -225,7 +224,6 @@ Future<dynamic> serviceMethod(
   }
 }
 
-
 // Muestra un cuadro de diálogo con mensaje de error
 void callDialogAction(BuildContext context, String message) {
   showDialog(
@@ -274,20 +272,16 @@ confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
   final processingState = Provider.of<ProcessingState>(context, listen: false);
 
   if (voluntary) {
-    final biometricJson = await authService.readBiometric();
-    if (biometricJson.isNotEmpty) {
-      final biometric = biometricUserModelFromJson(biometricJson);
-      if (!mounted) return;
-      await serviceMethod(
-        mounted,
-        context,
-        'delete',
-        null,
-        serviceAuthSession(biometric.affiliateId!),
-        true,
-        false,
-      );
-    }
+    if (!mounted) return;
+    await serviceMethod(
+      mounted,
+      context,
+      'delete',
+      null,
+      serviceAuthSession(),
+      true,
+      false,
+    );
   }
 
   // Limpia archivos temporales
@@ -337,7 +331,7 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
       //   false,
       //   false,
       // );
-        var response = await serviceMethod(
+      var response = await serviceMethod(
         mounted,
         context,
         'post',
@@ -374,8 +368,7 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
                       text: 'ACTUALIZAR',
                       onPressed: () async {
                         launchUrl(
-                          Uri.parse(
-                              json.decode(response.body)['url']),
+                          Uri.parse(json.decode(response.body)['url']),
                           mode: LaunchMode.externalApplication,
                         );
                       },
@@ -385,7 +378,7 @@ Future<bool> checkVersion(bool mounted, BuildContext context) async {
               );
             });
       }
-      return true;  
+      return true;
     } else {
       return false;
     }

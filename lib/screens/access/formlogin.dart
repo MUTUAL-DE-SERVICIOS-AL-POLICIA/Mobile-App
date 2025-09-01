@@ -345,6 +345,10 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     }
   }
 
+  String getRawPhoneNumber(String formatted) {
+    return formatted.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
   sendCredentialsNew({required bool isBiometric}) async {
     FocusScope.of(context).unfocus();
@@ -358,7 +362,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
       final identityCard =
           '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
-      final cellphone = phoneCtrl.text.trim();
+      final cellphone = getRawPhoneNumber(phoneCtrl.text.trim());
 
       if (dotenv.env['storeAndroid'] == 'appgallery') {
         body['firebase_token'] = '';
@@ -387,7 +391,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                 const Text("¿Estás seguro que los datos son correctos?"),
                 const SizedBox(height: 10),
                 Text("CI: $identityCard"),
-                Text("Celular: $cellphone"),
+                Text('Celular: ${phoneCtrl.text}'),
               ],
             ),
             actions: [
@@ -410,83 +414,82 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       }
 
       if (!mounted) return;
-      // var response = await serviceMethod(
-      //     mounted, context, 'post', body, createtosendmessage(), false, true);
       var response = await serviceMethod(
           mounted, context, 'post', body, loginAppMobile(), false, true);
       if (response != null) {
         if (isBiometric) {
-          if (response != null) {
-            final authService =
-                Provider.of<AuthService>(context, listen: false);
-            final tokenState = Provider.of<TokenState>(context, listen: false);
-            final notificationBloc =
-                BlocProvider.of<NotificationBloc>(context, listen: false);
-            final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-            await DBProvider.db.database;
-            final dataJson = json.decode(response.body)['data'];
+          if(!mounted)return;
+          final authService = Provider.of<AuthService>(context, listen: false);
+          final tokenState = Provider.of<TokenState>(context, listen: false);
+          final notificationBloc =
+              BlocProvider.of<NotificationBloc>(context, listen: false);
+          final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+          await DBProvider.db.database;
+          final dataJson = json.decode(response.body)['data'];
 
-            UserModel user = UserModel.fromJson({
-              "api_token": dataJson["apiToken"],
-              "user": dataJson["information"]
-            });
+          UserModel user = UserModel.fromJson({
+            "api_token": dataJson["apiToken"],
+            "user": dataJson["information"]
+          });
 
-            await authService.writeAuxtoken(user.apiToken!);
-            tokenState.updateStateAuxToken(true);
-            if (!mounted) return;
-            await authService.writeUser(context, userModelToJson(user));
-            userBloc.add(UpdateUser(user.user!));
-            final affiliateModel =
-                AffiliateModel(idAffiliate: user.user!.affiliateId!);
-            await DBProvider.db.newAffiliateModel(affiliateModel);
-            notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+          await authService.writeAuxtoken(user.apiToken!);
+          tokenState.updateStateAuxToken(true);
+          if (!mounted) return;
+          await authService.writeUser(context, userModelToJson(user));
+          userBloc.add(UpdateUser(user.user!));
+          final affiliateModel =
+              AffiliateModel(idAffiliate: user.user!.affiliateId!);
+          await DBProvider.db.newAffiliateModel(affiliateModel);
+          notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
 
-            await AuthHelpers.initSessionUserApp(
-                context: context,
-                response: response,
-                userApp: UserAppMobile(
-                    identityCard: body['username'],
-                    numberPhone: body['cellphone']),
-                user: user);
-          }
+          await AuthHelpers.initSessionUserApp(
+              context: context,
+              response: response,
+              userApp: UserAppMobile(
+                  identityCard: body['username'],
+                  numberPhone: body['cellphone']),
+              user: user);
         } else {
-          //debo realizar un nueva interfaz para que vaya
-          if (response != null) {
-            final dataJson = json.decode(response.body);
-            if (dataJson['error']) {
-              if (dataJson['message'] == 'Persona no encontrada') {
-                AuthHelpers.callDialogAction(context, dataJson['message']);
-              } else if (dataJson['message'] == 'Número de teléfono no registrado para esta persona.') {
-                debugPrint("debe entrar a la pagina para leer el carnet");
-                Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => RegisterIdentityScreen(body: body)
-                      ),
-                );
-              } else if (dataJson['message'] == 'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
-                AuthHelpers.callDialogAction(context, dataJson['message']);
-              }
-            } else {
-              body['messageId'] = dataJson['messageId'];
-              if (!mounted) return;
-              Navigator.pushReplacement(
+          final dataJson = json.decode(response.body);
+          if (dataJson['error']) {
+            if (dataJson['message'] == 'Persona no encontrada') {
+              AuthHelpers.callDialogAction(context, dataJson['message']);
+            } else if (dataJson['message'] ==
+                'Número de teléfono no registrado para esta persona.') {
+              debugPrint("debe entrar a la pagina para leer el carnet");
+              Navigator.push(
                 context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => SendMessageLogin(body: body),
-                  transitionDuration: const Duration(milliseconds: 400),
-                  transitionsBuilder:
-                      (_, animation, secondaryAnimation, child) {
-                    return SharedAxisTransition(
-                      animation: animation,
-                      secondaryAnimation: secondaryAnimation,
-                      transitionType: SharedAxisTransitionType.horizontal,
-                      child: child,
-                    );
-                  },
-                ),
+                MaterialPageRoute(
+                    builder: (_) => RegisterIdentityScreen(body: body)),
               );
+            } else if (dataJson['message'] ==
+                'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
+              AuthHelpers.callDialogAction(context, dataJson['message']);
+            } else if (dataJson['message'] ==
+                'La persona se encuentra fallecida') {
+              AuthHelpers.callDialogAction(context, dataJson['message']);
             }
+          } else {
+            body['messageId'] = dataJson['messageId'];
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => SendMessageLogin(
+                  body: body,
+                  activeloading: false,
+                ),
+                transitionDuration: const Duration(milliseconds: 400),
+                transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                  return SharedAxisTransition(
+                    animation: animation,
+                    secondaryAnimation: secondaryAnimation,
+                    transitionType: SharedAxisTransitionType.horizontal,
+                    child: child,
+                  );
+                },
+              ),
+            );
           }
         }
       }

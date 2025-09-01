@@ -54,28 +54,64 @@ Future<void> getProcessingPermit(BuildContext context) async {
   final tabProcedureState =
       Provider.of<TabProcedureState>(context, listen: false);
 
-  var response = await serviceMethod(true, context, 'get', null,
-      serviceGetProcessingPermit(userBloc.state.user!.affiliateId!), true, false);
+  var response = await serviceMethod(
+      true,
+      context,
+      'get',
+      null,
+      serviceGetProcessingPermit(userBloc.state.user!.affiliateId!),
+      true,
+      false);
 
+  // if (response != null) {
+  //   var data = json.decode(response.body)['data'];
+  //   userBloc.add(UpdateCtrlLive(data['liveness_success']));
+  //   userBloc.add(UpdateProcedureId(data['procedure_id']));
+
+  //   if (data['cell_phone_number'].length > 0) {
+  //     userBloc.add(UpdatePhone(data['cell_phone_number'][0]));
+  //   }
+
+  //   if (data['liveness_success']) {
+  //     tabProcedureState.updateTabProcedure(1);
+  //     if (userBloc.state.user!.verified!) {
+  //       loadingState.updateStateLoadingProcedure(true);
+  //     } else {
+  //       loadingState.updateStateLoadingProcedure(false);
+  //     }
+  //   } else {
+  //     tabProcedureState.updateTabProcedure(0);
+  //     loadingState.updateStateLoadingProcedure(false);
+  //   }
+  // }
   if (response != null) {
-    var data = json.decode(response.body)['data'];
-    userBloc.add(UpdateCtrlLive(data['liveness_success']));
-    userBloc.add(UpdateProcedureId(data['procedure_id']));
+    var body = json.decode(response.body);
+    var data = body['data'];
 
-    if (data['cell_phone_number'].length > 0) {
-      userBloc.add(UpdatePhone(data['cell_phone_number'][0]));
-    }
+    if (data is Map && data.isNotEmpty) {
+      userBloc.add(UpdateCtrlLive(data['liveness_success']));
+      userBloc.add(UpdateProcedureId(data['procedure_id']));
 
-    if (data['liveness_success']) {
-      tabProcedureState.updateTabProcedure(1);
-      if (userBloc.state.user!.verified!) {
-        loadingState.updateStateLoadingProcedure(true);
+      if (data['cell_phone_number'] != null &&
+          data['cell_phone_number'].length > 0) {
+        userBloc.add(UpdatePhone(data['cell_phone_number'][0]));
+      }
+
+      if (data['liveness_success'] == true) {
+        tabProcedureState.updateTabProcedure(1);
+        if (userBloc.state.user!.verified!) {
+          loadingState.updateStateLoadingProcedure(true);
+        } else {
+          loadingState.updateStateLoadingProcedure(false);
+        }
       } else {
+        tabProcedureState.updateTabProcedure(0);
         loadingState.updateStateLoadingProcedure(false);
       }
     } else {
-      tabProcedureState.updateTabProcedure(0);
+      debugPrint("⚠️ Data vacío o inválido: $data");
       loadingState.updateStateLoadingProcedure(false);
+      tabProcedureState.updateTabProcedure(0);
     }
   }
 }

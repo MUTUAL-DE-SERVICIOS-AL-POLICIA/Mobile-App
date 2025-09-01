@@ -201,8 +201,9 @@ class _ScreenProceduresState extends State<ScreenProcedures> {
 
   controleVerified() async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+    String type = 'verified';
     var response = await serviceMethod(
-        mounted, context, 'get', null, serviceGetMessageFace(), true, true);
+        mounted, context, 'get', null, serviceGetMessageFaceType(type), true, true);
     if (response != null) {
       userBloc.add(UpdateVerifiedDocument(
           json.decode(response.body)['data']['verified']));
