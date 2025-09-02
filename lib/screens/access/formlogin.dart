@@ -19,7 +19,6 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
-import 'package:muserpol_pvt/screens/access/register_num/verifity_identiity.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
@@ -348,44 +347,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     return formatted.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
-  // pruebadecompatibilidad() async {
-  //   final signature = await SmsAutoFill().getAppSignature;
-  //   if (!formKey.currentState!.validate()) {
-  //     return;
-  //   }
-
-  //   final identityCard =
-  //       '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
-  //   final cellphone = getRawPhoneNumber(phoneCtrl.text.trim());
-
-  //   if (dotenv.env['storeAndroid'] == 'appgallery') {
-  //     body['firebaseToken'] = '';
-  //   } else {
-  //     body['firebaseToken'] = await PushNotificationService.getTokenFirebase();
-  //   }
-  //   body['username'] = identityCard;
-  //   body['cellphone'] = cellphone;
-  //   body['signature'] = signature;
-
-  //   Navigator.pushReplacement(
-  //     context,
-  //     PageRouteBuilder(
-  //       pageBuilder: (_, __, ___) => SendMessageLogin(
-  //         body: body,
-  //         activeloading: false,
-  //       ),
-  //       transitionDuration: const Duration(milliseconds: 400),
-  //       transitionsBuilder: (_, animation, secondaryAnimation, child) {
-  //         return SharedAxisTransition(
-  //           animation: animation,
-  //           secondaryAnimation: secondaryAnimation,
-  //           transitionType: SharedAxisTransitionType.horizontal,
-  //           child: child,
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
 
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
   sendCredentialsNew({required bool isBiometric}) async {
@@ -452,87 +413,58 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       }
 
       if (!mounted) return;
-      var response = await serviceMethod(
-          mounted, context, 'post', body, loginAppMobile(), false, true);
-      if (response != null) {
-        if (isBiometric) {
-          if (!mounted) return;
-          final authService = Provider.of<AuthService>(context, listen: false);
-          final tokenState = Provider.of<TokenState>(context, listen: false);
-          final notificationBloc =
-              BlocProvider.of<NotificationBloc>(context, listen: false);
-          final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-          await DBProvider.db.database;
-          final dataJson = json.decode(response.body)['data'];
+      if (isBiometric) {
+        var response = await serviceMethod(
+            mounted, context, 'post', body, loginAppMobile(), false, true);
+        if (!mounted) return;
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final tokenState = Provider.of<TokenState>(context, listen: false);
+        final notificationBloc =
+            BlocProvider.of<NotificationBloc>(context, listen: false);
+        final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+        await DBProvider.db.database;
+        final dataJson = json.decode(response.body)['data'];
 
-          UserModel user = UserModel.fromJson({
-            "api_token": dataJson["apiToken"],
-            "user": dataJson["information"]
-          });
+        UserModel user = UserModel.fromJson({
+          "api_token": dataJson["apiToken"],
+          "user": dataJson["information"]
+        });
 
-          await authService.writeAuxtoken(user.apiToken!);
-          tokenState.updateStateAuxToken(true);
-          if (!mounted) return;
-          await authService.writeUser(context, userModelToJson(user));
-          userBloc.add(UpdateUser(user.user!));
-          final affiliateModel =
-              AffiliateModel(idAffiliate: user.user!.affiliateId!);
-          await DBProvider.db.newAffiliateModel(affiliateModel);
-          notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
-          if (!mounted) return;
-          await AuthHelpers.initSessionUserApp(
-              context: context,
-              response: response,
-              userApp: UserAppMobile(
-                  identityCard: body['username'],
-                  numberPhone: body['cellphone']),
-              user: user);
-        } else {
-          final dataJson = json.decode(response.body);
-          if (dataJson['error']) {
-            if (dataJson['message'] == 'Persona no encontrada') {
-              if (!mounted) return;
-              AuthHelpers.callDialogAction(context, dataJson['message']);
-            } else if (dataJson['message'] ==
-                'Número de teléfono no registrado para esta persona.') {
-              if (!mounted) return;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => RegisterIdentityScreen(body: body)),
+        await authService.writeAuxtoken(user.apiToken!);
+        tokenState.updateStateAuxToken(true);
+        if (!mounted) return;
+        await authService.writeUser(context, userModelToJson(user));
+        userBloc.add(UpdateUser(user.user!));
+        final affiliateModel =
+            AffiliateModel(idAffiliate: user.user!.affiliateId!);
+        await DBProvider.db.newAffiliateModel(affiliateModel);
+        notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+        if (!mounted) return;
+        await AuthHelpers.initSessionUserApp(
+            context: context,
+            response: response,
+            userApp: UserAppMobile(
+                identityCard: body['username'], numberPhone: body['cellphone']),
+            user: user);
+      } else {
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => SendMessageLogin(
+              body: body,
+              activeloading: false,
+            ),
+            transitionDuration: const Duration(milliseconds: 400),
+            transitionsBuilder: (_, animation, secondaryAnimation, child) {
+              return SharedAxisTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                transitionType: SharedAxisTransitionType.horizontal,
+                child: child,
               );
-            } else if (dataJson['message'] ==
-                'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
-              if (!mounted) return;
-              AuthHelpers.callDialogAction(context, dataJson['message']);
-            } else if (dataJson['message'] ==
-                'La persona se encuentra fallecida') {
-              if (!mounted) return;
-              AuthHelpers.callDialogAction(context, dataJson['message']);
-            }
-          } else {
-            body['messageId'] = dataJson['messageId'];
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (_, __, ___) => SendMessageLogin(
-                  body: body,
-                  activeloading: false,
-                ),
-                transitionDuration: const Duration(milliseconds: 400),
-                transitionsBuilder: (_, animation, secondaryAnimation, child) {
-                  return SharedAxisTransition(
-                    animation: animation,
-                    secondaryAnimation: secondaryAnimation,
-                    transitionType: SharedAxisTransitionType.horizontal,
-                    child: child,
-                  );
-                },
-              ),
-            );
-          }
-        }
+            },
+          ),
+        );
       }
     } catch (e) {
       if (!mounted) return;

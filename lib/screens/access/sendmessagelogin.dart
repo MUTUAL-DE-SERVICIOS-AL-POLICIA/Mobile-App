@@ -14,6 +14,7 @@ import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
+import 'package:muserpol_pvt/screens/access/register_num/verifity_identiity.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
@@ -54,6 +55,8 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     listenForSms();
     if (widget.activeloading!) {
       sendServicesMesagge();
+    } else {
+      sendServicesMesaggeLogin();
     }
   }
 
@@ -67,6 +70,44 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       widget.body['messageId'] = dataJson['messageId'];
     }
     setState(() => isLoading = false);
+  }
+
+  void sendServicesMesaggeLogin() async {
+    setState(() => isLoading = true);
+    var response = await serviceMethod(
+        mounted, context, 'post', widget.body, loginAppMobile(), false, true);
+    final dataJson = json.decode(response.body);
+     if (dataJson['error']) {
+          if (dataJson['message'] == 'Persona no encontrada') {
+            if (!mounted) return;
+            AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
+            setState(() => isLoading = false);
+          } else if (dataJson['message'] ==
+              'Número de teléfono no registrado para esta persona.') {
+            if (!mounted) return;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => RegisterIdentityScreen(body: widget.body)),
+            );
+          } else if (dataJson['message'] ==
+              'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
+            if (!mounted) return;
+            AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
+            setState(() => isLoading = false);
+          } else if (dataJson['message'] ==
+              'La persona se encuentra fallecida') {
+            if (!mounted) return;
+            AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
+            setState(() => isLoading = false);
+          }
+        } else {
+          widget.body['messageId'] = dataJson['messageId'];
+          setState(() => isLoading = false);
+        }
+
+
+    
   }
 
   void listenForSms() async {

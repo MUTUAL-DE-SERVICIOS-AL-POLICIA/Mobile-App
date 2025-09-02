@@ -117,4 +117,38 @@ class AuthHelpers {
           );
         });
   }
+
+
+  static void callDialogActionErrorLogin(BuildContext context, String message) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.warning_amber,
+                  size: 40,
+                  color: Colors.amber,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 20),
+                ButtonComponent(
+                  text: 'CERRAR',
+                  onPressed: () {
+                    Navigator.pushNamed(context, 'newlogin');
+                  },
+                )
+              ],
+            ),
+          );
+        });
+  }
 }
