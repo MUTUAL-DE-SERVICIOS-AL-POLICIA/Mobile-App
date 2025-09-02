@@ -52,6 +52,11 @@ class AuthService extends ChangeNotifier {
     return await storage.read(key: 'device_id') ?? '';
   }
 
+  /// Elimina los datos de autenticación biométrica
+  Future<void> deleteBiometric() async {
+    await storage.delete(key: 'biometric');
+  }
+
   /// Elimina los datos de sesión al cerrar sesión del usuario
   Future<void> logout() async {
     await storage.delete(key: 'user');
@@ -89,5 +94,4 @@ class AuthService extends ChangeNotifier {
   Future<void> writeFirstTime(BuildContext context) async {
     await storage.write(key: 'firstTime', value: 'true');
   }
-
 }

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
@@ -27,7 +28,10 @@ class SendMessageLogin extends StatefulWidget {
   final List<Map<String, String>>? fileIdentityCard;
   final bool? activeloading;
   const SendMessageLogin(
-      {super.key, required this.body, this.fileIdentityCard, this.activeloading});
+      {super.key,
+      required this.body,
+      this.fileIdentityCard,
+      this.activeloading});
 
   @override
   State<SendMessageLogin> createState() => _SendMessageLogin();
@@ -35,7 +39,7 @@ class SendMessageLogin extends StatefulWidget {
 
 class _SendMessageLogin extends State<SendMessageLogin> {
   final double containerWidth = 320.w;
-  final TextEditingController codeCtrl = TextEditingController(); // Agregado
+  final TextEditingController codeCtrl = TextEditingController();
   final FocusNode node = FocusNode();
   Timer? countdownTimer;
   int remainingSeconds = 180;
@@ -48,7 +52,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     super.initState();
     startCountdown();
     listenForSms();
-    if(widget.activeloading!){
+    if (widget.activeloading!) {
       sendServicesMesagge();
     }
   }
@@ -141,10 +145,10 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                               SizedBox(height: 10.h),
                               Center(
                                 child: Text(
-                                  'Esperando para detectar automáticamente el SMS\nenviado al +591 $numbercell',
+                                  'Esperando para detectar automáticamente el SMS\nenviado al',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 12.sp,
+                                    fontSize: 14.sp,
                                     color: Theme.of(context).brightness ==
                                             Brightness.dark
                                         ? Colors.white
@@ -152,20 +156,38 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                   ),
                                 ),
                               ),
-
-                              SizedBox(height: 20.h),
+                              SizedBox(height: 10.h),
+                              Center(
+                                child: Text(
+                                  '$numbercell',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 30.h),
                               PinCodeTextField(
                                 appContext: context,
                                 length: 4,
                                 onChanged: (value) {},
-                                onCompleted: (value) => node.nextFocus(),
+                                onCompleted: (value) {
+                                  FocusScope.of(context).unfocus();
+                                },
                                 controller: codeCtrl,
                                 focusNode: node,
                                 autoDisposeControllers: false,
                                 keyboardType: TextInputType.number,
                                 cursorColor: Colors.transparent,
                                 pinTheme: PinTheme(
-                                  inactiveColor: const Color(0xff419388),
+                                  inactiveColor: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
                                   activeColor: Theme.of(context).brightness ==
                                           Brightness.dark
                                       ? Colors.white
@@ -185,19 +207,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                     const Duration(milliseconds: 300),
                                 enableActiveFill: true,
                               ),
-                              SizedBox(height: 10.h),
-                              Center(
-                                child: SizedBox(
-                                  width: 90.w,
-                                  height: 190.h,
-                                  child: ClipRRect(
-                                    child: Image.asset(
-                                      'assets/images/sendmesagge.png',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10.h),
+                              SizedBox(height: 30.h),
                               ButtonComponent(
                                 text: 'VERIFICAR',
                                 onPressed: () {
@@ -245,7 +255,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                 onPressed: canResend
                                     ? () {
                                         // Aquí llamás a la función para reenviar el SMS
-                                        startCountdown(); // reinicia cronómetro
+                                        startCountdown();
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           const SnackBar(
@@ -268,30 +278,17 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                               SizedBox(
                                 height: 10.h,
                               ),
-                              // Center(
-                              //     child: Text(
-                              //   'Versión ${dotenv.env['version']}',
-                              //   style: TextStyle(
-                              //     fontSize: 12.sp,
-                              //     color: Theme.of(context).brightness ==
-                              //             Brightness.dark
-                              //         ? const Color.fromARGB(255, 255, 255, 255)
-                              //         : const Color(0xff419388),
-                              //   ),
-                              // ))
                               Center(
-                                child: Text(
-                                  'Version 4.0.1',
-                                  style: TextStyle(
-                                    fontSize: 12.sp, // Responsivo
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? const Color.fromARGB(
-                                            255, 255, 255, 255)
-                                        : const Color.fromARGB(255, 0, 0, 0),
-                                  ),
+                                  child: Text(
+                                'Versión ${dotenv.env['version']}',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? const Color.fromARGB(255, 255, 255, 255)
+                                      : const Color.fromARGB(255, 0, 0, 0),
                                 ),
-                              )
+                              ))
                             ],
                           ),
                         ],
@@ -338,9 +335,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     var requestBody = {'pin': code, 'messageId': widget.body['messageId']};
 
     if (!mounted) return;
-    // var response = await serviceMethod(mounted, context, 'post', requestBody,
-    //     verifytosendmessage(), false, true);
-
     var response = await serviceMethod(
         mounted, context, 'post', requestBody, verifyPin(), false, true);
 
@@ -348,6 +342,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       final decoded = json.decode(response.body);
 
       if (decoded['error'] == true) {
+        if (!mounted) return;
         showDialog(
             context: context,
             barrierDismissible: false,
@@ -395,7 +390,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
           AffiliateModel(idAffiliate: user.user!.affiliateId!);
       await DBProvider.db.newAffiliateModel(affiliateModel);
       notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
-
+      if (!mounted) return;
       if (widget.fileIdentityCard != null) {
         var newrequestBody = {'attachments': widget.fileIdentityCard};
         var newrequest = await serviceMethod(mounted, context, 'post',
@@ -404,7 +399,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
           debugPrint("envio la fotografia correctamentes");
         }
       }
-
+      if (!mounted) return;
       await AuthHelpers.initSessionUserApp(
           context: context,
           response: response,

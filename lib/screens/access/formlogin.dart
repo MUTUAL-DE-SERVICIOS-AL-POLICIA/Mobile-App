@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
@@ -178,13 +177,20 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     SizedBox(
                       height: 20.h,
                     ),
-                    //COMPONENTE BUTTON
+                    // COMPONENTE BUTTON
                     ButtonComponent(
                         text: 'INGRESAR',
                         stateLoading: isLoading,
                         onPressed: isLoading
                             ? null
                             : () => sendCredentialsNew(isBiometric: false)),
+
+                    // ButtonComponent(
+                    //     text: 'INGRESAR',
+                    //     stateLoading: isLoading,
+                    //     onPressed: isLoading
+                    //         ? null
+                    //         : () => pruebadecompatibilidad()),
                     SizedBox(
                       height: 10.h,
                     ),
@@ -256,23 +262,15 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     SizedBox(
                       height: 20.h, // Responsivo
                     ),
-                    // Center(
-                    //   child: Text(
-                    //     'Versión ${dotenv.env['version']}',
-                    //     style: TextStyle(
-                    //       fontSize: 12.sp, // Responsivo
-                    //       color: Theme.of(context).brightness == Brightness.dark
-                    //           ? const Color.fromARGB(255, 0, 0, 0)
-                    //           : const Color.fromARGB(255, 0, 0, 0),
-                    //     ),
-                    //   ),
-                    // )
                     Center(
                       child: Text(
-                        'Version 4.0.1',
+                        'Versión ${dotenv.env['version']}',
                         style: TextStyle(
-                            fontSize: 12.sp, // Responsivo
-                            color: color),
+                          fontSize: 12.sp, // Responsivo
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color.fromARGB(255, 0, 0, 0)
+                              : const Color.fromARGB(255, 0, 0, 0),
+                        ),
                       ),
                     )
                   ],
@@ -334,10 +332,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           ),
         );
       } else {
+        if (!mounted) return;
         AuthHelpers.showError(context, 'No se pudo obtener las credenciales.');
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      if (!mounted) return;
       AuthHelpers.showError(
           context, 'Ocurrió un error al conectar con el servidor.');
     } finally {
@@ -348,6 +347,45 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   String getRawPhoneNumber(String formatted) {
     return formatted.replaceAll(RegExp(r'[^0-9]'), '');
   }
+
+  // pruebadecompatibilidad() async {
+  //   final signature = await SmsAutoFill().getAppSignature;
+  //   if (!formKey.currentState!.validate()) {
+  //     return;
+  //   }
+
+  //   final identityCard =
+  //       '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
+  //   final cellphone = getRawPhoneNumber(phoneCtrl.text.trim());
+
+  //   if (dotenv.env['storeAndroid'] == 'appgallery') {
+  //     body['firebaseToken'] = '';
+  //   } else {
+  //     body['firebaseToken'] = await PushNotificationService.getTokenFirebase();
+  //   }
+  //   body['username'] = identityCard;
+  //   body['cellphone'] = cellphone;
+  //   body['signature'] = signature;
+
+  //   Navigator.pushReplacement(
+  //     context,
+  //     PageRouteBuilder(
+  //       pageBuilder: (_, __, ___) => SendMessageLogin(
+  //         body: body,
+  //         activeloading: false,
+  //       ),
+  //       transitionDuration: const Duration(milliseconds: 400),
+  //       transitionsBuilder: (_, animation, secondaryAnimation, child) {
+  //         return SharedAxisTransition(
+  //           animation: animation,
+  //           secondaryAnimation: secondaryAnimation,
+  //           transitionType: SharedAxisTransitionType.horizontal,
+  //           child: child,
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
   sendCredentialsNew({required bool isBiometric}) async {
@@ -365,9 +403,9 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       final cellphone = getRawPhoneNumber(phoneCtrl.text.trim());
 
       if (dotenv.env['storeAndroid'] == 'appgallery') {
-        body['firebase_token'] = '';
+        body['firebaseToken'] = '';
       } else {
-        body['firebase_token'] =
+        body['firebaseToken'] =
             await PushNotificationService.getTokenFirebase();
       }
 
@@ -375,7 +413,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       body['cellphone'] = cellphone;
       body['signature'] = signature;
       body['isBiometric'] = isBiometric;
-
+      if (!mounted) return;
       final confirm = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
@@ -418,7 +456,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           mounted, context, 'post', body, loginAppMobile(), false, true);
       if (response != null) {
         if (isBiometric) {
-          if(!mounted)return;
+          if (!mounted) return;
           final authService = Provider.of<AuthService>(context, listen: false);
           final tokenState = Provider.of<TokenState>(context, listen: false);
           final notificationBloc =
@@ -441,7 +479,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
               AffiliateModel(idAffiliate: user.user!.affiliateId!);
           await DBProvider.db.newAffiliateModel(affiliateModel);
           notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
-
+          if (!mounted) return;
           await AuthHelpers.initSessionUserApp(
               context: context,
               response: response,
@@ -453,10 +491,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
           final dataJson = json.decode(response.body);
           if (dataJson['error']) {
             if (dataJson['message'] == 'Persona no encontrada') {
+              if (!mounted) return;
               AuthHelpers.callDialogAction(context, dataJson['message']);
             } else if (dataJson['message'] ==
                 'Número de teléfono no registrado para esta persona.') {
-              debugPrint("debe entrar a la pagina para leer el carnet");
+              if (!mounted) return;
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -464,9 +503,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
               );
             } else if (dataJson['message'] ==
                 'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
+              if (!mounted) return;
               AuthHelpers.callDialogAction(context, dataJson['message']);
             } else if (dataJson['message'] ==
                 'La persona se encuentra fallecida') {
+              if (!mounted) return;
               AuthHelpers.callDialogAction(context, dataJson['message']);
             }
           } else {
@@ -494,7 +535,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
         }
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      if (!mounted) return;
       AuthHelpers.showError(
           context, 'Ocurrio un error al conectar con el servidor');
     } finally {

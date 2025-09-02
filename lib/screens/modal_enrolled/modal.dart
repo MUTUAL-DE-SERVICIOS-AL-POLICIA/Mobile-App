@@ -165,6 +165,7 @@ class _ModalInsideModalState extends State<ModalInsideModal>
           final currentUser = userBloc.state.user!;
           final updatedUser = currentUser.copyWith(enrolled: true);
           userBloc.add(UpdateUser(updatedUser));
+          if (!mounted) return;
           final authService = Provider.of<AuthService>(context, listen: false);
           final token = await authService.readAuxToken();
 
@@ -172,6 +173,7 @@ class _ModalInsideModalState extends State<ModalInsideModal>
             apiToken: token,
             user: updatedUser,
           );
+          if (!mounted) return;
           await authService.writeUser(
               context, userModelToJson(updatedUserModel));
           return widget.nextScreen(json.decode(response.body)['message']);

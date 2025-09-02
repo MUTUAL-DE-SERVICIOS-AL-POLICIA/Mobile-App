@@ -1,22 +1,18 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:local_auth/local_auth.dart';
-// import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/section_title.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
-// import 'package:muserpol_pvt/model/biometric_user_model.dart';
-// import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:provider/provider.dart';
-// import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MenuDrawer extends StatefulWidget {
@@ -30,7 +26,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
   bool colorValue = false;
   bool biometricValue = false;
   bool stateLoading = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -49,15 +45,16 @@ class _MenuDrawerState extends State<MenuDrawer> {
     if (await authService.readBiometric() != "") {
       final biometric = await authService.readBiometric();
 
-      setState(() => biometricValue = biometricUserModelFromJson(biometric).biometricUser!);
+      setState(() => biometricValue =
+          biometricUserModelFromJson(biometric).biometricUser!);
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
     debugPrint(biometricValue.toString());
-    final userBloc = BlocProvider.of<UserBloc>(context, listen: true).state.user;
+    final userBloc =
+        BlocProvider.of<UserBloc>(context, listen: true).state.user;
     return Drawer(
       width: MediaQuery.of(context).size.width / 1.4,
       child: Padding(
@@ -83,6 +80,9 @@ class _MenuDrawerState extends State<MenuDrawer> {
                         IconName(
                             icon: Icons.person_outline,
                             text: userBloc!.fullName!),
+                        IconName(
+                            icon: Icons.person_outline,
+                            text: userBloc.kinship!),
                         if (userBloc.degree != null)
                           IconName(
                               icon: Icons.local_police_outlined,
@@ -137,10 +137,9 @@ class _MenuDrawerState extends State<MenuDrawer> {
                       icon: Icons.logout,
                       onTap: () => closeSession(context),
                     ),
-                    // Center(
-                    //   child: Text('Versión ${dotenv.env['version']}'),
-                    // ),
-                    const Center(child: Text('Versión 4.0.1')),
+                    Center(
+                      child: Text('Versión ${dotenv.env['version']}'),
+                    ),
                   ],
                 ),
               ),
@@ -162,37 +161,48 @@ class _MenuDrawerState extends State<MenuDrawer> {
 
   void authBiometric(bool state) async {
     final authService = Provider.of<AuthService>(context, listen: false);
-  
+
     setState(() => biometricValue = state);
 
-    final LocalAuthentication auth = LocalAuthentication();
-    final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
-    final bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
-    
-    debugPrint('puede $canAuthenticate');
+    if (state) {
+      final LocalAuthentication auth = LocalAuthentication();
+      final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+      final bool canAuthenticate =
+          canAuthenticateWithBiometrics || await auth.isDeviceSupported();
 
-    final List<BiometricType> availableBiometrics = await auth.getAvailableBiometrics();
-    debugPrint('availableBiometric $availableBiometrics');
+      debugPrint('puede $canAuthenticate');
 
-    if (availableBiometrics.isNotEmpty) {
-      debugPrint("Algunos datos biometricos estan inscritos");
+      final List<BiometricType> availableBiometrics =
+          await auth.getAvailableBiometrics();
+      debugPrint('availableBiometric $availableBiometrics');
+
+      if (availableBiometrics.isNotEmpty) {
+        debugPrint("Algunos datos biometricos estan inscritos");
+      }
+
+      if (availableBiometrics.contains(BiometricType.strong) ||
+          availableBiometrics.contains(BiometricType.face)) {
+        debugPrint("Hay tipos especificos de datos biometricos disponibles");
+      }
+
+      final biometric =
+          biometricUserModelFromJson(await authService.readBiometric());
+
+      var biometricUserModel = BiometricUserModel();
+
+      biometricUserModel = BiometricUserModel(
+          biometricUser: state,
+          affiliateId: biometric.affiliateId,
+          userAppMobile: biometric.userAppMobile);
+
+      if (!mounted) return;
+      debugPrint(biometricUserModelToJson(biometricUserModel));
+      if (!mounted) return;
+      await authService.writeBiometric(
+          context, biometricUserModelToJson(biometricUserModel));
+    } else {
+      await authService.deleteBiometric();
     }
-
-    if (availableBiometrics.contains(BiometricType.strong) ||
-        availableBiometrics.contains(BiometricType.face)) {
-      debugPrint("Hay tipos especificos de datos biometricos disponibles");
-    }
-
-    final biometric = biometricUserModelFromJson(await authService.readBiometric());
-
-    var biometricUserModel = BiometricUserModel();
-
-    biometricUserModel = BiometricUserModel(biometricUser: state, affiliateId: biometric.affiliateId, userAppMobile: biometric.userAppMobile);
-
-    if(!mounted) return;
-    debugPrint(biometricUserModelToJson(biometricUserModel));
-    if (!mounted) return;
-    await authService.writeBiometric(context, biometricUserModelToJson(biometricUserModel));
   }
 
   void closeSession(BuildContext context) async {

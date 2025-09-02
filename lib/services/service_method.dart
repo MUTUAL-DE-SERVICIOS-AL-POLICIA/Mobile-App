@@ -1,4 +1,3 @@
-// Librerías necesarias
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -68,8 +67,8 @@ Future<dynamic> serviceMethod(
               .get(url, headers: headers)
               .timeout(const Duration(seconds: 40))
               .then((value) {
-            // debugPrint('statusCode ${value.statusCode}');
-            // debugPrint('value ${value.body}');
+            debugPrint('statusCode ${value.statusCode}');
+            debugPrint('value ${value.body}');
             switch (value.statusCode) {
               case 200:
                 return value;
@@ -127,8 +126,8 @@ Future<dynamic> serviceMethod(
               .post(url, headers: headers, body: json.encode(body))
               .timeout(const Duration(seconds: 40))
               .then((value) {
-            // debugPrint('statusCode ${value.statusCode}');
-            // debugPrint('value ${value.body}');
+            debugPrint('statusCode ${value.statusCode}');
+            debugPrint('value ${value.body}');
             switch (value.statusCode) {
               case 200:
               case 201:

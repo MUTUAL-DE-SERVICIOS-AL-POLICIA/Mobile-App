@@ -20,6 +20,7 @@ class _ScreenNotificationState extends State<ScreenNotification> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () async {
+      if (!mounted) return;
       final notificationBloc = BlocProvider.of<NotificationBloc>(context);
       debugPrint('argumentos ${ModalRoute.of(context)!.settings.arguments}');
       await DBProvider.db.updateNotificationModelByContent(json.encode(ModalRoute.of(context)!.settings.arguments));
