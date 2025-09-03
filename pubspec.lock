@@ -73,14 +73,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-  barcode_scan2:
-    dependency: "direct main"
-    description:
-      name: barcode_scan2
-      sha256: efbe38629e6df2200e4d60ebe252e8e041cd5ae7b50f194a20f01779ade9d1c3
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.5.0"
   bloc:
     dependency: "direct main"
     description:
@@ -227,7 +219,7 @@ packages:
     source: hosted
     version: "4.0.1"
   device_info_plus:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: device_info_plus
       sha256: "72d146c6d7098689ff5c5f66bcf593ac11efc530095385356e131070333e64da"
@@ -346,14 +338,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.10.5"
-  fixnum:
-    dependency: transitive
-    description:
-      name: fixnum
-      sha256: "25517a4deb0c03aa0f32fd12db525856438902d9c16536311e76cdc57b31d7d1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -519,7 +503,7 @@ packages:
     source: hosted
     version: "4.0.2"
   image:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image
       sha256: "13d3349ace88f12f4a0d175eb5c12dcdd39d35c4c109a8a13dfeb6d0bd9e31c3"
@@ -590,14 +574,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
-  installed_apps:
-    dependency: "direct main"
-    description:
-      name: installed_apps
-      sha256: dd2b7c531f91114cd6df447c56567593c9799ca83f057137ae719324ae0afd06
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.6.0"
   intl:
     dependency: "direct main"
     description:
@@ -935,14 +911,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.1"
-  protobuf:
-    dependency: transitive
-    description:
-      name: protobuf
-      sha256: "68645b24e0716782e58948f8467fd42a880f255096a821f9e7d0ec625b00c84d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.0"
   provider:
     dependency: "direct main"
     description:
@@ -1007,14 +975,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
-  showcaseview:
-    dependency: "direct main"
-    description:
-      name: showcaseview
-      sha256: "82e013ac2de1ae92cc6e652badf676606057c8e17aa3afd91e78866c4b4e85b1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.1"
   simple_circular_progress_bar:
     dependency: "direct main"
     description:

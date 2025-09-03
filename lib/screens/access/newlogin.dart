@@ -1,9 +1,8 @@
-import 'dart:io';
+
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -29,32 +28,11 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
     //verificar la version de la aplicacion
     checkVersion(mounted, context);
     initializeDateFormatting();
-    _initPlatformState();
   }
 
   //Tendria que cambiarse o buscar un nuevo codigo
   //ID del dispositvo cambiar a una libreria mas reciente
-  Future<void> _initPlatformState() async {
-    final deviceInfo = DeviceInfoPlugin();
-    String? statusDeviceId;
-
-    try {
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfo.androidInfo;
-        statusDeviceId = androidInfo.id;
-      } else if (Platform.isIOS) {
-        final iosInfo = await deviceInfo.iosInfo;
-        statusDeviceId = iosInfo.identifierForVendor;
-      } else {
-        statusDeviceId = 'Plataforma no soportada';
-      }
-    } catch (e) {
-      statusDeviceId = 'Error obteniendo ID: $e';
-    }
-
-    if (!mounted) return;
-    setState(() => deviceId = statusDeviceId);
-  }
+  
 
   @override
   Widget build(BuildContext context) {

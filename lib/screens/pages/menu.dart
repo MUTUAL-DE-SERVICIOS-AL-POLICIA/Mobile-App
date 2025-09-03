@@ -52,7 +52,6 @@ class _MenuDrawerState extends State<MenuDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(biometricValue.toString());
     final userBloc =
         BlocProvider.of<UserBloc>(context, listen: true).state.user;
     return Drawer(
@@ -167,8 +166,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
     if (state) {
       final LocalAuthentication auth = LocalAuthentication();
       final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
-      final bool canAuthenticate =
-          canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+      final bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
 
       debugPrint('puede $canAuthenticate');
 
