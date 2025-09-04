@@ -25,14 +25,9 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
   @override
   void initState() {
     super.initState();
-    //verificar la version de la aplicacion
     checkVersion(mounted, context);
     initializeDateFormatting();
   }
-
-  //Tendria que cambiarse o buscar un nuevo codigo
-  //ID del dispositvo cambiar a una libreria mas reciente
-  
 
   @override
   Widget build(BuildContext context) {
@@ -65,11 +60,11 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                         AdaptiveTheme.of(context).mode.isDark
                             ? 'assets/images/muserpol-logo.png'
                             : 'assets/images/muserpol-logo2.png',
-                        width: 200.w,
+                        width: 250.w,
                       ),
                     ),
                     //LLAMAMOS EL FORMULARIO DEL LOGIN
-                    SizedBox(height: 30.h),
+                    SizedBox(height: 10.h),
                     FadeIn(
                       animate: true,
                       child: const ScreenFormLogin(),

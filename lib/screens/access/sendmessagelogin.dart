@@ -62,7 +62,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
   void sendServicesMesagge() async {
     setState(() => isLoading = true);
-
     var response = await serviceMethod(
         mounted, context, 'post', widget.body, loginAppMobile(), false, true);
     if (response != null) {
@@ -77,37 +76,33 @@ class _SendMessageLogin extends State<SendMessageLogin> {
     var response = await serviceMethod(
         mounted, context, 'post', widget.body, loginAppMobile(), false, true);
     final dataJson = json.decode(response.body);
-     if (dataJson['error']) {
-          if (dataJson['message'] == 'Persona no encontrada') {
-            if (!mounted) return;
-            AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
-            setState(() => isLoading = false);
-          } else if (dataJson['message'] ==
-              'Número de teléfono no registrado para esta persona.') {
-            if (!mounted) return;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => RegisterIdentityScreen(body: widget.body)),
-            );
-          } else if (dataJson['message'] ==
-              'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
-            if (!mounted) return;
-            AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
-            setState(() => isLoading = false);
-          } else if (dataJson['message'] ==
-              'La persona se encuentra fallecida') {
-            if (!mounted) return;
-            AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
-            setState(() => isLoading = false);
-          }
-        } else {
-          widget.body['messageId'] = dataJson['messageId'];
-          setState(() => isLoading = false);
-        }
-
-
-    
+    if (dataJson['error']) {
+      if (dataJson['message'] == 'Persona no encontrada') {
+        if (!mounted) return;
+        AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
+        setState(() => isLoading = false);
+      } else if (dataJson['message'] ==
+          'Número de teléfono no registrado para esta persona.') {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => RegisterIdentityScreen(body: widget.body)),
+        );
+      } else if (dataJson['message'] ==
+          'La persona titular no se encuentra fallecida, pasar por oficinas de la MUSERPOL') {
+        if (!mounted) return;
+        AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
+        setState(() => isLoading = false);
+      } else if (dataJson['message'] == 'La persona se encuentra fallecida') {
+        if (!mounted) return;
+        AuthHelpers.callDialogActionErrorLogin(context, dataJson['message']);
+        setState(() => isLoading = false);
+      }
+    } else {
+      widget.body['messageId'] = dataJson['messageId'];
+      setState(() => isLoading = false);
+    }
   }
 
   void listenForSms() async {
@@ -181,34 +176,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                           Brightness.dark
                                       ? Colors.white
                                       : Colors.black,
-                                ),
-                              ),
-                              SizedBox(height: 10.h),
-                              Center(
-                                child: Text(
-                                  'Esperando para detectar automáticamente el SMS\nenviado al',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 10.h),
-                              Center(
-                                child: Text(
-                                  '$numbercell',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 20.sp,
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
                                 ),
                               ),
                               SizedBox(height: 30.h),
@@ -340,11 +307,43 @@ class _SendMessageLogin extends State<SendMessageLogin> {
               ),
             )),
         if (isLoading)
-          Container(
-            color: Colors.black54,
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white,
+          Positioned.fill(
+            child: Container(
+              color: Colors.black87,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 350.h),
+                    Image.asset(
+                      'assets/images/SMS_verification.gif',
+                      height: 120.h,
+                      fit: BoxFit.contain,
+                    ),
+                    SizedBox(height: 20.h),
+                    Text(
+                      'Enviando codigo mediante SMS',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Text(
+                      'al $numbercell',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

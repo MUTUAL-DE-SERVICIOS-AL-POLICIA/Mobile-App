@@ -9,7 +9,7 @@ showSuccessful(
       builder: (BuildContext context) {
         return GifLoadingSuccessful(text: textDialog);
       });
-  Timer(const Duration(seconds: 6), () {
+  Timer(const Duration(seconds: 3), () {
     Navigator.of(context).pop();
     finish();
   });

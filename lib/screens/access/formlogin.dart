@@ -63,7 +63,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   void initState() {
     super.initState();
     initializeDateFormatting();
-    // verifyBiometric();
+    verifyBiometric();
   }
 
   verifyBiometric() async {
@@ -101,7 +101,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     if (autenticated) {
       final biometric =
           biometricUserModelFromJson(await authService.readBiometric());
-
       if (biometric.userAppMobile != null) {
         debugPrint(jsonEncode(biometric.toJson()));
         setState(() {
@@ -142,13 +141,13 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     Align(
                       alignment: Alignment.center,
                       child: Text(
-                        'Bienvenido a Muserpol Movil',
+                        'Bienvenido a Muserpol - Movil',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).brightness == Brightness.dark
                               ? Colors.white
                               : Colors.black,
-                          fontSize: 18.sp,
+                          fontSize: 20.sp,
                         ),
                       ),
                     ),
@@ -183,13 +182,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                         onPressed: isLoading
                             ? null
                             : () => sendCredentialsNew(isBiometric: false)),
-
-                    // ButtonComponent(
-                    //     text: 'INGRESAR',
-                    //     stateLoading: isLoading,
-                    //     onPressed: isLoading
-                    //         ? null
-                    //         : () => pruebadecompatibilidad()),
                     SizedBox(
                       height: 10.h,
                     ),
@@ -267,7 +259,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                         style: TextStyle(
                           fontSize: 12.sp, // Responsivo
                           color: Theme.of(context).brightness == Brightness.dark
-                              ? const Color.fromARGB(255, 0, 0, 0)
+                              ? const Color.fromARGB(255, 255, 255, 255)
                               : const Color.fromARGB(255, 0, 0, 0),
                         ),
                       ),
@@ -347,7 +339,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     return formatted.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
-
   //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
   sendCredentialsNew({required bool isBiometric}) async {
     FocusScope.of(context).unfocus();
@@ -375,6 +366,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       body['signature'] = signature;
       body['isBiometric'] = isBiometric;
       if (!mounted) return;
+
       final confirm = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
@@ -383,22 +375,52 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-            title: const Text("Confirmar datos"),
+            titlePadding:
+                const EdgeInsets.only(left: 20, right: 10, top: 15, bottom: 5),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Confirmar datos",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.sp,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close,
+                      color: Color.fromARGB(255, 49, 121, 77)),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+              ],
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("¿Estás seguro que los datos son correctos?"),
-                const SizedBox(height: 10),
-                Text("CI: $identityCard"),
-                Text('Celular: ${phoneCtrl.text}'),
+                Text(
+                  "Carnet: $identityCard",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.sp,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Celular: ${phoneCtrl.text}",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.sp,
+                  ),
+                ),
               ],
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text("Cancelar"),
-              ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white, // botón blanco
+                  foregroundColor: Colors.black, // texto negro
+                ),
                 onPressed: () => Navigator.of(context).pop(true),
                 child: const Text("Confirmar"),
               ),
