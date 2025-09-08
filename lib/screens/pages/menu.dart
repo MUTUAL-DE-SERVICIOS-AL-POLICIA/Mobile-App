@@ -39,17 +39,6 @@ class _MenuDrawerState extends State<MenuDrawer> {
     verifyBiometric();
   }
 
-  // verifyBiometric() async {
-  //   final authService = Provider.of<AuthService>(context, listen: false);
-  //   await Future.delayed(const Duration(milliseconds: 50), () {});
-  //   if (await authService.readBiometric() != "") {
-  //     final biometric = await authService.readBiometric();
-
-  //     setState(() => biometricValue =
-  //         biometricUserModelFromJson(biometric).biometricUser!);
-  //   }
-  // }
-
   Future<BiometricUserModel> _safeLoadBiometric(AuthService s,
       {bool defaultFlag = false}) async {
     try {
@@ -219,52 +208,6 @@ class _MenuDrawerState extends State<MenuDrawer> {
       AdaptiveTheme.of(context).setLight();
     }
   }
-
-  // void authBiometric(bool state) async {
-  //   final authService = Provider.of<AuthService>(context, listen: false);
-
-  //   setState(() => biometricValue = state);
-
-  //   if (state) {
-  //     final LocalAuthentication auth = LocalAuthentication();
-  //     final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
-  //     final bool canAuthenticate =
-  //         canAuthenticateWithBiometrics || await auth.isDeviceSupported();
-
-  //     debugPrint('puede $canAuthenticate');
-
-  //     final List<BiometricType> availableBiometrics =
-  //         await auth.getAvailableBiometrics();
-  //     debugPrint('availableBiometric $availableBiometrics');
-
-  //     if (availableBiometrics.isNotEmpty) {
-  //       debugPrint("Algunos datos biometricos estan inscritos");
-  //     }
-
-  //     if (availableBiometrics.contains(BiometricType.strong) ||
-  //         availableBiometrics.contains(BiometricType.face)) {
-  //       debugPrint("Hay tipos especificos de datos biometricos disponibles");
-  //     }
-
-  //     final biometric =
-  //         biometricUserModelFromJson(await authService.readBiometric());
-
-  //     var biometricUserModel = BiometricUserModel();
-
-  //     biometricUserModel = BiometricUserModel(
-  //         biometricUser: state,
-  //         affiliateId: biometric.affiliateId,
-  //         userAppMobile: biometric.userAppMobile);
-
-  //     if (!mounted) return;
-  //     debugPrint(biometricUserModelToJson(biometricUserModel));
-  //     if (!mounted) return;
-  //     await authService.writeBiometric(
-  //         context, biometricUserModelToJson(biometricUserModel));
-  //   } else {
-  //     await authService.deleteBiometric();
-  //   }
-  // }
 
   void closeSession(BuildContext context) async {
     showDialog(
