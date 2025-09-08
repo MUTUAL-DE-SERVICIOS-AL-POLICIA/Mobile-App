@@ -21,7 +21,7 @@ class GifLoadingSuccessful extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false, // Bloquea el botón de retroceso
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
       },
@@ -32,7 +32,7 @@ class GifLoadingSuccessful extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Image(
-              image: AssetImage('assets/images/check1.gif'),
+              image: AssetImage('assets/images/check.gif'),
               fit: BoxFit.cover,
             ),
             Text(

@@ -265,14 +265,14 @@ class CiudadaniaButtonComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 250,
-      height: 56,
+      width: 300,
+      height: 60,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF2B3486),
+          backgroundColor: const Color.fromARGB(255, 60, 66, 121),
+          foregroundColor: Colors.white,
           elevation: 0,
-          side: const BorderSide(color: Color(0xFF2B3486), width: 2),
+          side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -293,7 +293,7 @@ class CiudadaniaButtonComponent extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset(
-                    'assets/images/logoCiudadania.png',
+                    'assets/images/logo_ciudadania.png',
                     width: 30,
                     height: 30,
                   ),
@@ -302,7 +302,7 @@ class CiudadaniaButtonComponent extends StatelessWidget {
                     'Ciudadania Digital',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Color(0xFF2B3486),
+                      color: Color.fromARGB(255, 255, 255, 255),
                     ),
                   ),
                 ],

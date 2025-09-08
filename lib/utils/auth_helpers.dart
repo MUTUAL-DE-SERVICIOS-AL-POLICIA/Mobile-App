@@ -4,10 +4,9 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:muserpol_pvt/components/button.dart';
-import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:muserpol_pvt/main.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
-import 'package:muserpol_pvt/model/user_model.dart';
+import 'package:muserpol_pvt/model/user_model.dart'; 
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/screens/list_services_menu/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
@@ -42,20 +41,14 @@ class AuthHelpers {
     await authService.writeToken(context, user.apiToken!);
     tokenState.updateStateAuxToken(false);
 
-    showSuccessful(
+    Navigator.pushReplacement(
       context,
-      'Correcto, Autenticacion Exitosa',
-      () {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const ScreenListService(
-              showTutorial: true,
-            ),
-            transitionDuration: const Duration(seconds: 0),
-          ),
-        );
-      },
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const ScreenListService(
+          showTutorial: true,
+        ),
+        transitionDuration: const Duration(seconds: 0),
+      ),
     );
   }
 
@@ -117,7 +110,6 @@ class AuthHelpers {
           );
         });
   }
-
 
   static void callDialogActionErrorLogin(BuildContext context, String message) {
     showDialog(

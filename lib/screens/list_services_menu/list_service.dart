@@ -11,14 +11,11 @@ import 'package:muserpol_pvt/screens/modal_enrolled/modal.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
-
 import 'package:muserpol_pvt/screens/navigation_general_pages.dart';
 import 'package:muserpol_pvt/screens/pages/menu.dart';
 import 'package:muserpol_pvt/components/header_muserpol.dart';
-
 import 'service_loader.dart';
 import 'service_option.dart';
 import 'tutorial_targets.dart';
@@ -82,8 +79,9 @@ class _ScreenListServiceState extends State<ScreenListService> {
       colorShadow: const Color(0xff419388),
       textSkip: "OMITIR",
       textStyleSkip: const TextStyle(
-        color: Color(0xffE0A44C),
+        color: Color.fromARGB(255, 255, 255, 255),
         fontWeight: FontWeight.bold,
+        fontSize: 30,
       ),
       paddingFocus: 10,
       opacityShadow: 0.8,
@@ -246,15 +244,15 @@ class _ScreenListServiceState extends State<ScreenListService> {
               ServiceOption(
                 key: keyAportes,
                 image: 'assets/images/icon_contributions.png',
-                title: 'APORTES',
-                description: 'Consulta de aportes individuales.',
+                title: 'SERVICIOS DE APORTES',
+                description: 'Consulta y Descarga tus aportes individuales de activo o pasivo.',
                 onPressed: () => _goToModule(1),
               ),
               ServiceOption(
                 key: keyPrestamos,
                 image: 'assets/images/icon_loans.png',
-                title: 'PRÉSTAMOS',
-                description: 'Consulta de historial de préstamos.',
+                title: 'SERVICIOS DE PRÉSTAMOS',
+                description: 'Consulta de historial de préstamos, Realiza tu calculo para tu nuevo préstamo.',
                 onPressed: () => _goToModule(2),
               ),
               SizedBox(height: 20.h),

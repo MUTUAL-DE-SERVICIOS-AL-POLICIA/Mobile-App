@@ -44,6 +44,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   TextEditingController phoneCtrl = TextEditingController();
   final LocalAuthentication auth = LocalAuthentication();
   final double containerWidth = 320.w;
+  bool _hasBiometricSetup = false;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool isLoading = false;
@@ -63,16 +64,23 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   void initState() {
     super.initState();
     initializeDateFormatting();
-    verifyBiometric();
+    _checkBiometricSetup();
   }
 
-  verifyBiometric() async {
+  Future<void> _checkBiometricSetup() async {
     final authService = Provider.of<AuthService>(context, listen: false);
+    final hasSaved = (await authService.readBiometric()).isNotEmpty;
 
-    if (await authService.readBiometric() != "") {
+    final deviceSupports = await auth.isDeviceSupported();
+    final canCheck = await auth.canCheckBiometrics;
+
+    final enabled = hasSaved && deviceSupports && canCheck;
+
+    if (!mounted) return;
+    setState(() => _hasBiometricSetup = enabled);
+
+    if (enabled) {
       _authenticate();
-    } else {
-      debugPrint("no tiene datos biometricos guardados");
     }
   }
 
@@ -147,7 +155,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                           color: Theme.of(context).brightness == Brightness.dark
                               ? Colors.white
                               : Colors.black,
-                          fontSize: 20.sp,
+                          fontSize: 18.sp,
                         ),
                       ),
                     ),
@@ -183,41 +191,42 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                             ? null
                             : () => sendCredentialsNew(isBiometric: false)),
                     SizedBox(
-                      height: 10.h,
-                    ),
-                    //COMPONENTE BOTON PARA CIUDADANIA DIGITAL
-                    CiudadaniaButtonComponent(
-                      stateLoading: isLoadingCiudadania,
-                      onPressed:
-                          isLoadingCiudadania ? null : onAuthCiudadaniaDigital,
-                    ),
-                    SizedBox(
                       height: 20.h,
                     ),
-                    //FALTA ACTIVAR PARA EL INGRESO CON HUELLA DIGITAL
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(50.r),
-                              onTap: verifyBiometric,
-                              child: Column(
-                                children: [
-                                  Icon(Icons.fingerprint,
-                                      size: 40.sp, color: color),
-                                  SizedBox(height: 4.h),
-                                  Text(
-                                    'Ingreso con biometría',
-                                    style: TextStyle(
-                                        fontSize: 12.sp, color: color),
-                                  ),
-                                ],
+                    //COMPONENTE BOTON PARA CIUDADANIA DIGITAL
+                    //QUITAR EL COMENTARIO PARA LA IMPLEMENTACION DE CIUDADANIA DIGITAL
+                    // CiudadaniaButtonComponent(
+                    //   stateLoading: isLoadingCiudadania,
+                    //   onPressed:
+                    //       isLoadingCiudadania ? null : onAuthCiudadaniaDigital,
+                    // ),
+                    // SizedBox(
+                    //   height: 20.h,
+                    // ),
+                    if (_hasBiometricSetup)
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50.r),
+                                onTap: _authenticate,
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.fingerprint,
+                                        size: 40.sp, color: color),
+                                    SizedBox(height: 4.h),
+                                    Text(
+                                      'Ingreso con biometría',
+                                      style: TextStyle(
+                                          fontSize: 12.sp, color: color),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ]),
+                          ]),
                     //SECCION DE CONTACTOS Y POLITICAS Y PRIVACIDAD
                     SizedBox(
                       height: 20.h,
@@ -367,73 +376,70 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       body['isBiometric'] = isBiometric;
       if (!mounted) return;
 
-      final confirm = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            titlePadding:
-                const EdgeInsets.only(left: 20, right: 10, top: 15, bottom: 5),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Confirmar datos",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20.sp,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close,
-                      color: Color.fromARGB(255, 49, 121, 77)),
-                  onPressed: () => Navigator.of(context).pop(false),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Carnet: $identityCard",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20.sp,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Celular: ${phoneCtrl.text}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20.sp,
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, // botón blanco
-                  foregroundColor: Colors.black, // texto negro
-                ),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text("Confirmar"),
+      if (!isBiometric) {
+        showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
               ),
-            ],
-          );
-        },
-      );
-
-      if (confirm != true) {
+              titlePadding: const EdgeInsets.only(
+                  left: 20, right: 10, top: 15, bottom: 5),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Confirmar datos",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.sp,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close,
+                        color: Color.fromARGB(255, 49, 121, 77)),
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Carnet: $identityCard",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.sp,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Celular: ${phoneCtrl.text}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.sp,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, // botón blanco
+                    foregroundColor: Colors.black, // texto negro
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text("Confirmar"),
+                ),
+              ],
+            );
+          },
+        );
         setState(() => isLoading = false);
-        return;
       }
-
       if (!mounted) return;
       if (isBiometric) {
         var response = await serviceMethod(
