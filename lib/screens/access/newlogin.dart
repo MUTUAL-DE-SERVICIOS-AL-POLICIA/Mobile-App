@@ -78,9 +78,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
       ),
     );
   }
-
   //FUNCION PARA SALIR DE LA APLICACION
-
   Future<bool> _onBackPressed() async {
     return await showDialog(
       barrierDismissible: false,

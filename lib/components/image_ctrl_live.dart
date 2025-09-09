@@ -52,14 +52,6 @@ class _ImageCtrlLiveState extends State<ImageCtrlLive>
     }
   }
 
-  // Future<void> _getAvailableCameras() async {
-  //   _availableCameras = await availableCameras();
-  //   CameraDescription newDescription;
-  //   newDescription = _availableCameras!.firstWhere((description) =>
-  //       description.lensDirection == CameraLensDirection.front);
-  //   _initCamera(newDescription);
-  // }
-
   Future<void> _getAvailableCameras() async {
     try {
       _availableCameras = await availableCameras();

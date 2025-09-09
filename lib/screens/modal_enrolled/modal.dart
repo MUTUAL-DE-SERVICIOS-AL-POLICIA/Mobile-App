@@ -19,8 +19,6 @@ import 'package:provider/provider.dart';
 class ModalInsideModal extends StatefulWidget {
   final Function(String) nextScreen;
   final bool stateFacialRecognition;
-  // final String? deviceId;
-  // final String? firebaseToken;
   const ModalInsideModal({
     super.key,
     required this.nextScreen,
@@ -49,9 +47,6 @@ class _ModalInsideModalState extends State<ModalInsideModal>
 
   getMessage() async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    // var response = await serviceMethod(mounted, context, 'get', null,
-    //     serviceProcessEnrolled(null), true, true);
-
     var response = await serviceMethod(
         mounted, context, 'get', null, serviceProcessEnrolled(), true, true);
     if (response != null) {
@@ -71,7 +66,7 @@ class _ModalInsideModalState extends State<ModalInsideModal>
   Widget build(BuildContext context) {
     return PopScope(
       canPop:
-          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+          false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         bool exitScreen = await _onBackPressed();
@@ -142,8 +137,6 @@ class _ModalInsideModalState extends State<ModalInsideModal>
   sendImage(String image) async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
     final Map<String, dynamic> body = {
-      // 'firebase_token': widget.firebaseToken, eliminar por el momento
-      // 'device_id': widget.deviceId, eliminar por el momento enviar datos para guardar
       'image': image
     };
 
