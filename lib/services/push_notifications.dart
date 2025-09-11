@@ -21,7 +21,7 @@ class PushNotificationService {
     await FirebaseMessaging.instance.getToken().then((v) {}).catchError((err) {
       debugPrint('error $err');
     });
-    debugPrint('tokenNotification $token');
+    // debugPrint('tokenNotification $token');
 
     //cuando esta en segundo plano la app
     FirebaseMessaging.onBackgroundMessage(_backgroundHandle);

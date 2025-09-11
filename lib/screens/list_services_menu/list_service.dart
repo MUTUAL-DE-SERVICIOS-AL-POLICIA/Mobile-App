@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,11 +50,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
   Future<void> _loadInitialData() async {
     final userBloc =
         BlocProvider.of<UserBloc>(context, listen: false).state.user;
-
-    if (userBloc != null) {
-      debugPrint('Datos completos del userBloc:');
-      debugPrint(json.encode(userBloc.toJson()));
-    }
 
     if (userBloc?.isEconomicComplement == true) {
       if (!mounted) return;

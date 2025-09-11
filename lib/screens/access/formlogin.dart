@@ -110,7 +110,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       final biometric =
           biometricUserModelFromJson(await authService.readBiometric());
       if (biometric.userAppMobile != null) {
-        debugPrint(jsonEncode(biometric.toJson()));
         setState(() {
           dniCtrl.text = biometric.userAppMobile?.identityCard ?? '';
           phoneCtrl.text = biometric.userAppMobile?.numberPhone ?? '';
@@ -317,7 +316,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
             '&code_challenge=$codeChallenge'
             '&code_challenge_method=S256';
 
-        debugPrint('acceso a la URL es: . $authorizationUrl');
+        // debugPrint('acceso a la URL es: . $authorizationUrl');
 
         if (!mounted) return;
         //RECIBIDO LAS CREDENCIALES DE CIUDADANIA DIGITAL INICIA LA PAGINA DE LOGIN DE CIUDADANIA DIGITAL

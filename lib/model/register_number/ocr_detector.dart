@@ -34,9 +34,9 @@ class TextDetector {
         );
       }
 
-      debugPrint("===== TEXTO DETECTADO =====");
-      debugPrint(recognizedText.text);
-      debugPrint("===========================");
+      // debugPrint("===== TEXTO DETECTADO =====");
+      // debugPrint(recognizedText.text);
+      // debugPrint("===========================");
 
       final matches = _findTextMatches(recognizedText, userInput);
       // Actualizar el estado
@@ -65,7 +65,6 @@ class TextDetector {
       );
     } catch (e) {
       debugPrint("Error en detección de texto: $e");
-
       return TextDetectionResult(
         success: false,
         match: false,
