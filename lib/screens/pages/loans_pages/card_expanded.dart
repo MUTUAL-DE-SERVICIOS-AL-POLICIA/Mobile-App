@@ -10,8 +10,6 @@ import 'package:muserpol_pvt/model/loan_model.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:muserpol_pvt/utils/save_document.dart';
-// import 'package:open_file_safe/open_file_safe.dart';
-// import 'package:open_file_safe_plus/open_file_safe_plus.dart';
 import 'package:open_filex/open_filex.dart';
 
 class CardExpandedNew extends StatefulWidget {

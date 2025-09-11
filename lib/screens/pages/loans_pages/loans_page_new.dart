@@ -105,12 +105,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                         ],
                       )
                     : const Text("normal")
-                // : Center(
-                //     child: Image.asset(
-                //     'assets/images/load.gif',
-                //     fit: BoxFit.cover,
-                //     height: 20,
-                //   ))
               ],
             ),
           ),

@@ -160,11 +160,11 @@ class _MenuDrawerState extends State<MenuDrawer> {
                       valueSwitch: colorValue,
                       onChangedSwitch: (v) => switchTheme(v),
                     ),
-                    SectiontitleSwitchComponent(
-                      title: 'Autenticación Biométrica',
-                      valueSwitch: biometricValue,
-                      onChangedSwitch: (v) => authBiometric(v),
-                    ),
+                    // SectiontitleSwitchComponent(
+                    //   title: 'Autenticación Biométrica',
+                    //   valueSwitch: biometricValue,
+                    //   onChangedSwitch: (v) => authBiometric(v),
+                    // ),
                     Divider(height: 0.03.sh),
                     const Text('Configuración general',
                         style: TextStyle(fontWeight: FontWeight.bold)),

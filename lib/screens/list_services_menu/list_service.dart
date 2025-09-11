@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,11 +50,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
   Future<void> _loadInitialData() async {
     final userBloc =
         BlocProvider.of<UserBloc>(context, listen: false).state.user;
-
-    if (userBloc != null) {
-      debugPrint('Datos completos del userBloc:');
-      debugPrint(json.encode(userBloc.toJson()));
-    }
 
     if (userBloc?.isEconomicComplement == true) {
       if (!mounted) return;
@@ -144,6 +137,10 @@ class _ScreenListServiceState extends State<ScreenListService> {
             await _loadInitialData();
             await Future.delayed(const Duration(seconds: 2));
           },
+          trigger: IndicatorTrigger.leadingEdge,
+          triggerMode: IndicatorTriggerMode.onEdge,
+          trailingScrollIndicatorVisible: false,
+          notificationPredicate: (notification) => notification.depth == 0,
           backgroundColor: const Color(0xff419388),
           indicatorBuilder: (context, controller) {
             return const Padding(
@@ -245,14 +242,16 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 key: keyAportes,
                 image: 'assets/images/icon_contributions.png',
                 title: 'SERVICIOS DE APORTES',
-                description: 'Consulta y Descarga tus aportes individuales de activo o pasivo.',
+                description:
+                    'Consulta y Descarga tus aportes individuales de activo o pasivo.',
                 onPressed: () => _goToModule(1),
               ),
               ServiceOption(
                 key: keyPrestamos,
                 image: 'assets/images/icon_loans.png',
                 title: 'SERVICIOS DE PRÉSTAMOS',
-                description: 'Consulta de historial de préstamos, Realiza tu calculo para tu nuevo préstamo.',
+                description:
+                    'Consulta de historial de préstamos, Realiza tu calculo para tu nuevo préstamo.',
                 onPressed: () => _goToModule(2),
               ),
               SizedBox(height: 20.h),

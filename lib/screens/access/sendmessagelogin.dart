@@ -108,7 +108,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   void listenForSms() async {
     await _autoFill.listenForCode();
     SmsAutoFill().code.listen((code) {
-      debugPrint('Código capturado por sms_autofill: $code');
       if (code.length == 4) {
         setState(() {
           codeCtrl.text = code;

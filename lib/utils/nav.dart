@@ -91,12 +91,6 @@ class CurvedNavigationBarState extends State<CurvedNavigationBar>
   Widget build(BuildContext context) {
     _length = widget.items.length;
     Size size = MediaQuery.of(context).size;
-
-    // Aseguramos que el tamaño de los iconos se ajuste dinámicamente
-    // double iconSize = size.width < 600
-    //     ? 20.sp
-    //     : 25.sp; // Tamaño más pequeño para pantallas pequeñas
-
     _icon = widget.items[_endingIndex].icon;
 
     return SafeArea(

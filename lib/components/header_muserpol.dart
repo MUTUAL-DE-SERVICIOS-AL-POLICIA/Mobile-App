@@ -32,7 +32,8 @@ class AppBarDualTitle extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       centerTitle: true,
-      elevation: 4, // intensidad de la sombra (sube o baja el valor)
+      elevation: 4,
+      backgroundColor: isDark ?  const Color(0xff132c29):const Color(0xfff2f2f2) ,
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

@@ -322,7 +322,6 @@ class _StepperProcedureState extends State<StepperProcedure> {
   }
 
   confirmDoblePercetionAlert() async {
-    debugPrint("doble persepcion");
     final loadingState = Provider.of<LoadingState>(context, listen: false);
     return await showDialog(
         barrierDismissible: false,

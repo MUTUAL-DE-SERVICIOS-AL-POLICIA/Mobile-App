@@ -4,6 +4,8 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:animations/animations.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:muserpol_pvt/components/animate.dart';
+import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:muserpol_pvt/model/register_number/files_state_veritify.dart';
 import 'package:muserpol_pvt/model/register_number/ocr_detector.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
@@ -48,6 +50,7 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     _controller = CameraController(
       cameras[0],
       ResolutionPreset.high,
+      enableAudio: false,
     );
 
     try {
@@ -100,15 +103,18 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
       final cropHeight = (guideHeight * scaleY).toInt();
 
       // Recortar la imagen
-      final croppedImage = img.copyCrop(originalImage,x: cropX, y: cropY, width: cropWidth, height: cropHeight);
+      final croppedImage = img.copyCrop(originalImage,
+          x: cropX, y: cropY, width: cropWidth, height: cropHeight);
       // Guardar en archivo temporal
-      final croppedFile = File('${image.path}_cropped.png')..writeAsBytesSync(img.encodePng(croppedImage));
+      final croppedFile = File('${image.path}_cropped.png')
+        ..writeAsBytesSync(img.encodePng(croppedImage));
 
       if (!mounted) return;
 
       if (_isFrontSide) {
         final inputImage = InputImage.fromFilePath(croppedFile.path);
-        final filesState = Provider.of<FilesStateVeritify>(context, listen: false);
+        final filesState =
+            Provider.of<FilesStateVeritify>(context, listen: false);
         final item = filesState.getFileById('cianverso');
 
         final result = await TextDetector.detectText(
@@ -136,14 +142,10 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
         }
 
         if (result.match) {
-
           _showImagePreview(context, croppedFile, isFront: true);
-
         }
       } else {
-
         _showImagePreview(context, croppedFile, isFront: false);
-
       }
     } catch (e) {
       if (mounted) {
@@ -158,8 +160,8 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     }
   }
 
-  void _showImagePreview(BuildContext context, File imageFile, {required bool isFront}) {
-    
+  void _showImagePreview(BuildContext context, File imageFile,
+      {required bool isFront}) {
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -223,8 +225,7 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
 
     final frontbytes = await frontImage.readAsBytes();
     String frontbase64 = base64Encode(frontbytes);
-
-    final backbytes = await frontImage.readAsBytes();
+    final backbytes = await backImage.readAsBytes();
     String backbase64 = base64Encode(backbytes);
 
     data.add({
@@ -261,6 +262,23 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     );
   }
 
+  Future<bool> backAcction() async {
+    if (_controller != null && _controller!.value.isInitialized) {
+      await _controller!.dispose();
+    }
+    if (!mounted) return false;
+    return await showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return ComponentAnimate(
+              child: DialogTwoAction(
+                  message: '¿Deseas salir de la verificación de la identidad?',
+                  actionCorrect: () => Navigator.pushNamed(context, 'newlogin'),
+                  messageCorrect: 'Salir'));
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -277,76 +295,83 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text("Capturar Cédula de Identidad"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            onPressed: _showDocumentInstructions,
-            icon: const Icon(Icons.help_outline),
+    return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          await backAcction();
+        },
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            title: const Text("Capturar Cédula de Identidad"),
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            actions: [
+              IconButton(
+                onPressed: _showDocumentInstructions,
+                icon: const Icon(Icons.help_outline),
+              ),
+              IconButton(
+                icon:
+                    Icon(_showGuide ? Icons.visibility : Icons.visibility_off),
+                onPressed: () => setState(() => _showGuide = !_showGuide),
+                tooltip: _showGuide ? "Ocultar guía" : "Mostrar guía",
+              ),
+            ],
           ),
-          IconButton(
-            icon: Icon(_showGuide ? Icons.visibility : Icons.visibility_off),
-            onPressed: () => setState(() => _showGuide = !_showGuide),
-            tooltip: _showGuide ? "Ocultar guía" : "Mostrar guía",
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          CameraPreview(_controller!),
-          if (_showGuide) _buildDocumentGuide(),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: Column(
-              children: [
-                const Text(
-                  "Coloque la cédula dentro del marco",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    shadows: [Shadow(blurRadius: 10, color: Colors.black)],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  "Asegúrese de que el número de cédula sea visible",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    shadows: [Shadow(blurRadius: 10, color: Colors.black)],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                _isCapturing
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : ElevatedButton.icon(
-                        onPressed: _captureAndDetect,
-                        icon: const Icon(Icons.camera),
-                        label: const Text("CAPTURAR"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              AdaptiveTheme.of(context).theme.primaryColor,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
+          body: Stack(
+            children: [
+              CameraPreview(_controller!),
+              if (_showGuide) _buildDocumentGuide(),
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: Column(
+                  children: [
+                    const Text(
+                      "Coloque la cédula dentro del marco",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        shadows: [Shadow(blurRadius: 10, color: Colors.black)],
                       ),
-              ],
-            ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Asegúrese de que el número de cédula sea visible",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    _isCapturing
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : ElevatedButton.icon(
+                            onPressed: _captureAndDetect,
+                            icon: const Icon(Icons.camera),
+                            label: const Text("CAPTURAR"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  AdaptiveTheme.of(context).theme.primaryColor,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget _buildInstruction(String text) {
