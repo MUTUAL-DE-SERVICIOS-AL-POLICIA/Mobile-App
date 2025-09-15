@@ -100,6 +100,10 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         setState(() => isLoading = false);
       }
     } else {
+      if (dataJson['message'] ==
+          'Persona verificada, afiliado policial Login de prueba') {
+        userTest(response);
+      }
       widget.body['messageId'] = dataJson['messageId'];
       setState(() => isLoading = false);
     }
@@ -361,6 +365,35 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                   actionCorrect: () => Navigator.pushNamed(context, 'newlogin'),
                   messageCorrect: 'Salir'));
         });
+  }
+
+  Future userTest(dynamic response) async {
+    final dataJson = json.decode(response.body)['data'];
+    final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+    final notificationBloc =
+        BlocProvider.of<NotificationBloc>(context, listen: false);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final tokenState = Provider.of<TokenState>(context, listen: false);
+    await DBProvider.db.database;
+
+    UserModel user = UserModel.fromJson(
+        {"api_token": dataJson["apiToken"], "user": dataJson["information"]});
+    await authService.writeAuxtoken(user.apiToken!);
+    tokenState.updateStateAuxToken(true);
+    if (!mounted) return;
+    await authService.writeUser(context, userModelToJson(user));
+    userBloc.add(UpdateUser(user.user!));
+    final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
+    await DBProvider.db.newAffiliateModel(affiliateModel);
+    notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+    if (!mounted) return;
+    await AuthHelpers.initSessionUserApp(
+        context: context,
+        response: response,
+        userApp: UserAppMobile(
+            identityCard: widget.body['username'],
+            numberPhone: widget.body['cellphone']),
+        user: user);
   }
 
   Future verifyPinNew(code) async {
