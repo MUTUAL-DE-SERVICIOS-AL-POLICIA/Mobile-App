@@ -5,11 +5,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
+import 'package:muserpol_pvt/firebase_options.dart';
 
 class PushNotificationService {
   static FirebaseMessaging messaging = FirebaseMessaging.instance;
   static String? token;
-  static final StreamController<String> _messageStream = StreamController.broadcast();
+  static final StreamController<String> _messageStream =
+      StreamController.broadcast();
   static Stream<String> get messagesStream => _messageStream.stream;
 
   static Future initializeapp() async {
@@ -26,11 +28,14 @@ class PushNotificationService {
     //cuando esta en segundo plano la app
     FirebaseMessaging.onBackgroundMessage(_backgroundHandle);
     //cuando esta en primer plano la app
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {}).onData((data) => _onMessageHandler(data));
+    FirebaseMessaging.onMessage
+        .listen((RemoteMessage message) {})
+        .onData((data) => _onMessageHandler(data));
     //cuando se abre la app desde la notificacion y la app esta en segundo plano pero no esta cerrado del todo
     FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenApp);
   }
-@pragma('vm:entry-point')
+
+  @pragma('vm:entry-point')
   static Future<void> _backgroundHandle(RemoteMessage message) async {
     await Firebase.initializeApp();
     debugPrint('_backgroundHandle ${json.encode(message.data)}');
@@ -41,7 +46,7 @@ class PushNotificationService {
         content: json.encode(message.data),
         read: false,
         date: DateTime.now());
-        
+
     await DBProvider.db.newNotificationModel(notification);
     debugPrint('REGISTRADO');
   }
@@ -63,11 +68,13 @@ class PushNotificationService {
 
   static Future _onMessageOpenApp(RemoteMessage message) async {
     debugPrint('_onMessageOpenApp');
+    debugPrint(message.data.toString());
     _messageStream.add(json.encode(message.data));
   }
 
   static requestPermission() async {
-    FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(badge: true, alert: true, sound: true);
+    FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        badge: true, alert: true, sound: true);
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
@@ -86,5 +93,31 @@ class PushNotificationService {
   }
   static Future getTokenFirebase() async {
     return await FirebaseMessaging.instance.getToken();
+  }
+}
+
+// en push_notifications.dart (fuera de la clase)
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    // 👇 IMPORTANTE: pasa las opciones explícitas en el isolate de background
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    debugPrint('_backgroundHandle ${json.encode(message.data)}');
+
+    final affiliateId = await DBProvider.db.getAffiliateModelById();
+    final notification = NotificationModel(
+      title: message.data['title'],
+      idAffiliate: affiliateId,
+      content: json.encode(message.data),
+      read: false,
+      date: DateTime.now(),
+    );
+    await DBProvider.db.newNotificationModel(notification);
+    debugPrint('REGISTRADO');
+  } catch (e, st) {
+    debugPrint('BG handler error: $e\n$st');
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; 
 import 'package:muserpol_pvt/bloc/contribution/contribution_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
@@ -41,22 +42,30 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 SharedPreferences? prefs;
-void main() async {
-  //carga las variales de entorno
+
+Future<void> main() async {
+  // 1) Carga .env y binding
   await dotenv.load(fileName: ".env");
-  //recupera tema guardado oscuro o claro
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 2) Tema y prefs
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
-  //variable global que guardara los estados si tiene doble percepcion
   prefs = await SharedPreferences.getInstance();
-  //inicializa firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  //inicializa las notificaciones
-  PushNotificationService.initializeapp();
+
+  // 3) Inicializa Firebase una sola vez aquí
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 4) 🔥 REGISTRA EL HANDLER DE BACKGROUND **ANTES** de cualquier uso de messaging
+  //    Este handler debe ser top-level con @pragma('vm:entry-point') en push_notifications.dart
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  // 5) Inicializa tu servicio de notificaciones (con await)
+  await PushNotificationService.initializeapp(); // ✅ AÑADE await
+
+  // 6) Overrides opcionales
   HttpOverrides.global = MyHttpOverrides();
-  //Arranca la app
+
+  // 7) Arranca la app
   runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 
@@ -70,34 +79,34 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    // Proporciona múltiples BLoCs a toda la app (gestión del estado por eventos).
+
     return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => UserBloc()),
+        BlocProvider(create: (_) => ProcedureBloc()),
+        BlocProvider(create: (_) => NotificationBloc()),
+        BlocProvider(create: (_) => ContributionBloc()),
+        BlocProvider(create: (_) => LoanBloc()),
+      ],
+      child: MultiProvider(
         providers: [
-          BlocProvider(create: (_) => UserBloc()),
-          BlocProvider(create: (_) => ProcedureBloc()),
-          BlocProvider(create: (_) => NotificationBloc()),
-          BlocProvider(create: (_) => ContributionBloc()),
-          BlocProvider(create: (_) => LoanBloc()),
+          ChangeNotifierProvider(create: (_) => AuthService()),
+          ChangeNotifierProvider(create: (_) => LoadingState()),
+          ChangeNotifierProvider(create: (_) => TokenState()),
+          ChangeNotifierProvider(create: (_) => FilesState()),
+          ChangeNotifierProvider(create: (_) => ObservationState()),
+          ChangeNotifierProvider(create: (_) => TabProcedureState()),
+          ChangeNotifierProvider(create: (_) => ProcessingState()),
+          ChangeNotifierProvider(create: (_) => FilesStateVeritify()),
         ],
-        child: MultiProvider(
-            providers: [
-              ChangeNotifierProvider(create: (_) => AuthService()),
-              ChangeNotifierProvider(create: (_) => LoadingState()),
-              ChangeNotifierProvider(create: (_) => TokenState()),
-              ChangeNotifierProvider(create: (_) => FilesState()),
-              ChangeNotifierProvider(create: (_) => ObservationState()),
-              ChangeNotifierProvider(create: (_) => TabProcedureState()),
-              ChangeNotifierProvider(create: (_) => ProcessingState()),
-              ChangeNotifierProvider(create: (_) => FilesStateVeritify())
-            ],
-            // Inicializa utilidades para diseño adaptable en distintos tamaños de pantalla
-            child: ScreenUtilInit(
-                designSize: const Size(360, 690),
-                minTextAdapt: true,
-                splitScreenMode: true,
-                // Carga el widget principal de la app: 'Muserpol'
-                builder: (context, child) =>
-                    Muserpol(savedThemeMode: savedThemeMode))));
+        child: ScreenUtilInit(
+          designSize: const Size(360, 690),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => Muserpol(savedThemeMode: savedThemeMode),
+        ),
+      ),
+    );
   }
 }
 
@@ -113,17 +122,13 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final GlobalKey<ScaffoldMessengerState> messengerKey =
       GlobalKey<ScaffoldMessengerState>();
-  @override
-  didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _updatebd();
-    }
-  }
 
   @override
   void initState() {
-    //en el void initState siempre se colocan las funciones que funcionen primero
+    super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Foreground / cuando abren la app desde la notificación
     PushNotificationService.messagesStream.listen((message) {
       debugPrint('NO TI FI CA CION $message');
       final msg = json.decode(message);
@@ -133,60 +138,59 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
         navigatorKey.currentState!.pushNamed('message', arguments: msg);
       }
     });
-    super.initState();
   }
 
   @override
   void dispose() {
-    //funciones para liberar la memoria
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  _updatebd() {
-    //actualiza la base de datos interna. (NOTIFICACIONES)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _updatebd();
+  }
+
+  void _updatebd() {
     Future.delayed(Duration.zero, () {
       final notificationBloc = BlocProvider.of<NotificationBloc>(context);
-      DBProvider.db
-          .getAllNotificationModel()
-          .then((res) => notificationBloc.add(UpdateNotifications(res)));
+      DBProvider.db.getAllNotificationModel().then(
+            (res) => notificationBloc.add(UpdateNotifications(res)),
+          );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    //Contruccion del Widgets
-    //Define el tema a la aplicacion
-    //La ruta de inicio de la aplicacion
-    //Siempre iniciara en "check_auth" -> Ruta que verifica si inicio la sesion para redirigirlo a la pagina correcta
-    //las otras rutas son abiertas dentro de la interfaz que puede navegarse sin estar autenticado
     return AdaptiveTheme(
-        light: styleLigth(),
-        dark: styleDark(),
-        debugShowFloatingThemeButton: true,
-        initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
-        builder: (theme, darkTheme) => MaterialApp(
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('es', 'ES'), // Spanish
-              Locale('en', 'US'), // English
-            ],
-            debugShowCheckedModeBanner: false,
-            navigatorKey: navigatorKey,
-            theme: theme,
-            darkTheme: darkTheme,
-            title: 'MUSERPOL PVT',
-            initialRoute: 'check_auth',
-            routes: {
-              'check_auth': (_) => const CheckAuthScreen(),
-              'slider': (_) => const PageSlider(),
-              'newlogin': (_) => const ScreenNewLogin(),
-              'contacts': (_) => const ScreenContact(),
-              'message': (_) => const ScreenNotification(),
-            }));
+      light: styleLigth(),
+      dark: styleDark(),
+      debugShowFloatingThemeButton: true,
+      initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
+      builder: (theme, darkTheme) => MaterialApp(
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('es', 'ES'),
+          Locale('en', 'US'),
+        ],
+        debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
+        theme: theme,
+        darkTheme: darkTheme,
+        title: 'MUSERPOL PVT',
+        initialRoute: 'check_auth',
+        routes: {
+          'check_auth': (_) => const CheckAuthScreen(),
+          'slider': (_) => const PageSlider(),
+          'newlogin': (_) => const ScreenNewLogin(),
+          'contacts': (_) => const ScreenContact(),
+          'message': (_) => const ScreenNotification(),
+        },
+      ),
+    );
   }
 }

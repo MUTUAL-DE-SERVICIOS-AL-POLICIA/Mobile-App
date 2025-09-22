@@ -241,7 +241,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
               ServiceOption(
                 key: keyAportes,
                 image: 'assets/images/icon_contributions.png',
-                title: 'SERVICIOS DE APORTES',
+                title: 'CERTIFICACIÓN DE APORTES',
                 description:
                     'Consulta y Descarga tus aportes individuales de activo o pasivo.',
                 onPressed: () => _goToModule(1),
