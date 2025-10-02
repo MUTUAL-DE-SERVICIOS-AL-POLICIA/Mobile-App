@@ -199,9 +199,9 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     //   onPressed:
                     //       isLoadingCiudadania ? null : onAuthCiudadaniaDigital,
                     // ),
-                    // SizedBox(
-                    //   height: 20.h,
-                    // ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
                     if (_hasBiometricSetup)
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

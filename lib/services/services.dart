@@ -55,5 +55,5 @@ String servicePrintLoans(int loanId) => '$hostGATEWAY/$reazonMovil/loanPrintPlan
 //IMPRIMIR EL KARDEX DEL PRESTAMO
 String servicePrintKadex(int loanId) => '$hostGATEWAY/$reazonMovil/loanPrintKardex/$loanId';
 //"CIUDADANIA DIGITAL -SERVICIO DE AUTENTICACION"
-String serviceGetCredentials() => '$hostSTI/$reazonAffiliate/assignmentcredentials';
-String serviceVerificationCode() => '$hostSTI/$reazonAffiliate/verificationcode';
+String serviceGetCredentials() => '$hostSTI/app/assignmentcredentials';
+String serviceVerificationCode() => '$hostSTI/app/verificationcode';
