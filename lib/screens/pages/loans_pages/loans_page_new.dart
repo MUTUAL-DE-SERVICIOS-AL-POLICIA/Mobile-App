@@ -119,7 +119,7 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
             enableDrag: false,
             isDismissible: true,
             context: context,
-            builder: (context) => (const Text("Aca debe estar la calculadora")),
+            builder: (context) => (const Text("")),
           );
         },
         child: const Icon(Icons.add_circle),
