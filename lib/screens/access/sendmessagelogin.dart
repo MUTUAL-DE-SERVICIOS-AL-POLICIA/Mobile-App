@@ -52,6 +52,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   void initState() {
     super.initState();
     startCountdown();
+    debugPrint(widget.activeloading.toString());
     listenForSms();
     if (widget.activeloading!) {
       sendServicesMesagge();
@@ -170,17 +171,18 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                           Column(
                             children: [
                               SizedBox(height: 10.h),
-                              Text(
-                                'Verificación de Codigo',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20.sp,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
+                              Center(
+                                  child:
+                                      Text('PIN de Seguridad',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20.sp,
+                                            color:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                          ))),
                               SizedBox(height: 30.h),
                               PinCodeTextField(
                                 appContext: context,
@@ -312,20 +314,23 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Colors.black87,
+              color: Colors.black54,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(height: 350.h),
-                    Image.asset(
-                      'assets/images/SMS_verification.gif',
-                      height: 120.h,
-                      fit: BoxFit.contain,
+                    SizedBox(height: 360.h),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20.r),
+                      child: Image.asset(
+                        'assets/images/mensaje.gif',
+                        height: 120.h,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     SizedBox(height: 20.h),
                     Text(
-                      'Enviando codigo mediante SMS',
+                      'Enviando pin de seguridad mediante SMS',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20.sp,
