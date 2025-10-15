@@ -35,6 +35,11 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
 
   File? _frontImage;
 
+  bool _showVerifying = false;
+
+  bool _cameraDisposed = false;
+  bool _navigatingAway = false;
+
   Future<void> initCameras() async {
     cameras = await availableCameras();
   }
@@ -66,16 +71,69 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     }
   }
 
+  Future<void> _askConfirmAndInitCamera() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      var numbercell = widget.body['cellphone'];
+      final confirm = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text("Registrar nuevo número"),
+          content: Text.rich(
+            TextSpan(
+              children: [
+                const TextSpan(
+                  text: 'El celular ',
+                ),
+                TextSpan(
+                  text: '$numbercell',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const TextSpan(
+                  text:
+                      ' no esta registrado, se verificará la identidad con la captura de su cédula.',
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Cancelar"),
+            ),
+            //Cambiar la estructura del boton
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Sí, registrar"),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true) {
+        await _initializeCamera();
+      } else {
+        if (mounted) Navigator.pushNamed(context, 'newlogin');
+      }
+    });
+  }
+
   Future<void> _captureAndDetect() async {
     if (_controller == null ||
+        _cameraDisposed ||
         !_controller!.value.isInitialized ||
         _isCapturing) {
       return;
     }
 
-    setState(() => _isCapturing = true);
+    setState(() {
+      _isCapturing = true;
+      _showVerifying = true;
+    });
 
     try {
+      await _controller!.pausePreview();
+
       final XFile image = await _controller!.takePicture();
       final bytes = await File(image.path).readAsBytes();
       final originalImage = img.decodeImage(bytes);
@@ -102,10 +160,14 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
       final cropWidth = (guideWidth * scaleX).toInt();
       final cropHeight = (guideHeight * scaleY).toInt();
 
-      // Recortar la imagen
-      final croppedImage = img.copyCrop(originalImage,
-          x: cropX, y: cropY, width: cropWidth, height: cropHeight);
-      // Guardar en archivo temporal
+      final croppedImage = img.copyCrop(
+        originalImage,
+        x: cropX,
+        y: cropY,
+        width: cropWidth,
+        height: cropHeight,
+      );
+
       final croppedFile = File('${image.path}_cropped.png')
         ..writeAsBytesSync(img.encodePng(croppedImage));
 
@@ -128,6 +190,7 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
         if (!mounted) return;
 
         if (!result.isDocumentValid) {
+          if (mounted) setState(() => _showVerifying = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -141,19 +204,30 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
           return;
         }
 
+        if (mounted) setState(() => _showVerifying = false);
         if (result.match) {
           _showImagePreview(context, croppedFile, isFront: true);
         }
       } else {
+        if (mounted) setState(() => _showVerifying = false);
         _showImagePreview(context, croppedFile, isFront: false);
       }
     } catch (e) {
       if (mounted) {
+        setState(() => _showVerifying = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al procesar imagen: $e')),
         );
       }
     } finally {
+      if (mounted &&
+          !_navigatingAway &&
+          _controller != null &&
+          !_cameraDisposed) {
+        try {
+          await _controller!.resumePreview();
+        } catch (_) {}
+      }
       if (mounted) {
         setState(() => _isCapturing = false);
       }
@@ -184,18 +258,28 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
                   width: 200, height: 150, fit: BoxFit.contain),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
                   if (isFront) {
-                    // Guardamos el anverso en una variable temporal
                     _frontImage = imageFile;
                     setState(() => _isFrontSide = false);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Ahora capture el reverso")),
                     );
                   } else {
-                    // Guardamos reverso y enviamos ambos como archivos
+                    setState(() {
+                      _showVerifying = true;
+                      _navigatingAway = true;
+                    });
+
                     widget.body["isRegisterCellphone"] = true;
+
+                    try {
+                      await _controller?.dispose();
+                    } catch (_) {}
+                    _controller = null;
+                    _cameraDisposed = true;
+
                     sendCredentialsNew(_frontImage!, imageFile);
                   }
                 },
@@ -211,12 +295,15 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    _askConfirmAndInitCamera();
   }
 
   @override
   void dispose() {
+    _cameraDisposed = true;
+
     _controller?.dispose();
+    _controller = null;
     super.dispose();
   }
 
@@ -228,19 +315,11 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
     final backbytes = await backImage.readAsBytes();
     String backbase64 = base64Encode(backbytes);
 
-    data.add({
-      'filename': 'ci_anverso',
-      'content': frontbase64,
-    });
+    data.add({'filename': 'ci_anverso', 'content': frontbase64});
+    data.add({'filename': 'ci_reverso', 'content': backbase64});
 
-    data.add({
-      'filename': 'ci_reverso',
-      'content': backbase64,
-    });
-    if (_controller != null && _controller!.value.isInitialized) {
-      await _controller!.dispose();
-    }
     if (!mounted) return;
+
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
@@ -263,20 +342,38 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
   }
 
   Future<bool> backAcction() async {
-    if (_controller != null && _controller!.value.isInitialized) {
-      await _controller!.dispose();
-    }
     if (!mounted) return false;
-    return await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (BuildContext context) {
-          return ComponentAnimate(
-              child: DialogTwoAction(
-                  message: '¿Deseas salir de la verificación de la identidad?',
-                  actionCorrect: () => Navigator.pushNamed(context, 'newlogin'),
-                  messageCorrect: 'Salir'));
-        });
+    final shouldExit = await showDialog<bool>(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return ComponentAnimate(
+          child: DialogTwoAction(
+            message: '¿Deseas salir de la verificación de la identidad?',
+            actionCorrect: () => Navigator.pop(context, true),
+            messageCorrect: 'Salir',
+          ),
+        );
+      },
+    );
+
+    if (shouldExit == true) {
+      setState(() {
+        _navigatingAway = true;
+        _showVerifying = true;
+      });
+      try {
+        await _controller?.dispose();
+      } catch (_) {}
+      _controller = null;
+      _cameraDisposed = true;
+
+      if (mounted) {
+        Navigator.pushNamed(context, 'newlogin');
+      }
+      return true;
+    }
+    return false;
   }
 
   @override
@@ -288,90 +385,90 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
       );
     }
 
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Error de Cámara")),
-        body: const Center(child: Text("No se pudo inicializar la cámara")),
-      );
-    }
+    final canShowPreview = _controller != null &&
+        !_cameraDisposed &&
+        _controller!.value.isInitialized &&
+        !_navigatingAway;
 
     return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) async {
-          if (didPop) return;
-          await backAcction();
-        },
-        child: Scaffold(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await backAcction();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          title: const Text("Capturar Cédula de Identidad"),
           backgroundColor: Colors.black,
-          appBar: AppBar(
-            title: const Text("Capturar Cédula de Identidad"),
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                onPressed: _showDocumentInstructions,
-                icon: const Icon(Icons.help_outline),
-              ),
-              IconButton(
-                icon:
-                    Icon(_showGuide ? Icons.visibility : Icons.visibility_off),
-                onPressed: () => setState(() => _showGuide = !_showGuide),
-                tooltip: _showGuide ? "Ocultar guía" : "Mostrar guía",
-              ),
-            ],
-          ),
-          body: Stack(
-            children: [
-              CameraPreview(_controller!),
-              if (_showGuide) _buildDocumentGuide(),
-              Positioned(
-                bottom: 20,
-                left: 20,
-                right: 20,
-                child: Column(
-                  children: [
-                    const Text(
-                      "Coloque la cédula dentro del marco",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              onPressed: _showDocumentInstructions,
+              icon: const Icon(Icons.help_outline),
+            ),
+            IconButton(
+              icon: Icon(_showGuide ? Icons.visibility : Icons.visibility_off),
+              onPressed: () => setState(() => _showGuide = !_showGuide),
+              tooltip: _showGuide ? "Ocultar guía" : "Mostrar guía",
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            if (canShowPreview)
+              CameraPreview(_controller!)
+            else
+              Container(color: Colors.black),
+            if (_showGuide) _buildDocumentGuide(),
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Column(
+                children: [
+                  const Text(
+                    "Coloque la cédula dentro del marco",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Asegúrese de que el número de cédula sea visible",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: canShowPreview ? _captureAndDetect : null,
+                    icon: const Icon(Icons.camera),
+                    label: const Text("CAPTURAR"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          AdaptiveTheme.of(context).theme.primaryColor,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Asegúrese de que el número de cédula sea visible",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        shadows: [Shadow(blurRadius: 10, color: Colors.black)],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    _isCapturing
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : ElevatedButton.icon(
-                            onPressed: _captureAndDetect,
-                            icon: const Icon(Icons.camera),
-                            label: const Text("CAPTURAR"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  AdaptiveTheme.of(context).theme.primaryColor,
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                          ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ));
+            ),
+            if (_showVerifying) _buildVerifyingOverlay(),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildInstruction(String text) {
@@ -412,6 +509,38 @@ class _RegisterIdentityScreenState extends State<RegisterIdentityScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerifyingOverlay() {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black45,
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 200),
+              Image(
+                image: AssetImage('assets/images/loading.gif'),
+                height: 120,
+                fit: BoxFit.contain,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Verificando',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

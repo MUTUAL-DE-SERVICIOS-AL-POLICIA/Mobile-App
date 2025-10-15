@@ -110,11 +110,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       final biometric =
           biometricUserModelFromJson(await authService.readBiometric());
       if (biometric.userAppMobile != null) {
-        setState(() {
-          dniCtrl.text = biometric.userAppMobile?.identityCard ?? '';
-          phoneCtrl.text = biometric.userAppMobile?.numberPhone ?? '';
-        });
-
         sendCredentialsNew(isBiometric: true);
       }
     }
@@ -148,7 +143,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     Align(
                       alignment: Alignment.center,
                       child: Text(
-                        'Bienvenido a Muserpol - Movil',
+                        'Te damos la bienvenida',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).brightness == Brightness.dark
@@ -199,9 +194,9 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     //   onPressed:
                     //       isLoadingCiudadania ? null : onAuthCiudadaniaDigital,
                     // ),
-                    // SizedBox(
-                    //   height: 20.h,
-                    // ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
                     if (_hasBiometricSetup)
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -271,6 +266,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                               : const Color.fromARGB(255, 0, 0, 0),
                         ),
                       ),
+                    ),
+                    Center(
+                      child: Text(dotenv.env['STATE_PROD'] == 'true'
+                          ? ""
+                          : "Versión de Pruebas"),
                     )
                   ],
                 ),
@@ -347,20 +347,40 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     return formatted.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
-  //INGRESO POR MEDIO DE SMS, INTRODUCIENDO NUMERO DE CARNET, Y SU NUMERO DE CELULAR
   sendCredentialsNew({required bool isBiometric}) async {
     FocusScope.of(context).unfocus();
     setState(() => isLoading = true);
 
     try {
       final signature = await SmsAutoFill().getAppSignature;
-      if (!formKey.currentState!.validate()) {
-        return;
+      if (!isBiometric) {
+        if (!formKey.currentState!.validate()) {
+          return;
+        }
       }
 
-      final identityCard =
-          '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
-      final cellphone = getRawPhoneNumber(phoneCtrl.text.trim());
+      String identityCard;
+      String cellphone;
+
+      if (isBiometric) {
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final biometric =
+            biometricUserModelFromJson(await authService.readBiometric());
+
+        final saved = biometric.userAppMobile;
+        if (saved == null) {
+          if (!mounted) return;
+          AuthHelpers.showError(context, 'No hay datos biométricos guardados.');
+          return;
+        }
+
+        identityCard = saved.identityCard ?? '';
+        cellphone = getRawPhoneNumber(saved.numberPhone ?? '');
+      } else {
+        identityCard =
+            '${dniCtrl.text.trim()}${dniComCtrl.text == '' ? '' : '-${dniComCtrl.text.trim()}'}';
+        cellphone = getRawPhoneNumber(phoneCtrl.text.trim());
+      }
 
       if (dotenv.env['storeAndroid'] == 'appgallery') {
         body['firebaseToken'] = '';
@@ -373,82 +393,20 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       body['cellphone'] = cellphone;
       body['signature'] = signature;
       body['isBiometric'] = isBiometric;
+
       if (!mounted) return;
 
-      if (!isBiometric) {
-        showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              titlePadding: const EdgeInsets.only(
-                  left: 20, right: 10, top: 15, bottom: 5),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Confirmar datos",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20.sp,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close,
-                        color: Color.fromARGB(255, 49, 121, 77)),
-                    onPressed: () => Navigator.of(context).pop(false),
-                  ),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Carnet: $identityCard",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20.sp,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Celular: ${phoneCtrl.text}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20.sp,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white, // botón blanco
-                    foregroundColor: Colors.black, // texto negro
-                  ),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text("Confirmar"),
-                ),
-              ],
-            );
-          },
-        );
-        setState(() => isLoading = false);
-      }
-      if (!mounted) return;
       if (isBiometric) {
         var response = await serviceMethod(
             mounted, context, 'post', body, loginAppMobile(), false, true);
         if (!mounted) return;
+
         final authService = Provider.of<AuthService>(context, listen: false);
         final tokenState = Provider.of<TokenState>(context, listen: false);
         final notificationBloc =
             BlocProvider.of<NotificationBloc>(context, listen: false);
         final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+
         await DBProvider.db.database;
         final dataJson = json.decode(response.body)['data'];
 
@@ -460,19 +418,23 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
         await authService.writeAuxtoken(user.apiToken!);
         tokenState.updateStateAuxToken(true);
         if (!mounted) return;
+
         await authService.writeUser(context, userModelToJson(user));
         userBloc.add(UpdateUser(user.user!));
+
         final affiliateModel =
             AffiliateModel(idAffiliate: user.user!.affiliateId!);
         await DBProvider.db.newAffiliateModel(affiliateModel);
         notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+
         if (!mounted) return;
         await AuthHelpers.initSessionUserApp(
-            context: context,
-            response: response,
-            userApp: UserAppMobile(
-                identityCard: body['username'], numberPhone: body['cellphone']),
-            user: user);
+          context: context,
+          response: response,
+          userApp: UserAppMobile(
+              identityCard: body['username'], numberPhone: body['cellphone']),
+          user: user,
+        );
       } else {
         Navigator.pushReplacement(
           context,
@@ -496,7 +458,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     } catch (e) {
       if (!mounted) return;
       AuthHelpers.showError(
-          context, 'Ocurrio un error al conectar con el servidor');
+          context, 'Ocurrió un error al conectar con el servidor');
     } finally {
       if (mounted) setState(() => isLoading = false);
     }

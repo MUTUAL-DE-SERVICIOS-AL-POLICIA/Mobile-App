@@ -52,6 +52,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   void initState() {
     super.initState();
     startCountdown();
+    debugPrint(widget.activeloading.toString());
     listenForSms();
     if (widget.activeloading!) {
       sendServicesMesagge();
@@ -100,6 +101,10 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         setState(() => isLoading = false);
       }
     } else {
+      if (dataJson['message'] ==
+          'Persona verificada, afiliado policial Login de prueba') {
+        userTest(response);
+      }
       widget.body['messageId'] = dataJson['messageId'];
       setState(() => isLoading = false);
     }
@@ -166,17 +171,18 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                           Column(
                             children: [
                               SizedBox(height: 10.h),
-                              Text(
-                                'Verificación de Codigo',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20.sp,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
+                              Center(
+                                  child:
+                                      Text('PIN de Seguridad',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20.sp,
+                                            color:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                          ))),
                               SizedBox(height: 30.h),
                               PinCodeTextField(
                                 appContext: context,
@@ -308,20 +314,23 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Colors.black87,
+              color: Colors.black54,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(height: 350.h),
-                    Image.asset(
-                      'assets/images/SMS_verification.gif',
-                      height: 120.h,
-                      fit: BoxFit.contain,
+                    SizedBox(height: 360.h),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20.r),
+                      child: Image.asset(
+                        'assets/images/mensaje.gif',
+                        height: 120.h,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     SizedBox(height: 20.h),
                     Text(
-                      'Enviando codigo mediante SMS',
+                      'Enviando pin de seguridad mediante SMS',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20.sp,
@@ -361,6 +370,35 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                   actionCorrect: () => Navigator.pushNamed(context, 'newlogin'),
                   messageCorrect: 'Salir'));
         });
+  }
+
+  Future userTest(dynamic response) async {
+    final dataJson = json.decode(response.body)['data'];
+    final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+    final notificationBloc =
+        BlocProvider.of<NotificationBloc>(context, listen: false);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final tokenState = Provider.of<TokenState>(context, listen: false);
+    await DBProvider.db.database;
+
+    UserModel user = UserModel.fromJson(
+        {"api_token": dataJson["apiToken"], "user": dataJson["information"]});
+    await authService.writeAuxtoken(user.apiToken!);
+    tokenState.updateStateAuxToken(true);
+    if (!mounted) return;
+    await authService.writeUser(context, userModelToJson(user));
+    userBloc.add(UpdateUser(user.user!));
+    final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
+    await DBProvider.db.newAffiliateModel(affiliateModel);
+    notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+    if (!mounted) return;
+    await AuthHelpers.initSessionUserApp(
+        context: context,
+        response: response,
+        userApp: UserAppMobile(
+            identityCard: widget.body['username'],
+            numberPhone: widget.body['cellphone']),
+        user: user);
   }
 
   Future verifyPinNew(code) async {
