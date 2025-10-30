@@ -26,6 +26,7 @@ import 'package:muserpol_pvt/screens/pages/complement_pages/complement/tab_info.
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StepperProcedure extends StatefulWidget {
   final Function(dynamic) endProcedure;
@@ -41,14 +42,20 @@ class _StepperProcedureState extends State<StepperProcedure> {
   final TextRecognizer _textRecognizer = TextRecognizer();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool buttonLoading = false;
+  SharedPreferences? prefs;
   @override
   void initState() {
     super.initState();
+    _initPrefs();
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false).state;
     observationAffiliate();
     if (userBloc.phone != null) {
       setState(() => phoneCtrl.text = userBloc.phone!);
     }
+  }
+
+  _initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
   }
 
   Future<void> observationAffiliate() async {

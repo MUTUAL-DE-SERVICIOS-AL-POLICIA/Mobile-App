@@ -11,6 +11,7 @@ import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/screens/list_services_menu/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthHelpers {
   static Future<void> initSessionUserApp({
@@ -33,7 +34,8 @@ class AuthHelpers {
           ['affiliateId'],
       userAppMobile: userApp,
     );
-    prefs!.setBool('isDoblePerception',
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isDoblePerception',
         json.decode(response.body)['data']['information']['isDoblePerception']);
     await authService.writeBiometric(
         context, biometricUserModelToJson(biometricUserModel));

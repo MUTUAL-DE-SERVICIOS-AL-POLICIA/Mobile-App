@@ -57,3 +57,10 @@ String servicePrintKadex(int loanId) => '$hostGATEWAY/$reazonMovil/loanPrintKard
 //"CIUDADANIA DIGITAL -SERVICIO DE AUTENTICACION"
 String serviceGetCredentials() => '$hostSTI/app/assignmentcredentials';
 String serviceVerificationCode() => '$hostSTI/app/verificationcode';
+//PRE EVALUACION DE PRESTAMOS
+//obtener modulos y submodulos mediante el affiliateId
+String servicePreEvaluation(int affiliateId)=>'$hostGATEWAY/appMobile/preEvaluation/loanModalities/$affiliateId';
+//Obtener contribuciones cotizables (ultimo pago)
+String serviceLastPayment(int affiliateId, int procedureModalityId)=>'$hostGATEWAY/appMobile/preEvaluation/quotable/$affiliateId';
+//obtener documentos requeridos
+String serviceGetRequiredDocuments(int procedureModalityId,int affiliateId)=>'$hostGATEWAY/appMobile/preEvaluation/loanDocuments/$affiliateId/$procedureModalityId';
