@@ -117,7 +117,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         setState(() {
           codeCtrl.text = code;
         });
-        verifyPinNew(code);
       } else {
         debugPrint('No se capturó un código válido.');
       }

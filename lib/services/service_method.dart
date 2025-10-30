@@ -12,6 +12,7 @@ import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/bloc/procedure/procedure_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
+import 'package:muserpol_pvt/provider/app_session_state.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
@@ -44,14 +45,14 @@ Future<dynamic> serviceMethod(
   }
 
   try {
-
     final result = await InternetAddress.lookup('google.com');
 
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
       var url = Uri.parse(urlAPI);
       // Cliente HTTP que ignora certificados inválidos (útil en desarrollo)
       final ioc = HttpClient();
-      ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      ioc.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
       final http = IOClient(ioc);
       // Logs útiles para debug
       debugPrint('==========================================');
@@ -112,11 +113,13 @@ Future<dynamic> serviceMethod(
             // Manejo de errores de red
             debugPrint('errA $err');
             if ('$err'.contains('html')) {
-              callDialogAction(context, 'Tenemos un problema con nuestro servidor, intente luego');
+              callDialogAction(context,
+                  'Tenemos un problema con nuestro servidor, intente luego');
             } else if ('$err'.contains('connection')) {
               callDialogAction(context, 'Verifique su conexión a Internet1');
             } else {
-              callDialogAction(context, 'Lamentamos los inconvenientes, inténtalo de nuevo');
+              callDialogAction(
+                  context, 'Lamentamos los inconvenientes, inténtalo de nuevo');
             }
             return null;
           });
@@ -243,6 +246,7 @@ void callDialogAction(BuildContext context, String message) {
         );
       });
 }
+
 /// Cierra la sesión del usuario, limpia estados, tokens, y redirige al inicio
 confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
   final procedureBloc = BlocProvider.of<ProcedureBloc>(context, listen: false);
@@ -256,6 +260,9 @@ confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
       Provider.of<TabProcedureState>(context, listen: false);
   final processingState = Provider.of<ProcessingState>(context, listen: false);
 
+  final session = Provider.of<AppSessionState>(context, listen: false);
+  session.disableAutoBiometricUntilColdStart();
+  
   if (voluntary) {
     if (!mounted) return;
     await serviceMethod(
@@ -288,10 +295,10 @@ confirmDeleteSession(bool mounted, BuildContext context, bool voluntary) async {
   if (!mounted) return;
   Navigator.pushReplacementNamed(context, 'newlogin');
 }
+
 /// Verifica si hay una nueva versión de la app disponible y sugiere actualizar
 Future<bool> checkVersion(bool mounted, BuildContext context) async {
   try {
-
     final result = await InternetAddress.lookup('google.com');
 
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {

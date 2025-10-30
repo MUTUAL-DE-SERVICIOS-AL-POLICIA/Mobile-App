@@ -24,7 +24,7 @@ String sendIdentityCard() => '$hostGATEWAY/$reazonMovil/ecoComSaveIdentity';
 //CONTACTOS
 String serviceGetContacts() => '$hostGATEWAY/$reazonMovil/globalCities';
 //POLITICAS Y PRIVACIDAD
-String serviceGetPrivacyPolicy() => 'https://www.muserpol.gob.bo/index.php/transparencia/terminos-y-condiciones-de-uso-aplicacion-movil';
+String serviceGetPrivacyPolicy() => 'https://www.muserpol.gob.bo/terminos-y-condiciones';
 //CARGAR COMPLEMENTO ECONOMICO 
 String serviceGetEconomicComplements(int page, bool current) => '$hostGATEWAY/$reazonMovil/ecoComEconomicComplements/?page=$page&current=$current';
 //CARGAR OBSERVACIONES PARA COMPLEMENTO ECONOMICO

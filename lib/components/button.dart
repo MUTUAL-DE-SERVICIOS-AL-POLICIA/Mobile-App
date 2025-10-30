@@ -272,7 +272,8 @@ class CiudadaniaButtonComponent extends StatelessWidget {
           backgroundColor: const Color.fromARGB(255, 60, 66, 121),
           foregroundColor: Colors.white,
           elevation: 0,
-          side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 2),
+          side: const BorderSide(
+              color: Color.fromARGB(255, 255, 255, 255), width: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -303,6 +304,69 @@ class CiudadaniaButtonComponent extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       color: Color.fromARGB(255, 255, 255, 255),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class BiometricButtonComponent extends StatelessWidget {
+  final bool stateLoading;
+  final Function()? onPressed;
+
+  const BiometricButtonComponent({
+    super.key,
+    this.stateLoading = false,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final color = isDarkMode
+        ? const Color(0xff419388)
+        : const Color.fromARGB(255, 255, 255, 255);
+    return SizedBox(
+      width: 300,
+      height: 60,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          elevation: 0,
+          side: const BorderSide(color: Color(0xff419388), width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: EdgeInsets.zero,
+        ),
+        onPressed: stateLoading ? null : onPressed,
+        child: stateLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2B3486)),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/face_and_finger.png',
+                    width: 50,
+                    height: 50,
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Ingreso por biometria',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ],

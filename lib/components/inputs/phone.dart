@@ -17,7 +17,7 @@ class PhoneNumber extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Número telefónico:',
+      Text('Número de Celular:',
           style: TextStyle(
               fontSize: 15.sp,
               color: Theme.of(context).brightness == Brightness.dark

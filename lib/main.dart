@@ -12,6 +12,7 @@ import 'package:muserpol_pvt/bloc/contribution/contribution_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/register_number/files_state_veritify.dart';
+import 'package:muserpol_pvt/provider/app_session_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
 import 'package:muserpol_pvt/screens/inbox/notification.dart';
@@ -59,8 +60,7 @@ Future<void> main() async {
   //    Este handler debe ser top-level con @pragma('vm:entry-point') en push_notifications.dart
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  // 5) Inicializa tu servicio de notificaciones (con await)
-  await PushNotificationService.initializeapp(); // ✅ AÑADE await
+  await PushNotificationService.initializeapp(); 
 
   // 6) Overrides opcionales
   HttpOverrides.global = MyHttpOverrides();
@@ -98,6 +98,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => TabProcedureState()),
           ChangeNotifierProvider(create: (_) => ProcessingState()),
           ChangeNotifierProvider(create: (_) => FilesStateVeritify()),
+          ChangeNotifierProvider(create: (_) => AppSessionState()),
         ],
         child: ScreenUtilInit(
           designSize: const Size(360, 690),

@@ -11,13 +11,13 @@ import 'package:just_the_tooltip/just_the_tooltip.dart';
 import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
-import 'package:muserpol_pvt/components/card_login.dart';
 import 'package:muserpol_pvt/components/inputs/identity_card.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/components/inputs/phone.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
+import 'package:muserpol_pvt/provider/app_session_state.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
@@ -27,7 +27,6 @@ import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:muserpol_pvt/utils/auth_helpers.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
@@ -69,8 +68,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
   Future<void> _checkBiometricSetup() async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final hasSaved = (await authService.readBiometric()).isNotEmpty;
 
+    final hasSaved = (await authService.readBiometric()).isNotEmpty;
     final deviceSupports = await auth.isDeviceSupported();
     final canCheck = await auth.canCheckBiometrics;
 
@@ -80,7 +79,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     setState(() => _hasBiometricSetup = enabled);
 
     if (enabled) {
-      _authenticate();
+      final session = Provider.of<AppSessionState>(context, listen: false);
+      if (session.allowAutoBiometric) {
+        if (!mounted) return;
+        _authenticate();
+      }
     }
   }
 
@@ -117,15 +120,9 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final color = isDarkMode
-        ? const Color.fromARGB(255, 255, 255, 255)
-        : const Color(0xff419388);
-
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     final node = FocusScope.of(context);
-    //devuelve la estructura inicial de la aplicacion: FORMULARIO DEL LOGIN
     return SafeArea(
       child: Center(
         child: Column(
@@ -170,12 +167,12 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                           setState(() => dniComCtrl.text = ''),
                     ),
                     SizedBox(
-                      height: 10.h,
+                      height: 20.h,
                     ),
                     //COMPONENTE PARA EL INGRESO DE NUMERO DE CELULAR
                     PhoneNumber(phoneCtrl: phoneCtrl, onEditingComplete: () {}),
                     SizedBox(
-                      height: 20.h,
+                      height: 10.h,
                     ),
                     // COMPONENTE BUTTON
                     ButtonComponent(
@@ -184,74 +181,23 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                         onPressed: isLoading
                             ? null
                             : () => sendCredentialsNew(isBiometric: false)),
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    //COMPONENTE BOTON PARA CIUDADANIA DIGITAL
-                    //QUITAR EL COMENTARIO PARA LA IMPLEMENTACION DE CIUDADANIA DIGITAL
+                    // SizedBox(
+                    //   height: 10.h,
+                    // ),
+                    // // COMPONENTE BOTON PARA CIUDADANIA DIGITAL
+                    // // QUITAR EL COMENTARIO PARA LA IMPLEMENTACION DE CIUDADANIA DIGITAL
                     // CiudadaniaButtonComponent(
                     //   stateLoading: isLoadingCiudadania,
                     //   onPressed:
                     //       isLoadingCiudadania ? null : onAuthCiudadaniaDigital,
                     // ),
                     SizedBox(
-                      height: 20.h,
+                      height: 10.h,
                     ),
                     if (_hasBiometricSetup)
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50.r),
-                                onTap: _authenticate,
-                                child: Column(
-                                  children: [
-                                    Icon(Icons.fingerprint,
-                                        size: 40.sp, color: color),
-                                    SizedBox(height: 4.h),
-                                    Text(
-                                      'Ingreso con biometría',
-                                      style: TextStyle(
-                                          fontSize: 12.sp, color: color),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ]),
-                    //SECCION DE CONTACTOS Y POLITICAS Y PRIVACIDAD
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    SizedBox(
-                      width: containerWidth,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: MiniCardButton(
-                              icon: Icons.contact_phone,
-                              label: 'Contactos\na nivel nacional',
-                              onTap: () =>
-                                  Navigator.pushNamed(context, 'contacts'),
-                            ),
-                          ),
-                          SizedBox(width: 10.w), // Responsivo
-                          Expanded(
-                            child: MiniCardButton(
-                              icon: Icons.privacy_tip,
-                              label: 'Política\nde privacidad',
-                              onTap: () => launchUrl(
-                                Uri.parse(serviceGetPrivacyPolicy()),
-                                mode: LaunchMode.externalApplication,
-                              ),
-                            ),
-                          ),
-                        ],
+                      BiometricButtonComponent(
+                        onPressed: _authenticate,
                       ),
-                    ),
                     //VERSION DE LA APLICACION VISIBLE
                     SizedBox(
                       height: 20.h, // Responsivo
