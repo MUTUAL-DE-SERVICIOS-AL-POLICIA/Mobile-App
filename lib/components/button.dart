@@ -251,3 +251,63 @@ class NumberComponent extends StatelessWidget {
     );
   }
 }
+
+class CiudadaniaButtonComponent extends StatelessWidget {
+  final bool stateLoading;
+  final Function()? onPressed;
+
+  const CiudadaniaButtonComponent({
+    super.key,
+    this.stateLoading = false,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 300,
+      height: 60,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromARGB(255, 60, 66, 121),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: EdgeInsets.zero,
+        ),
+        onPressed: stateLoading ? null : onPressed,
+        child: stateLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2B3486)),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/logo_ciudadania.png',
+                    width: 30,
+                    height: 30,
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Ciudadania Digital',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 255, 255, 255),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}

@@ -72,7 +72,7 @@ class _ModalAceptTerminState extends State<ModalAceptTermin> {
                               child: GestureDetector(
                                 onTap: () => setState(() => stateNotificationsPush = !stateNotificationsPush),
                                 child: Text('Acepto que me envien notificaciones',
-                                    style: TextStyle(color: AdaptiveTheme.of(context).theme.primaryColorDark)),
+                                    style: TextStyle(fontSize: 17.sp, color: AdaptiveTheme.of(context).theme.primaryColorDark)),
                               ),
                             )
                           ],
@@ -92,7 +92,8 @@ class _ModalAceptTerminState extends State<ModalAceptTermin> {
     final authService = Provider.of<AuthService>(context, listen: false);
     await authService.writeFirstTime(context);
     if (!mounted) return;
-    Navigator.pushReplacementNamed(context, 'switch');
+    // Navigator.pushReplacementNamed(context, 'switch');
+    Navigator.pushReplacementNamed(context, 'newlogin');
   }
 }
 

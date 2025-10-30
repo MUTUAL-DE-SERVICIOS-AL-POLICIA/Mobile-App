@@ -47,7 +47,9 @@ class InputComponent extends StatelessWidget {
       style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 20.sp,
-          color: const Color(0xff419388),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
           fontFamily: 'Poppins'),
       focusNode: focusNode,
       textCapitalization: textCapitalization,

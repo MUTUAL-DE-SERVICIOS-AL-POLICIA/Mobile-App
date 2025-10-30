@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:muserpol_pvt/swipe/acept_conditions.dart';
@@ -77,9 +78,12 @@ class _PageSliderState extends State<PageSlider> {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _showModalInside(),
-          label: const Text(
+          label: Text(
             'EMPEZAR',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            style: TextStyle(
+                fontSize: 15.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.w500),
           ),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

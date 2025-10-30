@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/components/input.dart';
 
 class Password extends StatefulWidget {
@@ -7,7 +8,12 @@ class Password extends StatefulWidget {
   final Function() onEditingComplete;
   final bool? confirm;
   final Function(String)? validator;
-  const Password({super.key, required this.passwordCtrl, required this.onEditingComplete, this.confirm = false, this.validator});
+  const Password(
+      {super.key,
+      required this.passwordCtrl,
+      required this.onEditingComplete,
+      this.confirm = false,
+      this.validator});
 
   @override
   State<Password> createState() => _PasswordState();
@@ -20,7 +26,11 @@ class _PasswordState extends State<Password> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.confirm! ? 'Confirme su contraseña:' : 'Contraseña:'),
+        Text(
+          widget.confirm! ? 'Confirme su contraseña:' : 'Contraseña:',
+          style: TextStyle(
+              fontSize: 15.sp, color: const Color.fromARGB(255, 0, 0, 0)),
+        ),
         InputComponent(
             textInputAction: TextInputAction.done,
             controllerText: widget.passwordCtrl,
@@ -43,7 +53,8 @@ class _PasswordState extends State<Password> {
             labelText: "Contraseña",
             obscureText: hidePassword,
             onTap: () => setState(() => hidePassword = !hidePassword),
-            iconOnTap: hidePassword ? Icons.lock_outline : Icons.lock_open_sharp)
+            iconOnTap:
+                hidePassword ? Icons.lock_outline : Icons.lock_open_sharp)
       ],
     );
   }

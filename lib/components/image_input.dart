@@ -76,7 +76,6 @@ class ImageInputState extends State<ImageInput> {
       imageQuality: 100,
     );
     if (!mounted) return;
-
     Navigator.pop(context);
     if (pickedFile == null) return;
     final inputImage = InputImage.fromFilePath(pickedFile.path);

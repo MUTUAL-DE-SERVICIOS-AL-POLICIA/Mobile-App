@@ -9,21 +9,21 @@ import 'package:muserpol_pvt/components/image_ctrl_live.dart';
 import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:muserpol_pvt/model/liveness_data_model.dart';
+import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/screens/modal_enrolled/tab_info.dart';
+import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
+import 'package:provider/provider.dart';
 
 class ModalInsideModal extends StatefulWidget {
   final Function(String) nextScreen;
   final bool stateFacialRecognition;
-  final String? deviceId;
-  final String? firebaseToken;
-  const ModalInsideModal(
-      {super.key,
-      required this.nextScreen,
-      this.deviceId,
-      this.stateFacialRecognition = false,
-      this.firebaseToken});
+  const ModalInsideModal({
+    super.key,
+    required this.nextScreen,
+    this.stateFacialRecognition = false,
+  });
 
   @override
   State<ModalInsideModal> createState() => _ModalInsideModalState();
@@ -48,14 +48,7 @@ class _ModalInsideModalState extends State<ModalInsideModal>
   getMessage() async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
     var response = await serviceMethod(
-        mounted,
-        context,
-        'get',
-        null,
-        serviceProcessEnrolled(
-            widget.stateFacialRecognition ? widget.deviceId : null),
-        true,
-        true);
+        mounted, context, 'get', null, serviceProcessEnrolled(), true, true);
     if (response != null) {
       userBloc.add(UpdateStateCam(true));
       setState(() {
@@ -73,7 +66,7 @@ class _ModalInsideModalState extends State<ModalInsideModal>
   Widget build(BuildContext context) {
     return PopScope(
       canPop:
-          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+          false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         bool exitScreen = await _onBackPressed();
@@ -124,31 +117,31 @@ class _ModalInsideModalState extends State<ModalInsideModal>
     );
   }
 
-  Future<bool> _onBackPressed() async {
-    return await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) => ComponentAnimate(
-            child: DialogTwoAction(
-                message: '¿DESEAS SALIR DEL $titleback?',
-                actionCorrect: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                messageCorrect: 'Salir')));
+  _onBackPressed() async {
+    final result = await showDialog<bool>(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => ComponentAnimate(
+        child: DialogTwoAction(
+          message: '¿DESEAS SALIR DEL $titleback?',
+          actionCorrect: () {
+            Navigator.pop(context, true); 
+          },
+          messageCorrect: 'Salir',
+        ),
+      ),
+    );
+    return result ?? false; 
   }
 
   sendImage(String image) async {
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
     final Map<String, dynamic> body = {
-      'firebase_token': widget.firebaseToken,
-      'device_id': widget.deviceId,
       'image': image
     };
 
-    debugPrint(body.toString());
-    var response = await serviceMethod(mounted, context, 'post', body,
-        serviceProcessEnrolled(null), true, true);
+    var response = await serviceMethod(
+        mounted, context, 'post', body, serviceProcessEnrolledPost(), true, true);
     userBloc.add(UpdateStateCam(true));
     if (response != null) {
       if (json.decode(response.body)['error']) {
@@ -162,6 +155,20 @@ class _ModalInsideModalState extends State<ModalInsideModal>
                 DialogAction(message: json.decode(response.body)['message']));
       } else {
         if (json.decode(response.body)['data']['completed']) {
+          final currentUser = userBloc.state.user!;
+          final updatedUser = currentUser.copyWith(enrolled: true);
+          userBloc.add(UpdateUser(updatedUser));
+          if (!mounted) return;
+          final authService = Provider.of<AuthService>(context, listen: false);
+          final token = await authService.readAuxToken();
+
+          final updatedUserModel = UserModel(
+            apiToken: token,
+            user: updatedUser,
+          );
+          if (!mounted) return;
+          await authService.writeUser(
+              context, userModelToJson(updatedUserModel));
           return widget.nextScreen(json.decode(response.body)['message']);
         } else {
           setState(() =>

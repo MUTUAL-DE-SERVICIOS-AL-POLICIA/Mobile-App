@@ -1,132 +1,81 @@
 // To parse this JSON data, do
 //
 //     final contactsModel = contactsModelFromJson(jsonString);
-
 import 'dart:convert';
 
-ContactsModel contactsModelFromJson(String str) => ContactsModel.fromJson(json.decode(str));
+ContactsModel contactsModelFromJson(String str) =>
+    ContactsModel.fromJson(json.decode(str));
 
 String contactsModelToJson(ContactsModel data) => json.encode(data.toJson());
 
 class ContactsModel {
-    ContactsModel({
-        this.error,
-        this.message,
-        this.data,
-    });
+  ContactsModel({
+    this.serviceStatus,
+    this.message,
+    this.data,
+  });
 
-    bool? error;
-    String? message;
-    Data? data;
+  bool? serviceStatus;
+  String? message;
+  List<City>? data;
 
-    ContactsModel copyWith({
-        bool? error,
-        String? message,
-        Data? data,
-    }) => 
-        ContactsModel(
-            error: error ?? this.error,
-            message: message ?? this.message,
-            data: data ?? this.data,
-        );
-
-    factory ContactsModel.fromJson(Map<String, dynamic> json) => ContactsModel(
-        error: json["error"],
+  factory ContactsModel.fromJson(Map<String, dynamic> json) => ContactsModel(
+        serviceStatus: json["serviceStatus"],
         message: json["message"],
-        data: Data.fromJson(json["data"]),
-    );
+        data: json["data"] != null
+            ? List<City>.from(json["data"].map((x) => City.fromJson(x)))
+            : [],
+      );
 
-    Map<String, dynamic> toJson() => {
-        "error": error,
+  Map<String, dynamic> toJson() => {
+        "serviceStatus": serviceStatus,
         "message": message,
-        "data": data!.toJson(),
-    };
-}
-
-class Data {
-    Data({
-        this.cities,
-    });
-
-    List<City>? cities;
-
-    Data copyWith({
-        List<City>? cities,
-    }) => 
-        Data(
-            cities: cities ?? this.cities,
-        );
-
-    factory Data.fromJson(Map<String, dynamic> json) => Data(
-        cities: List<City>.from(json["cities"].map((x) => City.fromJson(x))),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "cities": List<dynamic>.from(cities!.map((x) => x.toJson())),
-    };
+        "data": data != null
+            ? List<dynamic>.from(data!.map((x) => x.toJson()))
+            : [],
+      };
 }
 
 class City {
-    City({
-        this.id,
-        this.name,
-        this.latitude,
-        this.longitude,
-        this.companyAddress,
-        this.phonePrefix,
-        this.companyPhones,
-        this.companyCellphones,
-    });
+  City({
+    this.id,
+    this.name,
+    this.latitude,
+    this.longitude,
+    this.companyAddress,
+    this.phonePrefix,
+    this.companyPhones,
+    this.companyCellphones,
+  });
 
-    int? id;
-    String? name;
-    double? latitude;
-    double? longitude;
-    String? companyAddress;
-    int? phonePrefix;
-    String? companyPhones;
-    String? companyCellphones;
+  int? id;
+  String? name;
+  double? latitude;
+  double? longitude;
+  String? companyAddress;
+  int? phonePrefix;
+  String? companyPhones;
+  String? companyCellphones;
 
-    City copyWith({
-        int? id,
-        String? name,
-        double? latitude,
-        double? longitude,
-        String? companyAddress,
-        int? phonePrefix,
-        String? companyPhones,
-        String? companyCellphones,
-    }) => 
-        City(
-            id: id ?? this.id,
-            name: name ?? this.name,
-            latitude: latitude ?? this.latitude,
-            longitude: longitude ?? this.longitude,
-            companyAddress: companyAddress ?? this.companyAddress,
-            phonePrefix: phonePrefix ?? this.phonePrefix,
-            companyPhones: companyPhones ?? this.companyPhones,
-            companyCellphones: companyCellphones ?? this.companyCellphones,
-        );
-
-    factory City.fromJson(Map<String, dynamic> json) => City(
+  factory City.fromJson(Map<String, dynamic> json) => City(
         id: json["id"],
         name: json["name"],
-        latitude: json["latitude"].toDouble(),
-        longitude: json["longitude"].toDouble(),
-        companyAddress: json["company_address"],
-        phonePrefix: json["phone_prefix"],
-        companyPhones: json["company_phones"],
-        companyCellphones: json["company_cellphones"],
-    );
+        latitude: double.tryParse(json["latitude"].toString()),
+        longitude: double.tryParse(json["longitude"].toString()),
+        companyAddress: json["companyAddress"],
+        phonePrefix: json["phonePrefix"],
+        companyPhones: json["companyPhones"],
+        companyCellphones: json["companyCellphones"],
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,
         "latitude": latitude,
         "longitude": longitude,
-        "company_address": companyAddress,
-        "phone_prefix": phonePrefix,
-        "company_phones": companyPhones,
-        "company_cellphones": companyCellphones,
-    };
+        "companyAddress": companyAddress,
+        "phonePrefix": phonePrefix,
+        "companyPhones": companyPhones,
+        "companyCellphones": companyCellphones,
+      };
 }

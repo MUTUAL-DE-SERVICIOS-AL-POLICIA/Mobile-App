@@ -15,14 +15,15 @@ class MiniCardButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final color = isDarkMode ? Colors.white : const Color(0xff419388);
+    final color = isDarkMode
+        ? const Color.fromARGB(255, 255, 255, 255)
+        : const Color(0xff419388);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         decoration: BoxDecoration(
-          border: Border.all(color: color),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
@@ -34,7 +35,7 @@ class MiniCardButton extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 15,
                 color: color,
                 fontWeight: FontWeight.w500,
               ),
