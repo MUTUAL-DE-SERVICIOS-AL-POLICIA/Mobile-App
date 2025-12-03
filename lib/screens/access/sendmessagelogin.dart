@@ -52,8 +52,12 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   void initState() {
     super.initState();
     startCountdown();
-    debugPrint(widget.activeloading.toString());
     listenForSms();
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted && isLoading) {
+        setState(() => isLoading = false);
+      }
+    });
     if (widget.activeloading!) {
       sendServicesMesagge();
     } else {
@@ -102,7 +106,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       }
     } else {
       if (dataJson['message'] ==
-          'Persona verificada, afiliado policial Login de prueba') {
+          'Persona verificada, afiliado policial, Inicio de sesión para pruebas') {
         userTest(response);
       }
       widget.body['messageId'] = dataJson['messageId'];
@@ -135,6 +139,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   @override
   Widget build(BuildContext context) {
     var numbercell = widget.body['cellphone'];
+    var countryCode = widget.body['countryCode'];
     return Stack(
       children: [
         PopScope(
@@ -171,17 +176,15 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                             children: [
                               SizedBox(height: 10.h),
                               Center(
-                                  child:
-                                      Text('PIN de Seguridad',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20.sp,
-                                            color:
-                                                Theme.of(context).brightness ==
-                                                        Brightness.dark
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                          ))),
+                                  child: Text('PIN de Seguridad',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20.sp,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ))),
                               SizedBox(height: 30.h),
                               PinCodeTextField(
                                 appContext: context,
@@ -266,7 +269,6 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                 text: 'REENVIAR CÓDIGO',
                                 onPressed: canResend
                                     ? () {
-                                        // Aquí llamás a la función para reenviar el SMS
                                         startCountdown();
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
@@ -276,7 +278,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                           ),
                                         );
                                       }
-                                    : null, // deshabilitado si no puede reenviar
+                                    : null,
                               ),
                               Text(
                                 canResend
@@ -328,16 +330,28 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                       ),
                     ),
                     SizedBox(height: 20.h),
-                    Text(
-                      'Enviando pin de seguridad mediante SMS',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
+                    if (countryCode == '+591')
+                      Text(
+                        'Enviando pin de seguridad mediante SMS',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Enviando pin de seguridad mediante WhatsApp',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
-                    ),
                     SizedBox(height: 20.h),
                     Text(
                       'al $numbercell',
@@ -406,13 +420,14 @@ class _SendMessageLogin extends State<SendMessageLogin> {
         BlocProvider.of<NotificationBloc>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
+
     FocusScope.of(context).unfocus();
 
     var requestBody = {'pin': code, 'messageId': widget.body['messageId']};
 
     if (!mounted) return;
-    var response = await serviceMethod(
-        mounted, context, 'post', requestBody, verifyPin(), false, true);
+
+    var response = await serviceMethod(mounted, context, 'post', requestBody, verifyPin(), false, true);
 
     if (response != null) {
       final decoded = json.decode(response.body);

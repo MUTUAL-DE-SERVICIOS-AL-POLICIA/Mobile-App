@@ -45,6 +45,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   final double containerWidth = 320.w;
   bool _hasBiometricSetup = false;
 
+  String _countryDialCode = '+591';
+
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool isLoading = false;
   bool btnAccess = true;
@@ -170,7 +172,13 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                       height: 20.h,
                     ),
                     //COMPONENTE PARA EL INGRESO DE NUMERO DE CELULAR
-                    PhoneNumber(phoneCtrl: phoneCtrl, onEditingComplete: () {}),
+                    PhoneNumber(
+                      phoneCtrl: phoneCtrl,
+                      onEditingComplete: () {},
+                      onDialCodeChanged: (dial) {
+                        setState(() => _countryDialCode = dial);
+                      },
+                    ),
                     SizedBox(
                       height: 10.h,
                     ),
@@ -297,6 +305,29 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     FocusScope.of(context).unfocus();
     setState(() => isLoading = true);
 
+    if (_countryDialCode != '+591') {
+      final continuar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: const Text("¿Usted es del extranjero?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+                setState(() => isLoading = false);
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Continuar"),
+            ),
+          ],
+        ),
+      );
+      if (continuar != true) return;
+    }
+
     try {
       final signature = await SmsAutoFill().getAppSignature;
       if (!isBiometric) {
@@ -337,6 +368,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
       body['username'] = identityCard;
       body['cellphone'] = cellphone;
+      body['countryCode'] = _countryDialCode;
       body['signature'] = signature;
       body['isBiometric'] = isBiometric;
 

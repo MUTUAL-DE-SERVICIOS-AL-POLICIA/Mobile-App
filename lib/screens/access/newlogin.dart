@@ -48,7 +48,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
               Expanded(
                 child: Center(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 15.w),
+                    padding: EdgeInsets.symmetric(horizontal: 10.w),
                     child: Column(
                       children: [
                         Image.asset(
@@ -57,7 +57,7 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
                               : 'assets/images/muserpol-logo2.png',
                           width: 270.w,
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 5.h),
                         FadeIn(child: const ScreenFormLogin()),
                       ],
                     ),

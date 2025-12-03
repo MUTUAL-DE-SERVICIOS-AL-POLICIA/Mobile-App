@@ -55,12 +55,12 @@ Future<dynamic> serviceMethod(
           (X509Certificate cert, String host, int port) => true;
       final http = IOClient(ioc);
       // Logs útiles para debug
-      debugPrint('==========================================');
-      debugPrint('== method $method');
-      debugPrint('== url $url');
-      debugPrint('== body $body');
-      debugPrint('== headers $headers');
-      debugPrint('==========================================');
+      // debugPrint('==========================================');
+      // debugPrint('== method $method');
+      // debugPrint('== url $url');
+      // debugPrint('== body $body');
+      // debugPrint('== headers $headers');
+      // debugPrint('==========================================');
       // Selección del método HTTP
       switch (method) {
         case 'get':
@@ -68,8 +68,8 @@ Future<dynamic> serviceMethod(
               .get(url, headers: headers)
               .timeout(const Duration(seconds: 40))
               .then((value) {
-            debugPrint('statusCode ${value.statusCode}');
-            debugPrint('value ${value.body}');
+            // debugPrint('statusCode ${value.statusCode}');
+            // debugPrint('value ${value.body}');
             switch (value.statusCode) {
               case 200:
                 return value;

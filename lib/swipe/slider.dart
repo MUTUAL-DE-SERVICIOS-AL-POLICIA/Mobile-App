@@ -43,7 +43,7 @@ class _PageSliderState extends State<PageSlider> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop:
-          false, // Evita que el usuario cierre la pantalla con el botón de retroceso
+          false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
       },
