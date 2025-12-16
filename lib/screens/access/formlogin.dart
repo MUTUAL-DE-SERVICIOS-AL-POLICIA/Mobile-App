@@ -11,13 +11,13 @@ import 'package:just_the_tooltip/just_the_tooltip.dart';
 import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/components/button.dart';
-import 'package:muserpol_pvt/components/card_login.dart';
 import 'package:muserpol_pvt/components/inputs/identity_card.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:muserpol_pvt/components/inputs/phone.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
+import 'package:muserpol_pvt/provider/app_session_state.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
 import 'package:muserpol_pvt/screens/access/sendmessagelogin.dart';
 import 'package:muserpol_pvt/screens/access/web_screen.dart';
@@ -27,7 +27,6 @@ import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:muserpol_pvt/utils/auth_helpers.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
@@ -45,6 +44,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   final LocalAuthentication auth = LocalAuthentication();
   final double containerWidth = 320.w;
   bool _hasBiometricSetup = false;
+
+  String _countryDialCode = '+591';
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool isLoading = false;
@@ -69,8 +70,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
   Future<void> _checkBiometricSetup() async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final hasSaved = (await authService.readBiometric()).isNotEmpty;
 
+    final hasSaved = (await authService.readBiometric()).isNotEmpty;
     final deviceSupports = await auth.isDeviceSupported();
     final canCheck = await auth.canCheckBiometrics;
 
@@ -80,7 +81,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
     setState(() => _hasBiometricSetup = enabled);
 
     if (enabled) {
-      _authenticate();
+      final session = Provider.of<AppSessionState>(context, listen: false);
+      if (session.allowAutoBiometric) {
+        if (!mounted) return;
+        _authenticate();
+      }
     }
   }
 
@@ -117,15 +122,9 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final color = isDarkMode
-        ? const Color.fromARGB(255, 255, 255, 255)
-        : const Color(0xff419388);
-
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     final node = FocusScope.of(context);
-    //devuelve la estructura inicial de la aplicacion: FORMULARIO DEL LOGIN
     return SafeArea(
       child: Center(
         child: Column(
@@ -173,13 +172,19 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                       height: 10.h,
                     ),
                     //COMPONENTE PARA EL INGRESO DE NUMERO DE CELULAR
-                    PhoneNumber(phoneCtrl: phoneCtrl, onEditingComplete: () {}),
+                    PhoneNumber(
+                      phoneCtrl: phoneCtrl,
+                      onEditingComplete: () {},
+                      onDialCodeChanged: (dial) {
+                        setState(() => _countryDialCode = dial);
+                      },
+                    ),
                     SizedBox(
-                      height: 20.h,
+                      height: 10.h,
                     ),
                     // COMPONENTE BUTTON
                     ButtonComponent(
-                        text: 'INGRESAR',
+                        text: 'Continuar',
                         stateLoading: isLoading,
                         onPressed: isLoading
                             ? null
@@ -187,80 +192,51 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     SizedBox(
                       height: 20.h,
                     ),
-                    //COMPONENTE BOTON PARA CIUDADANIA DIGITAL
-                    //QUITAR EL COMENTARIO PARA LA IMPLEMENTACION DE CIUDADANIA DIGITAL
-                    // CiudadaniaButtonComponent(
-                    //   stateLoading: isLoadingCiudadania,
-                    //   onPressed:
-                    //       isLoadingCiudadania ? null : onAuthCiudadaniaDigital,
-                    // ),
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    if (_hasBiometricSetup)
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50.r),
-                                onTap: _authenticate,
-                                child: Column(
-                                  children: [
-                                    Icon(Icons.fingerprint,
-                                        size: 40.sp, color: color),
-                                    SizedBox(height: 4.h),
-                                    Text(
-                                      'Ingreso con biometría',
-                                      style: TextStyle(
-                                          fontSize: 12.sp, color: color),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ]),
-                    //SECCION DE CONTACTOS Y POLITICAS Y PRIVACIDAD
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    SizedBox(
-                      width: containerWidth,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: MiniCardButton(
-                              icon: Icons.contact_phone,
-                              label: 'Contactos\na nivel nacional',
-                              onTap: () =>
-                                  Navigator.pushNamed(context, 'contacts'),
-                            ),
-                          ),
-                          SizedBox(width: 10.w), // Responsivo
-                          Expanded(
-                            child: MiniCardButton(
-                              icon: Icons.privacy_tip,
-                              label: 'Política\nde privacidad',
-                              onTap: () => launchUrl(
-                                Uri.parse(serviceGetPrivacyPolicy()),
-                                mode: LaunchMode.externalApplication,
-                              ),
-                            ),
-                          ),
-                        ],
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        'Otras formas de iniciar sesión:',
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                          fontSize: 12.sp,
+                        ),
                       ),
                     ),
-                    //VERSION DE LA APLICACION VISIBLE
                     SizedBox(
-                      height: 20.h, // Responsivo
+                      height: 20.h,
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: CiudadaniaButtonComponent(
+                            stateLoading: isLoadingCiudadania,
+                            onPressed: isLoadingCiudadania
+                                ? null
+                                : onAuthCiudadaniaDigital,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: BiometricButtonComponent(
+                            onPressed: _authenticate,
+                            enabled: _hasBiometricSetup,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(
+                      height: 30.h,
                     ),
                     Center(
                       child: Text(
                         'Versión ${dotenv.env['version']}',
                         style: TextStyle(
-                          fontSize: 12.sp, // Responsivo
+                          fontSize: 10.sp,
                           color: Theme.of(context).brightness == Brightness.dark
                               ? const Color.fromARGB(255, 255, 255, 255)
                               : const Color.fromARGB(255, 0, 0, 0),
@@ -268,9 +244,17 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                       ),
                     ),
                     Center(
-                      child: Text(dotenv.env['STATE_PROD'] == 'true'
-                          ? ""
-                          : "Versión de Pruebas"),
+                      child: Text(
+                        dotenv.env['STATE_PROD'] == 'true'
+                            ? ""
+                            : "Versión de Pruebas",
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color.fromARGB(255, 255, 255, 255)
+                              : const Color.fromARGB(255, 0, 0, 0),
+                        ),
+                      ),
                     )
                   ],
                 ),
@@ -281,9 +265,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       ),
     );
   }
-  //HACE LLAMADA AL COMPONENTE PARA LLAMAR A LA PAGINA DE CIUDADANIA DIGITAL
-  //CIUDADANIA DIGITAL SOLO INICIARA POR MEDIO DE UNA PAGINA WEB Y NO ASI POR UNA CONEXION POR UNA APP EXTERNA
-  //SE ESTA UTILIZANDO UN ESQUEMA DENTRO DE ANDROIDMANIFEST.XML PARA LA LLAMADA AL ESQUEMA "COM.MUSERPOL.PVT://OAUTHREDIRECT"
 
   Future<void> onAuthCiudadaniaDigital() async {
     setState(() => isLoadingCiudadania = true);
@@ -301,10 +282,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
       if (response != null && response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        final url = decoded['url'];
-        final clientId = decoded['clientID'];
-        final redirectUri = decoded['redirectURI'];
-        final scope = decoded['scope'];
+
+        final url = decoded['data']['clientUrl'];
+        final clientId = decoded['data']['clientId'];
+        final redirectUri = decoded['data']['redirectUri'];
+        final scope = decoded['data']['scopes'];
 
         final codeVerifier = AuthHelpers.generateCodeVerifier();
         final codeChallenge = AuthHelpers.generateCodeChallenge(codeVerifier);
@@ -316,12 +298,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
             '&code_challenge=$codeChallenge'
             '&code_challenge_method=S256';
 
-        // debugPrint('acceso a la URL es: . $authorizationUrl');
-
         if (!mounted) return;
-        //RECIBIDO LAS CREDENCIALES DE CIUDADANIA DIGITAL INICIA LA PAGINA DE LOGIN DE CIUDADANIA DIGITAL
-        //PARA REALIZAR LAS CONSULTAS CORRESPONDIENTES AL SERVICIO DE CIUDADANIA DIGITAL SE DEBE ENVIAR EL CODE VERIFIER, IMPORTATE GUARDARLO
-        //SOLO PARA UN USO
+
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => Webscreen(
@@ -350,6 +328,29 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
   sendCredentialsNew({required bool isBiometric}) async {
     FocusScope.of(context).unfocus();
     setState(() => isLoading = true);
+
+    if (_countryDialCode != '+591') {
+      final continuar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: const Text("¿Usted es del extranjero?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+                setState(() => isLoading = false);
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Continuar"),
+            ),
+          ],
+        ),
+      );
+      if (continuar != true) return;
+    }
 
     try {
       final signature = await SmsAutoFill().getAppSignature;
@@ -391,6 +392,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
       body['username'] = identityCard;
       body['cellphone'] = cellphone;
+      body['countryCode'] = _countryDialCode;
       body['signature'] = signature;
       body['isBiometric'] = isBiometric;
 

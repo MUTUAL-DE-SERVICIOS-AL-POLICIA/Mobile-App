@@ -5,15 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muserpol_pvt/bloc/notification/notification_bloc.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
-import 'package:muserpol_pvt/components/susessful.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/user_model.dart';
 import 'package:muserpol_pvt/provider/app_state.dart';
-import 'package:muserpol_pvt/screens/list_services_menu/list_service.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
+import 'package:muserpol_pvt/utils/auth_helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -57,7 +56,6 @@ class _WebScreenState extends State<Webscreen> {
             }
 
             if (code != null) {
-              debugPrint('Authorization code recibido: $code');
               await _handleOAuthCallback(code);
               return NavigationDecision.prevent;
             }
@@ -69,33 +67,15 @@ class _WebScreenState extends State<Webscreen> {
       ..loadRequest(Uri.parse(widget.initialUrl));
   }
 
-  //PROCESO DE AUTENTICACON POR CIUDADANIA DIGITAL
-
   Future<void> _handleOAuthCallback(String code) async {
-    final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
-    final notificationBloc =
-        BlocProvider.of<NotificationBloc>(context, listen: false);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final tokenState = Provider.of<TokenState>(context, listen: false);
-
     setState(() => _isLoading = true);
     FocusScope.of(context).unfocus();
 
     try {
-      final versionOK = await checkVersion(mounted, context);
-
-      if (!versionOK) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Versión de la app desactualizada.")),
-        );
-        _closeScreen();
-        return;
-      }
-
       final requestBody = {
-        'code': code,
-        'code_verifier': widget.codeVerifier,
+        'isCitizenshipDigital': true,
+        'citizenshipDigitalCode': code,
+        'citizenshipDigitalCodeVerifier': widget.codeVerifier,
       };
 
       final response = await serviceMethod(
@@ -103,97 +83,90 @@ class _WebScreenState extends State<Webscreen> {
         context,
         'post',
         requestBody,
-        serviceVerificationCode(),
+        loginAppMobile(),
         false,
         true,
       );
 
-      if (response != null) {
+      if (response == null) {
+        _closeScreen();
+        return;
+      }
+
+      final jsonResponse = json.decode(response.body);
+
+      if (jsonResponse['error'] == true &&
+          jsonResponse.containsKey('logoutUrl')) {
+        final String message =
+            jsonResponse['message'] ?? 'Sesión finalizada por seguridad';
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+
+        final logoutUrl = jsonResponse['logoutUrl'];
+        await _controller.loadRequest(Uri.parse(logoutUrl));
+
+        await Future.delayed(const Duration(seconds: 1));
+
+        _closeScreen();
+        return;
+      }
+
+      if (jsonResponse['error'] == false &&
+          jsonResponse.containsKey('logoutUrl')) {
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final tokenState = Provider.of<TokenState>(context, listen: false);
+        final notificationBloc =
+            BlocProvider.of<NotificationBloc>(context, listen: false);
+        final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
+
         await DBProvider.db.database;
 
-        UserModel user =
-            userModelFromJson(json.encode(json.decode(response.body)['data']));
-
-        var username = json.decode(response.body)['user_app']['username'];
-        var cellphone = json.decode(response.body)['user_app']['cellphone'];
+        UserModel user = UserModel.fromJson({
+          "api_token": jsonResponse['data']['apiToken'],
+          "user": jsonResponse['data']['information']
+        });
 
         await authService.writeAuxtoken(user.apiToken!);
         tokenState.updateStateAuxToken(true);
-        await authService.writeUser(context, userModelToJson(user));
 
+        if (!mounted) return;
+
+        await authService.writeUser(context, userModelToJson(user));
         userBloc.add(UpdateUser(user.user!));
 
-        final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
+        final affiliateModel =
+            AffiliateModel(idAffiliate: user.user!.affiliateId!);
         await DBProvider.db.newAffiliateModel(affiliateModel);
-
         notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+        final logoutUrl = jsonResponse['logoutUrl'];
 
-        initSessionUserApp(
-            response,
-            UserAppMobile(identityCard: username, numberPhone: cellphone),
-            user);
+        await _controller.loadRequest(Uri.parse(logoutUrl));
 
-        debugPrint('Validación exitosa');
         if (!mounted) return;
-      } else {
-        debugPrint('Falló la validación');
-        _closeScreen();
+        await AuthHelpers.initSessionUserApp(
+          context: context,
+          response: response,
+          userApp: UserAppMobile(
+              identityCard: jsonResponse['data']['information']['identityCard'],
+              numberPhone: jsonResponse['data']['information']['cellphone']),
+          user: user,
+        );
+        return;
       }
     } catch (e) {
       debugPrint("Error inesperado: $e");
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error durante la validación.")),
-      );
       _closeScreen();
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  initSessionUserApp(
-      dynamic response, UserAppMobile userApp, UserModel user) async {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final tokenState = Provider.of<TokenState>(context, listen: false);
-    tokenState.updateStateAuxToken(false);
-
-    final biometricUserModel = BiometricUserModel(
-      affiliateId: json.decode(response.body)['data']['user']['id'],
-    );
-
-    if (!mounted) return;
-    await authService.writeBiometric(
-        context, biometricUserModelToJson(biometricUserModel));
-
-    if (!mounted) return;
-    await authService.writeToken(context, user.apiToken!);
-
-    if (!mounted) return;
-    await authService.writeToken(context, user.apiToken!);
-    tokenState.updateStateAuxToken(false);
-
-    if (!mounted) return;
-
-    //Ingreso con un "ok" a la aplicacion
-
-    showSuccessful(
-      context,
-      'Correcto, Autenticacion Exitosa',
-      () {
-        // Luego de que el mensaje de éxito se cierre, navegamos a la siguiente pantalla
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const ScreenListService(
-              showTutorial: true,
-            ),
-            transitionDuration: const Duration(seconds: 0),
-          ),
-        );
-      },
-    );
   }
 
   void _closeScreen([dynamic result]) {
@@ -214,7 +187,7 @@ class _WebScreenState extends State<Webscreen> {
           WebViewWidget(controller: _controller),
           if (_isLoading)
             Container(
-              color: Colors.black.withAlpha((0.4 * 255).toInt()),
+              color: Colors.black87,
               child: const Center(
                 child: CircularProgressIndicator(color: Colors.white),
               ),

@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 final liquidPages = [
   const LiquidPage(
-      imageBackground: 'assets/images/001.webp',
+      imageBackground: 'assets/images/muserpol_fachada.webp',
       imageFront: "assets/icons/6.png",
       titleText: "BIENVENIDO",
       subtitleText: "MUTUAL DE SERVICIOS AL POLICÍA",

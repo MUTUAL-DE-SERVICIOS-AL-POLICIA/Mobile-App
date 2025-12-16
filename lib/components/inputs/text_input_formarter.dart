@@ -6,17 +6,16 @@ class PhoneNumberFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    // quitamos cualquier carácter que no sea número
     String digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
     String formatted = '';
     if (digits.length <= 3) {
-      formatted = '(${digits}';
+      formatted = '${digits}';
     } else if (digits.length <= 6) {
-      formatted = '(${digits.substring(0, 3)})-${digits.substring(3)}';
+      formatted = '${digits.substring(0, 3)} ${digits.substring(3)}';
     } else {
       formatted =
-          '(${digits.substring(0, 3)})-${digits.substring(3, digits.length)}';
+          '${digits.substring(0, 3)} ${digits.substring(3, digits.length)}';
     }
 
     return TextEditingValue(
