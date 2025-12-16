@@ -169,7 +169,7 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                           setState(() => dniComCtrl.text = ''),
                     ),
                     SizedBox(
-                      height: 20.h,
+                      height: 10.h,
                     ),
                     //COMPONENTE PARA EL INGRESO DE NUMERO DE CELULAR
                     PhoneNumber(
@@ -184,37 +184,59 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                     ),
                     // COMPONENTE BUTTON
                     ButtonComponent(
-                        text: 'INGRESAR',
+                        text: 'Continuar',
                         stateLoading: isLoading,
                         onPressed: isLoading
                             ? null
                             : () => sendCredentialsNew(isBiometric: false)),
-                    // SizedBox(
-                    //   height: 10.h,
-                    // ),
-                    // // COMPONENTE BOTON PARA CIUDADANIA DIGITAL
-                    // // QUITAR EL COMENTARIO PARA LA IMPLEMENTACION DE CIUDADANIA DIGITAL
-                    // CiudadaniaButtonComponent(
-                    //   stateLoading: isLoadingCiudadania,
-                    //   onPressed:
-                    //       isLoadingCiudadania ? null : onAuthCiudadaniaDigital,
-                    // ),
                     SizedBox(
-                      height: 10.h,
+                      height: 20.h,
                     ),
-                    if (_hasBiometricSetup)
-                      BiometricButtonComponent(
-                        onPressed: _authenticate,
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        'Otras formas de iniciar sesión:',
+                        style: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                          fontSize: 12.sp,
+                        ),
                       ),
-                    //VERSION DE LA APLICACION VISIBLE
+                    ),
                     SizedBox(
-                      height: 20.h, // Responsivo
+                      height: 20.h,
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: CiudadaniaButtonComponent(
+                            stateLoading: isLoadingCiudadania,
+                            onPressed: isLoadingCiudadania
+                                ? null
+                                : onAuthCiudadaniaDigital,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: BiometricButtonComponent(
+                            onPressed: _authenticate,
+                            enabled: _hasBiometricSetup,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(
+                      height: 30.h,
                     ),
                     Center(
                       child: Text(
                         'Versión ${dotenv.env['version']}',
                         style: TextStyle(
-                          fontSize: 12.sp, // Responsivo
+                          fontSize: 10.sp,
                           color: Theme.of(context).brightness == Brightness.dark
                               ? const Color.fromARGB(255, 255, 255, 255)
                               : const Color.fromARGB(255, 0, 0, 0),
@@ -222,9 +244,17 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
                       ),
                     ),
                     Center(
-                      child: Text(dotenv.env['STATE_PROD'] == 'true'
-                          ? ""
-                          : "Versión de Pruebas"),
+                      child: Text(
+                        dotenv.env['STATE_PROD'] == 'true'
+                            ? ""
+                            : "Versión de Pruebas",
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color.fromARGB(255, 255, 255, 255)
+                              : const Color.fromARGB(255, 0, 0, 0),
+                        ),
+                      ),
                     )
                   ],
                 ),
@@ -235,9 +265,6 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
       ),
     );
   }
-  //HACE LLAMADA AL COMPONENTE PARA LLAMAR A LA PAGINA DE CIUDADANIA DIGITAL
-  //CIUDADANIA DIGITAL SOLO INICIARA POR MEDIO DE UNA PAGINA WEB Y NO ASI POR UNA CONEXION POR UNA APP EXTERNA
-  //SE ESTA UTILIZANDO UN ESQUEMA DENTRO DE ANDROIDMANIFEST.XML PARA LA LLAMADA AL ESQUEMA "COM.MUSERPOL.PVT://OAUTHREDIRECT"
 
   Future<void> onAuthCiudadaniaDigital() async {
     setState(() => isLoadingCiudadania = true);
@@ -255,10 +282,11 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
 
       if (response != null && response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        final url = decoded['url'];
-        final clientId = decoded['clientID'];
-        final redirectUri = decoded['redirectURI'];
-        final scope = decoded['scope'];
+
+        final url = decoded['data']['clientUrl'];
+        final clientId = decoded['data']['clientId'];
+        final redirectUri = decoded['data']['redirectUri'];
+        final scope = decoded['data']['scopes'];
 
         final codeVerifier = AuthHelpers.generateCodeVerifier();
         final codeChallenge = AuthHelpers.generateCodeChallenge(codeVerifier);
@@ -270,12 +298,8 @@ class _ScreenFormLoginState extends State<ScreenFormLogin> {
             '&code_challenge=$codeChallenge'
             '&code_challenge_method=S256';
 
-        // debugPrint('acceso a la URL es: . $authorizationUrl');
-
         if (!mounted) return;
-        //RECIBIDO LAS CREDENCIALES DE CIUDADANIA DIGITAL INICIA LA PAGINA DE LOGIN DE CIUDADANIA DIGITAL
-        //PARA REALIZAR LAS CONSULTAS CORRESPONDIENTES AL SERVICIO DE CIUDADANIA DIGITAL SE DEBE ENVIAR EL CODE VERIFIER, IMPORTATE GUARDARLO
-        //SOLO PARA UN USO
+
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => Webscreen(

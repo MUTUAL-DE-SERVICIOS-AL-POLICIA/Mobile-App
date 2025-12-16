@@ -43,7 +43,7 @@ class _IdentityCardState extends State<IdentityCard> {
           children: [
             Text(widget.title,
                 style: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: 16.sp,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.white
                         : Colors.black)),

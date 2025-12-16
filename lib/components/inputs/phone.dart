@@ -127,7 +127,7 @@ class _PhoneNumberState extends State<PhoneNumber> {
             Text(
               'Número de teléfono personal:',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 16.sp,
                 color: isDark ? Colors.white : Colors.black,
               ),
             ),

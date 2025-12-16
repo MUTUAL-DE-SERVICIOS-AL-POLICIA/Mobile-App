@@ -55,8 +55,7 @@ String servicePrintLoans(int loanId) => '$hostGATEWAY/$reazonMovil/loanPrintPlan
 //IMPRIMIR EL KARDEX DEL PRESTAMO
 String servicePrintKadex(int loanId) => '$hostGATEWAY/$reazonMovil/loanPrintKardex/$loanId';
 //"CIUDADANIA DIGITAL -SERVICIO DE AUTENTICACION"
-String serviceGetCredentials() => '$hostSTI/app/assignmentcredentials';
-String serviceVerificationCode() => '$hostSTI/app/verificationcode';
+String serviceGetCredentials() => '$hostGATEWAY/$auth/credentialsCitizenshipDigital';
 //PRE EVALUACION DE PRESTAMOS
 //obtener modulos y submodulos mediante el affiliateId
 String servicePreEvaluation(int affiliateId)=>'$hostGATEWAY/appMobile/preEvaluation/loanModalities/$affiliateId';
