@@ -185,7 +185,6 @@ class _ScreenListServiceState extends State<ScreenListService> {
                           .user;
 
                   if (userBloc?.isEconomicComplement == true) {
-                    // Si tiene acceso, Ingresa a Complemento Economico
                     if (userBloc?.enrolled == false) {
                       return showBarModalBottomSheet(
                           expand: false,
@@ -255,17 +254,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
                 onPressed: () => _goToModule(2),
               ),
               SizedBox(height: 20.h),
-              Center(
-                child: Text(
-                  'Versión 4.0.1',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : const Color.fromARGB(255, 0, 0, 0),
-                  ),
-                ),
-              ),
+              
             ],
           ),
         ),

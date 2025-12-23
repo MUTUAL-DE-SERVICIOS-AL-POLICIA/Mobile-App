@@ -32,7 +32,7 @@ class GifLoadingSuccessful extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Image(
-              image: AssetImage('assets/images/check.gif'),
+              image: AssetImage('assets/images/check1.gif'),
               fit: BoxFit.cover,
             ),
             Text(

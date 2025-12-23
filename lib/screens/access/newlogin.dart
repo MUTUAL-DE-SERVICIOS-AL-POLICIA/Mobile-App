@@ -1,5 +1,3 @@
-
-
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
@@ -10,6 +8,8 @@ import 'package:muserpol_pvt/components/animate.dart';
 import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:muserpol_pvt/screens/access/formlogin.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
+import 'package:muserpol_pvt/services/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ScreenNewLogin extends StatefulWidget {
   const ScreenNewLogin({super.key});
@@ -43,41 +43,38 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top,
-              ),
-              //LOGO DE LA MUSERPOL EN EL LOGIN INICIAL
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Image.asset(
-                        AdaptiveTheme.of(context).mode.isDark
-                            ? 'assets/images/muserpol-logo.png'
-                            : 'assets/images/muserpol-logo2.png',
-                        width: 250.w,
-                      ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          AdaptiveTheme.of(context).mode.isDark
+                              ? 'assets/images/muserpol-logo.png'
+                              : 'assets/images/muserpol-logo2.png',
+                          width: 270.w,
+                        ),
+                        SizedBox(height: 5.h),
+                        FadeIn(child: const ScreenFormLogin()),
+                      ],
                     ),
-                    //LLAMAMOS EL FORMULARIO DEL LOGIN
-                    SizedBox(height: 10.h),
-                    FadeIn(
-                      animate: true,
-                      child: const ScreenFormLogin(),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+
+            ],
           ),
         ),
+
+        //SECCION DE CONTACTOS Y POLITICAS Y PRIVACIDAD
+        bottomNavigationBar: const _FooterBar(),
       ),
     );
   }
+
   //FUNCION PARA SALIR DE LA APLICACION
   Future<bool> _onBackPressed() async {
     return await showDialog(
@@ -93,6 +90,89 @@ class _ScreenNewLoginState extends State<ScreenNewLogin> {
           ),
         );
       },
+    );
+  }
+}
+
+class _FooterBar extends StatelessWidget {
+  const _FooterBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          border: Border(
+            top: BorderSide(color: Theme.of(context).dividerColor),
+          ),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        child: Row(
+          children: [
+            Expanded(
+              child: _FooterButton(
+                icon: Icons.contact_phone,
+                label: 'Contactos',
+                onTap: () => Navigator.pushNamed(context, 'contacts'),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: _FooterButton(
+                icon: Icons.privacy_tip,
+                label: 'Términos',
+                onTap: () => launchUrl(
+                  Uri.parse(serviceGetPrivacyPolicy()),
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FooterButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.r),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20.sp),
+              SizedBox(width: 8.w),
+              Flexible(
+                child: Text(
+                  label,
+                  style:
+                      TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

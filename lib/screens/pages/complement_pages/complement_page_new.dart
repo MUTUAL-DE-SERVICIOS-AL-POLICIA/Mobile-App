@@ -20,7 +20,6 @@ import 'package:muserpol_pvt/services/services.dart';
 import 'package:muserpol_pvt/utils/save_document.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ScreenComplementNew extends StatefulWidget {
   const ScreenComplementNew({super.key});
@@ -32,18 +31,12 @@ class ScreenComplementNew extends StatefulWidget {
 class _ScreenComplementNewState extends State<ScreenComplementNew> {
   bool stateBtn = true;
   late final ScrollController scroll;
-  SharedPreferences? prefs;
 
   @override
   void initState() {
     super.initState();
-    _initPrefs();
     getEconomicComplement();
     scroll = ScrollController();
-  }
-
-  _initPrefs() async {
-    prefs = await SharedPreferences.getInstance();
   }
 
   @override
