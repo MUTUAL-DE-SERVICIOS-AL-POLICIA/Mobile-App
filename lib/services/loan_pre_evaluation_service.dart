@@ -1,8 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
-import 'package:muserpol_pvt/services/service_method.dart';
-import 'package:muserpol_pvt/services/services.dart';
+import 'package:muserpol_pvt/model/evaluation_models.dart';
 
 class LoanPreEvaluationService {
   static String? _authToken;

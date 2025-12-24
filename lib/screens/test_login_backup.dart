@@ -23,12 +23,6 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    print('🧪 TestLoginScreen: CARGADO CORRECTAMENTE');
-  }
-
   // Mapeo de cédulas de prueba a datos de usuarios reales
   // Puedes agregar más usuarios aquí según necesites
   final Map<String, Map<String, dynamic>> _testUsers = {
@@ -230,7 +224,7 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                     const SizedBox(height: 24),
                     
                     Text(
-                      'LOGIN DE PRUEBA - ACTIVO',
+                      'LOGIN DE PRUEBA',
                       style: TextStyle(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,

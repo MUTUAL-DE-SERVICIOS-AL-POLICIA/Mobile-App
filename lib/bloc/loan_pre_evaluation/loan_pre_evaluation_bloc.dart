@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../model/loan_pre_evaluation_model.dart';
+import '../../model/evaluation_models.dart';
 import '../../services/service_method.dart';
 import '../../services/services.dart';
 
@@ -21,39 +21,54 @@ class LoanPreEvaluationBloc extends Bloc<LoanPreEvaluationEvent, LoanPreEvaluati
 
   /// Valida la estructura de una modalidad antes del parsing
   bool _validateModalityStructure(Map<String, dynamic> modality) {
-    final requiredFields = [
-      'id', 'affiliateId', 'procedure_modality_id', 'name', 
-      'category', 'affiliate_state_type', 'subsector', 'parameters'
-    ];
-    
-    for (String field in requiredFields) {
-      if (!modality.containsKey(field)) {
-        debugPrint('Campo requerido faltante: $field');
+    try {
+      final requiredFields = [
+        'id', 'affiliateId', 'procedure_modality_id', 'name', 
+        'category', 'affiliate_state_type', 'subsector', 'parameters'
+      ];
+      
+      for (String field in requiredFields) {
+        if (!modality.containsKey(field)) {
+          debugPrint('❌ Campo requerido faltante: $field');
+          return false;
+        }
+      }
+      
+      // Validar que parameters sea un objeto
+      if (modality['parameters'] is! Map<String, dynamic>) {
+        debugPrint('❌ El campo parameters no es un objeto válido: ${modality['parameters']}');
         return false;
       }
-    }
-    
-    // Validar que parameters sea un objeto
-    if (modality['parameters'] is! Map<String, dynamic>) {
-      debugPrint('El campo parameters no es un objeto válido');
+      
+      final parameters = modality['parameters'] as Map<String, dynamic>;
+      final requiredParams = [
+        'debtIndex', 'guarantors', 'maxLenders', 'maximumAmountModality',
+        'minimumAmountModality', 'maximumTermModality', 'minimumTermModality',
+        'annualInterest', 'periodInterest'
+      ];
+      
+      for (String param in requiredParams) {
+        if (!parameters.containsKey(param)) {
+          debugPrint('❌ Parámetro requerido faltante: $param');
+          return false;
+        }
+      }
+      
+      // Validar que los valores no sean null
+      for (String field in requiredFields) {
+        if (modality[field] == null && field != 'parameters') {
+          debugPrint('⚠️ Campo con valor null: $field');
+          // No retornamos false aquí, solo advertimos
+        }
+      }
+      
+      debugPrint('✅ Estructura de modalidad válida');
+      return true;
+      
+    } catch (e) {
+      debugPrint('❌ Error validando estructura de modalidad: $e');
       return false;
     }
-    
-    final parameters = modality['parameters'] as Map<String, dynamic>;
-    final requiredParams = [
-      'debtIndex', 'guarantors', 'maxLenders', 'maximumAmountModality',
-      'minimumAmountModality', 'maximumTermModality', 'minimumTermModality',
-      'annualInterest', 'periodInterest'
-    ];
-    
-    for (String param in requiredParams) {
-      if (!parameters.containsKey(param)) {
-        debugPrint('Parámetro requerido faltante: $param');
-        return false;
-      }
-    }
-    
-    return true;
   }
 
   /// Método de diagnóstico para debugging
@@ -140,9 +155,10 @@ class LoanPreEvaluationBloc extends Bloc<LoanPreEvaluationEvent, LoanPreEvaluati
                   validModalities.add(item);
                 } else {
                   debugPrint('Modalidad $i tiene estructura inválida, se omite');
+                  debugPrint('Datos de modalidad inválida: $item');
                 }
               } else {
-                debugPrint('Item $i no es un objeto válido, se omite');
+                debugPrint('Item $i no es un objeto válido, se omite: $item');
               }
             }
             
@@ -150,22 +166,37 @@ class LoanPreEvaluationBloc extends Bloc<LoanPreEvaluationEvent, LoanPreEvaluati
               throw Exception('No se encontraron modalidades con estructura válida');
             }
             
-            // Intentar crear las modalidades
-            final modalitiesResponse = LoanModalitiesResponse.fromJson(validModalities);
-            
-            if (modalitiesResponse.modalities.isEmpty) {
-              emit(LoanModalitiesError('No se pudieron procesar las modalidades'));
-              return;
+            // Intentar crear las modalidades con mejor manejo de errores
+            try {
+              final modalitiesResponse = LoanModalitiesResponse.fromJson(validModalities);
+              
+              if (modalitiesResponse.modalities.isEmpty) {
+                emit(LoanModalitiesError('No se pudieron procesar las modalidades'));
+                return;
+              }
+              
+              debugPrint('Modalidades cargadas exitosamente: ${modalitiesResponse.modalities.length}');
+              emit(LoanModalitiesLoaded(modalitiesResponse.modalities));
+              return; // Éxito, salir del bucle de reintentos
+              
+            } catch (modalityParsingError) {
+              debugPrint('❌ Error específico al parsear modalidades: $modalityParsingError');
+              debugPrint('Datos que causaron el error: $validModalities');
+              throw Exception('Error al crear objetos de modalidad: ${modalityParsingError.toString()}');
             }
             
-            debugPrint('Modalidades cargadas exitosamente: ${modalitiesResponse.modalities.length}');
-            emit(LoanModalitiesLoaded(modalitiesResponse.modalities));
-            return; // Éxito, salir del bucle de reintentos
-            
           } catch (jsonError) {
-            debugPrint('Error parsing JSON: $jsonError');
-            debugPrint('Response body that failed: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}...');
-            throw Exception('Error al procesar la respuesta del servidor: ${jsonError.toString()}');
+            debugPrint('❌ Error parsing JSON: $jsonError');
+            debugPrint('Response body que falló: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}...');
+            
+            // Verificar si es un error de tipo específico
+            if (jsonError.toString().contains('type \'String\' is not a subtype of type \'int\'')) {
+              throw Exception('Error de formato de datos: El servidor está enviando números como texto. Contacte al administrador.');
+            } else if (jsonError.toString().contains('FormatException')) {
+              throw Exception('Error en el formato JSON del servidor. Contacte al administrador.');
+            } else {
+              throw Exception('Error al procesar la respuesta del servidor: ${jsonError.toString()}');
+            }
           }
         } else {
           throw Exception('No se recibió respuesta del servidor');
@@ -214,7 +245,7 @@ class LoanPreEvaluationBloc extends Bloc<LoanPreEvaluationEvent, LoanPreEvaluati
       
       if (response != null) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
-        final documentsResponse = LoanDocumentsResponse.fromJson(jsonData);
+        final documentsResponse = DocumentsResponse.fromJson(jsonData);
         emit(LoanDocumentsLoaded(documentsResponse));
       } else {
         emit(LoanDocumentsError('Error al cargar los documentos requeridos'));
@@ -229,7 +260,7 @@ class LoanPreEvaluationBloc extends Bloc<LoanPreEvaluationEvent, LoanPreEvaluati
     Emitter<LoanPreEvaluationState> emit,
   ) async {
     // Mantener las modalidades actuales si existen
-    List<LoanModalityNew>? currentModalities;
+    List<LoanModality>? currentModalities;
     if (state is LoanModalitiesLoaded) {
       currentModalities = (state as LoanModalitiesLoaded).modalities;
     } else if (state is LoanModalitiesWithContributionsLoaded) {
@@ -256,7 +287,7 @@ class LoanPreEvaluationBloc extends Bloc<LoanPreEvaluationEvent, LoanPreEvaluati
       
       if (response != null) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
-        final contributionsResponse = QuotableContributionsResponse.fromJson(jsonData);
+        final contributionsResponse = ContributionsResponse.fromJson(jsonData);
         
         if (!contributionsResponse.error) {
           if (currentModalities != null) {

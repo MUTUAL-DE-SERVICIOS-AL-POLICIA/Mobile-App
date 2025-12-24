@@ -15,7 +15,7 @@ class LoanModalitiesLoading extends LoanPreEvaluationState {
 }
 
 class LoanModalitiesLoaded extends LoanPreEvaluationState {
-  final List<LoanModalityNew> modalities;
+  final List<LoanModality> modalities;
 
   const LoanModalitiesLoaded(this.modalities);
 }
@@ -30,7 +30,7 @@ class LoanModalitiesError extends LoanPreEvaluationState {
 class LoanDocumentsLoading extends LoanPreEvaluationState {}
 
 class LoanDocumentsLoaded extends LoanPreEvaluationState {
-  final LoanDocumentsResponse documents;
+  final DocumentsResponse documents;
 
   const LoanDocumentsLoaded(this.documents);
 }
@@ -45,7 +45,7 @@ class LoanDocumentsError extends LoanPreEvaluationState {
 class QuotableContributionsLoading extends LoanPreEvaluationState {}
 
 class QuotableContributionsLoaded extends LoanPreEvaluationState {
-  final QuotableContributionsResponse contributions;
+  final ContributionsResponse contributions;
 
   const QuotableContributionsLoaded(this.contributions);
 }
@@ -58,8 +58,8 @@ class QuotableContributionsError extends LoanPreEvaluationState {
 
 // Combined State for Modalities and Contributions
 class LoanModalitiesWithContributionsLoaded extends LoanPreEvaluationState {
-  final List<LoanModalityNew> modalities;
-  final QuotableContributionsResponse? contributions;
+  final List<LoanModality> modalities;
+  final ContributionsResponse? contributions;
 
   const LoanModalitiesWithContributionsLoaded(this.modalities, [this.contributions]);
 }
