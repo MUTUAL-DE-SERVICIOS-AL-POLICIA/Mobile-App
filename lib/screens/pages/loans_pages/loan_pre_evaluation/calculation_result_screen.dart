@@ -38,7 +38,8 @@ class CalculationResultScreen extends StatefulWidget {
   });
 
   @override
-  State<CalculationResultScreen> createState() => _CalculationResultScreenState();
+  State<CalculationResultScreen> createState() =>
+      _CalculationResultScreenState();
 }
 
 class _CalculationResultScreenState extends State<CalculationResultScreen> {
@@ -74,8 +75,10 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       setState(() {
         _affiliateId = userState.user!.affiliateId!;
       });
-      
-      context.read<LoanPreEvaluationBloc>().add(LoadLoanModalitiesPreEval(_affiliateId));
+
+      context
+          .read<LoanPreEvaluationBloc>()
+          .add(LoadLoanModalitiesPreEval(_affiliateId));
       return;
     }
 
@@ -90,7 +93,8 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
   void _showErrorAndExit(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
     Navigator.pop(context);
   }
 
@@ -104,7 +108,9 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
     _calculate();
 
-    _montoSolicitado = _montoMaximoCalculado > 0 ? _montoMaximoCalculado : _params!.minimumAmountModality;
+    _montoSolicitado = _montoMaximoCalculado > 0
+        ? _montoMaximoCalculado
+        : _params!.minimumAmountModality;
 
     _montoController.text = _montoSolicitado.toStringAsFixed(2);
     _calculate();
@@ -114,8 +120,10 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   void _calculate() {
     if (_params == null) return;
 
-    final montoValidado = EvaluationService.clampAmount(_montoSolicitado, _params!.minimumAmountModality, _params!.maximumAmountModality);
-    final plazoValidado = _plazoMeses.clamp(_params!.minimumTermModality, _params!.maximumTermModality);
+    final montoValidado = EvaluationService.clampAmount(_montoSolicitado,
+        _params!.minimumAmountModality, _params!.maximumAmountModality);
+    final plazoValidado = _plazoMeses.clamp(
+        _params!.minimumTermModality, _params!.maximumTermModality);
 
     final convertedParams = LoanParameters(
       debtIndex: _params!.debtIndex,
@@ -133,9 +141,12 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       periodInterest: _params!.periodInterest,
     );
 
-    final cuotaFija = EvaluationService.calculateCuota(montoValidado, plazoValidado, convertedParams);
-    final montoMaximoReal = EvaluationService.calculateMontoMaximo(_liquidoParaCalificacion, convertedParams);
-    final limiteEndeudamiento = EvaluationService.calculateDebtIndex(cuotaFija, _liquidoParaCalificacion, convertedParams);
+    final cuotaFija = EvaluationService.calculateCuota(
+        montoValidado, plazoValidado, convertedParams);
+    final montoMaximoReal = EvaluationService.calculateMontoMaximo(
+        _liquidoParaCalificacion, convertedParams);
+    final limiteEndeudamiento = EvaluationService.calculateDebtIndex(
+        cuotaFija, _liquidoParaCalificacion, convertedParams);
 
     setState(() {
       _montoSolicitado = montoValidado;
@@ -145,7 +156,8 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       _mensajeError = '';
 
       if (limiteEndeudamiento > _params!.debtIndex) {
-        _mensajeError = 'La cuota ${EvaluationService.getPaymentFrequency(_params!.loanMonthTerm)} excede el límite de endeudamiento permitido de ${_params!.debtIndex}% de tu Liquido para Calificación.';
+        _mensajeError =
+            'La cuota ${EvaluationService.getPaymentFrequency(_params!.loanMonthTerm)} excede el límite de endeudamiento permitido de ${_params!.debtIndex}% de tu Liquido para Calificación.';
       }
     });
   }
@@ -167,32 +179,41 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   }
 
   double _clampAmount(double value) {
-    final maxAmount = _montoMaximoCalculado > 0 ? _montoMaximoCalculado : (_params?.maximumAmountModality ?? double.infinity);
+    final maxAmount = _montoMaximoCalculado > 0
+        ? _montoMaximoCalculado
+        : (_params?.maximumAmountModality ?? double.infinity);
     final minAmount = _params?.minimumAmountModality ?? 0;
     return EvaluationService.clampAmount(value, minAmount, maxAmount);
   }
 
   void _updateControllerWithClampedValue() {
     _montoController.text = _montoSolicitado.toStringAsFixed(2);
-    _montoController.selection = TextSelection.fromPosition(TextPosition(offset: _montoController.text.length));
+    _montoController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _montoController.text.length));
   }
 
   void _loadDocuments() {
     FocusScope.of(context).unfocus();
 
     if (_modality == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Modalidad no encontrada')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Modalidad no encontrada')));
       return;
     }
 
-    context.read<LoanPreEvaluationBloc>().add(LoadLoanDocuments(_modality!.procedureModalityId, _affiliateId));
+    context
+        .read<LoanPreEvaluationBloc>()
+        .add(LoadLoanDocuments(_modality!.procedureModalityId, _affiliateId));
   }
 
   // === UTILITIES ===
-  String _getInterestLabel() => EvaluationService.getInterestLabel(_params?.loanMonthTerm ?? 1);
-  String _getTermType() => EvaluationService.getTermType(_params?.loanMonthTerm ?? 1);
-  String _getPaymentFrequency() => EvaluationService.getPaymentFrequency(_params?.loanMonthTerm ?? 1);
-  double _getMaxAmount() => _montoMaximoCalculado > 0 ? _montoMaximoCalculado : (_params?.maximumAmountModality ?? 0);
+  String _getTermType() =>
+      EvaluationService.getTermType(_params?.loanMonthTerm ?? 1);
+  String _getPaymentFrequency() =>
+      EvaluationService.getPaymentFrequency(_params?.loanMonthTerm ?? 1);
+  double _getMaxAmount() => _montoMaximoCalculado > 0
+      ? _montoMaximoCalculado
+      : (_params?.maximumAmountModality ?? 0);
 
   // === UI ===
   @override
@@ -213,17 +234,20 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
           body: BlocBuilder<LoanPreEvaluationBloc, LoanPreEvaluationState>(
             builder: (context, state) {
               if (state is LoanModalitiesLoading) {
-                return Center(child: CircularProgressIndicator(color: const Color(0xff419388)));
+                return Center(
+                    child: CircularProgressIndicator(
+                        color: const Color(0xff419388)));
               }
 
-              if (state is LoanModalitiesLoaded || state is LoanModalitiesWithContributionsLoaded) {
+              if (state is LoanModalitiesLoaded ||
+                  state is LoanModalitiesWithContributionsLoaded) {
                 final modalities = _getModalitiesFromState(state);
                 if (modalities != null) {
                   final modality = modalities.firstWhere(
                     (m) => m.id == widget.modalityId,
                     orElse: () => modalities.first,
                   );
-                  
+
                   if (_modality == null) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       setState(() {
@@ -236,8 +260,11 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
               }
 
               return _modality == null
-                  ? Center(child: CircularProgressIndicator(color: const Color(0xff419388)))
-                  : SingleChildScrollView(padding: const EdgeInsets.all(16), child: _buildBody());
+                  ? Center(
+                      child: CircularProgressIndicator(
+                          color: const Color(0xff419388)))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16), child: _buildBody());
             },
           ),
         ),
@@ -248,7 +275,8 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   void _handleBlocState(BuildContext context, LoanPreEvaluationState state) {
     if (state is LoanDocumentsLoaded) _navigateToDocuments(state);
     if (state is LoanDocumentsError) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.message), backgroundColor: Colors.red));
     }
   }
 
@@ -363,13 +391,22 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Monto Solicitado',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold, fontSize: 17.sp, color: const Color(0xff2d6b61))),
+              fontWeight: FontWeight.bold,
+              fontSize: 17.sp,
+              color: const Color(0xff2d6b61))),
       const SizedBox(height: 12),
       Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isOverLimit ? Colors.red.shade300 : Colors.grey.shade300, width: 1.5),
-            boxShadow: [BoxShadow(color: Colors.black.withAlpha(13), blurRadius: 8, offset: const Offset(0, 2))]),
+            border: Border.all(
+                color: isOverLimit ? Colors.red.shade300 : Colors.grey.shade300,
+                width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withAlpha(13),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2))
+            ]),
         child: TextField(
           controller: _montoController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -377,29 +414,36 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
           style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
-              color: isOverLimit ? Colors.red.shade600 : const Color(0xff2d6b61),
+              color:
+                  isOverLimit ? Colors.red.shade600 : const Color(0xff2d6b61),
               letterSpacing: 0.5),
           textAlign: TextAlign.right,
           decoration: InputDecoration(
             hintText: 'Toca para ingresar tu monto',
             hintStyle: TextStyle(
-                color: Colors.grey.shade400, fontSize: 16.sp, fontWeight: FontWeight.w400, fontStyle: FontStyle.italic),
+                color: Colors.grey.shade400,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.italic),
             suffixText: 'Bs',
             suffixStyle: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
-                color: isOverLimit ? Colors.red.shade600 : const Color(0xff2d6b61)),
-            contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                color: isOverLimit
+                    ? Colors.red.shade600
+                    : const Color(0xff2d6b61)),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             filled: true,
             fillColor: Theme.of(context).cardColor,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none),
           ),
         ),
       ),
     ]);
   }
-
-
 
   Widget _buildErrorAlert() {
     return EvaluationWidgets.errorAlert(
@@ -407,8 +451,6 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       message: _mensajeError,
     );
   }
-
-
 
   Widget _buildResultsSection() {
     return Column(
@@ -454,6 +496,4 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       onPressed: _loadDocuments,
     );
   }
-
-
 }
