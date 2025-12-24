@@ -25,6 +25,14 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+// Comentado: configuración antigua que fue reemplazada por plugins declarados arriba
+// apply plugin: 'com.android.application'
+// apply plugin: 'com.google.gms.google-services' // Firebase
+// apply plugin: 'kotlin-android'
+// apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+// apply plugin: 'com.huawei.agconnect' // Huawei services
+
+// Cargar propiedades del archivo key.properties (para firmar la app)
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
@@ -34,7 +42,7 @@ if (keystorePropertiesFile.exists()) {
 // Configuración del bloque android
 android {
     namespace 'com.muserpol.pvt' // Identificador del paquete (importante para Play Console)
-    compileSdkVersion 36         // SDK de compilación (actualizado)
+    compileSdkVersion 35         // SDK de compilación (actualizado)
     ndkVersion '27.0.12077973'   // Versión del NDK (para código nativo si se usa)
 
     // Compatibilidad con Java
@@ -53,11 +61,10 @@ android {
 
     defaultConfig {
         applicationId "com.muserpol.pvt" // ID ÚNICO de la app (IMPORTANTE para Play Store)
-        minSdkVersion flutter.minSdkVersion                 // Mínimo Android soportado
+        minSdkVersion 21                 // Mínimo Android soportado
         targetSdkVersion 35             // Target Android (recomendado: siempre lo último)
-        versionCode 77                  // Código de versión (debe INCREMENTAR en cada subida)
-        versionName "4.1.2"             // Nombre visible de la versión (para usuarios)
-
+        versionCode 58                  // Código de versión (debe INCREMENTAR en cada subida)
+        versionName "3.0.8"          // Nombre visible de la versión (para usuarios)
         multiDexEnabled true            // Soporte para multidex si el método supera el límite
     }
 

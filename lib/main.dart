@@ -58,10 +58,6 @@ Future<void> main() async {
   // Carga .env
   await dotenv.load(fileName: ".env");
 
-  // MODO DE PRUEBA: Limpiar datos para forzar login de prueba
-  // Comenta esta línea si quieres usar el login normal
-  await clearTestData();
-
   // Http override global
   HttpOverrides.global = MyHttpOverrides();
 
