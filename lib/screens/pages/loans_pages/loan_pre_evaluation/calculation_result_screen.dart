@@ -275,9 +275,23 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
   void _handleBlocState(BuildContext context, LoanPreEvaluationState state) {
     if (state is LoanDocumentsLoaded) _navigateToDocuments(state);
+
     if (state is LoanDocumentsError) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(state.message), backgroundColor: Colors.red));
+    }
+
+    if (state is QuotableContributionsError) {
+      // Si ya cargamos la modalidad, permitimos continuar (usuario puede editar cotizable en la pantalla anterior)
+      if (_modality != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text(
+                'No se encontraron contribuciones. Ingresa los datos manualmente.'),
+            backgroundColor: Colors.orange));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(state.message), backgroundColor: Colors.red));
+      }
     }
   }
 
@@ -349,13 +363,31 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   }
 
   Widget _buildModalityInfo() {
-    return Text(
-      (_modality?.name ?? 'MODALIDAD DE PRÉSTAMO').toUpperCase(),
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: const Color(0xff2d6b61),
-        fontSize: 20.sp,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment
+          .start, // Esto afecta solo a los hijos directos que no ocupan todo el ancho
+      children: [
+        // Título: alineado a la izquierda
+        Text(
+          'MODALIDAD DE PRÉSTAMO',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xff2d6b61),
+            fontSize: 20.sp,
+          ),
+        ),
+        // Nombre de la modalidad: centrado
+        if (_modality?.name != null)
+          Center(
+            child: Text(
+              _modality!.name,
+              style: TextStyle(
+                color: const Color(0xff2d6b61),
+                fontSize: 18.sp,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -364,7 +396,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'CONFIGURA TU PRÃ‰STAMO',
+          'CONFIGURA TU PRÉSTAMO',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: const Color(0xff2d6b61),
@@ -391,8 +423,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   }
 
   Widget _buildAmountInput() {
-    final maxAmount = _getMaxAmount();
-    final isOverLimit = _montoSolicitado > maxAmount;
+    _getMaxAmount();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Monto Solicitado',
@@ -404,9 +435,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: isOverLimit ? Colors.red.shade300 : Colors.grey.shade300,
-                width: 1.5),
+            border: Border.all(color: const Color(0xff2d6b61), width: 1.5),
             boxShadow: [
               BoxShadow(
                   color: Colors.black.withAlpha(13),
@@ -420,8 +449,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
           style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
-              color:
-                  isOverLimit ? Colors.red.shade600 : const Color(0xff2d6b61),
+              color: const Color(0xff2d6b61),
               letterSpacing: 0.5),
           textAlign: TextAlign.right,
           decoration: InputDecoration(
@@ -435,9 +463,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
             suffixStyle: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
-                color: isOverLimit
-                    ? Colors.red.shade600
-                    : const Color(0xff2d6b61)),
+                color: const Color(0xff2d6b61)),
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             filled: true,
@@ -463,7 +489,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'RESULTADO DEL CÃLCULO',
+          'RESULTADO DEL CÁLCULO',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: const Color(0xff2d6b61),

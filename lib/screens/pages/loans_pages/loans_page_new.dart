@@ -248,7 +248,7 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              '¡Descubre a qué modalidad de préstamo puedes acceder!',
+                              '¡Descubre a qué modalidades de préstamo puedes acceder!',
                               style: TextStyle(
                                 fontSize: 28.sp,
                                 fontWeight: FontWeight.bold,

@@ -45,7 +45,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
       'isDoblePerception': false,
       'messageEcoCom': '',
       'verified': true,
-      'apiToken': '3e599c7c36a6d3021e17a2e8b9c1e732c25265738ed0e40136f81a6fe8c09348',
+      'apiToken':
+          '3e599c7c36a6d3021e17a2e8b9c1e732c25265738ed0e40136f81a6fe8c09348',
     },
     '2114': {
       'fullName': 'MARIA GOMEZ SANCHEZ',
@@ -60,7 +61,25 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
       'isDoblePerception': false,
       'messageEcoCom': '',
       'verified': true,
-      'apiToken': 'abf5085b10bcfad26f2920e1f1d5e1ca9a271a552088849ca8ce65fa290e430d',
+      'apiToken':
+          'abf5085b10bcfad26f2920e1f1d5e1ca9a271a552088849ca8ce65fa290e430d',
+    },
+    '0620': {
+      'fullName': 'JIMENEZ VARGAS LUCIO ENRIQUE RENE',
+      'affiliateId': 620,
+      'kinship': 'TITULAR',
+      'degree':
+          'SUBOFICIAL', // puedes ajustar si tienes el nombre exacto del degree_id 7
+      'category': '85%',
+      'pensionEntity': 'MUSERPOL',
+      'isPolice': true,
+      'isEconomicComplement': false,
+      'enrolled': true,
+      'isDoblePerception': false,
+      'messageEcoCom': '',
+      'verified': true,
+      'apiToken':
+          'a6bdee24d8b3cbf57bd5dcd3eafe8b27d0f8f2badd0868a2d3c93d21b5ead167',
     },
   };
 
@@ -80,13 +99,13 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
       await Future.delayed(const Duration(milliseconds: 800));
 
       final ci = _ciController.text.trim();
-      
+
       // Buscar el usuario en el mapeo de prueba
       Map<String, dynamic>? userData = _testUsers[ci];
-      
+
       // Token a usar (específico del usuario o genérico)
       String apiToken;
-      
+
       // Si no se encuentra en el mapeo, usar datos genéricos
       if (userData == null) {
         apiToken = 'test_token_${ci}_${DateTime.now().millisecondsSinceEpoch}';
@@ -144,14 +163,14 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
       // Guardar el token específico del usuario
       final authService = context.read<AuthService>();
       await authService.writeToken(context, apiToken);
-      
+
       // Guardar los datos del usuario
       final userModel = UserModel(
         apiToken: apiToken,
         user: testUser,
       );
       await authService.writeUser(context, userModelToJson(userModel));
-      
+
       // Crear datos biométricos de prueba
       final biometricUserModel = BiometricUserModel(
         biometricUser: false,
@@ -161,7 +180,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
           numberPhone: '70000000',
         ),
       );
-      await authService.writeBiometric(context, biometricUserModelToJson(biometricUserModel));
+      await authService.writeBiometric(
+          context, biometricUserModelToJson(biometricUserModel));
 
       // Navegar al menú principal
       if (!mounted) return;
@@ -228,7 +248,7 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     Text(
                       'LOGIN DE PRUEBA - ACTIVO',
                       style: TextStyle(
@@ -238,7 +258,7 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     Text(
                       'Ingresa tu cédula para acceder al sistema de pruebas',
                       textAlign: TextAlign.center,
@@ -254,7 +274,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                       controller: _ciController,
                       keyboardType: TextInputType.text,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9a-zA-Z-]')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[0-9a-zA-Z-]')),
                         LengthLimitingTextInputFormatter(15),
                       ],
                       decoration: InputDecoration(
@@ -314,7 +335,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
                                 ),
                               )
                             : Text(
@@ -340,7 +362,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.info_outline, color: Colors.blue[600], size: 20),
+                              Icon(Icons.info_outline,
+                                  color: Colors.blue[600], size: 20),
                               const SizedBox(width: 8),
                               Text(
                                 'Modo de Prueba',

@@ -278,11 +278,27 @@ class QuotableContribution {
   final String quotable;
   final String state;
 
+  // Additional fields that the API may include
+  final String payableLiquid; // payable_liquid
+  final String seniorityBonus; // seniority_bonus
+  final String studyBonus; // study_bonus
+  final String positionBonus; // position_bonus
+  final String borderBonus; // border_bonus
+  final String eastBonus; // east_bonus
+  final String gain; // gain
+
   QuotableContribution({
     required this.id,
     required this.monthYear,
     required this.quotable,
     required this.state,
+    required this.payableLiquid,
+    required this.seniorityBonus,
+    required this.studyBonus,
+    required this.positionBonus,
+    required this.borderBonus,
+    required this.eastBonus,
+    required this.gain,
   });
 
   factory QuotableContribution.fromJson(Map<String, dynamic> json) {
@@ -291,6 +307,13 @@ class QuotableContribution {
       monthYear: json['month_year'] ?? '',
       quotable: json['quotable'] ?? '',
       state: json['state'] ?? '',
+      payableLiquid: json['payable_liquid']?.toString() ?? '',
+      seniorityBonus: json['seniority_bonus']?.toString() ?? '',
+      studyBonus: json['study_bonus']?.toString() ?? '',
+      positionBonus: json['position_bonus']?.toString() ?? '',
+      borderBonus: json['border_bonus']?.toString() ?? '',
+      eastBonus: json['east_bonus']?.toString() ?? '',
+      gain: json['gain']?.toString() ?? '',
     );
   }
 }

@@ -44,7 +44,7 @@ class EvaluationWidgets {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 24.sp,
+                  fontSize: 23.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -466,8 +466,8 @@ class EvaluationWidgets {
                 const SizedBox(height: 12),
                 _detailRowWhite(
                   icon: Icons.percent,
-                  label: interestLabel,
-                  value: '${params.periodInterest.toStringAsFixed(2)}%',
+                  label: 'Interes Anual',
+                  value: '${params.annualInterest.toStringAsFixed(2)}%',
                 ),
                 const SizedBox(height: 12),
                 _detailRowWhite(
@@ -493,8 +493,7 @@ class EvaluationWidgets {
     final termType = EvaluationService.getTermType(params.loanMonthTerm);
     final paymentFrequency =
         EvaluationService.getPaymentFrequency(params.loanMonthTerm);
-    final interestLabel =
-        EvaluationService.getInterestLabel(params.loanMonthTerm);
+    final interestLabel = 'Interes Anual';
 
     return Column(
       children: [
@@ -567,8 +566,8 @@ class EvaluationWidgets {
               const SizedBox(height: 12),
               _detailRow(Icons.calendar_today, 'Plazo', '$term $termType'),
               const SizedBox(height: 12),
-              _detailRow(Icons.percent, interestLabel,
-                  '${params.periodInterest.toStringAsFixed(2)}%'),
+              _detailRow(Icons.percent, 'Interés Anual',
+                  '${params.annualInterest.toStringAsFixed(2)}%'),
               const SizedBox(height: 12),
               _detailRow(Icons.people, 'Garantes', '${params.guarantors}'),
             ],
@@ -816,12 +815,12 @@ class EvaluationWidgets {
               _buildModalityInfoRow(
                 Icons.attach_money,
                 'Monto',
-                '${EvaluationService.formatMoney(modality.parameters.minimumAmountModality)} - ${EvaluationService.formatMoney(modality.parameters.maximumAmountModality)} Bs',
+                'hasta ${EvaluationService.formatMoney(modality.parameters.maximumAmountModality)} Bs',
               ),
               _buildModalityInfoRow(
                 Icons.percent,
-                'Interés',
-                '${modality.parameters.periodInterest.toStringAsFixed(2)}%',
+                'Interés Anual',
+                '${modality.parameters.annualInterest.toStringAsFixed(2)}%',
               ),
               _buildModalityInfoRow(
                 Icons.people,
@@ -868,8 +867,8 @@ class EvaluationWidgets {
             Expanded(
               child: _buildModalityInfoCell(
                 Icons.percent,
-                'Interés',
-                '${modality.parameters.periodInterest.toStringAsFixed(2)}%',
+                'Interés Anual',
+                '${modality.parameters.annualInterest.toStringAsFixed(2)}%',
               ),
             ),
           ],

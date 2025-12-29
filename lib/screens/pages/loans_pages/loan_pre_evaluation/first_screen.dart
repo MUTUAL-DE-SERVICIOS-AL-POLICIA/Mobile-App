@@ -21,7 +21,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   // State variables
   double? sueldoBase;
   bool _isFetchingSueldo = false;
-  bool _isGridView = false;
+  bool _isGridView = true;
   bool _showModalitiesForPasivo = false;
   bool _isBonusExpanded = false;
   bool _hasNavigatedAway = false;
@@ -198,7 +198,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Advertencia Importante',
+                        'IMPORTANTE',
                         style: TextStyle(
                             fontSize: 22.sp,
                             fontWeight: FontWeight.bold,
@@ -218,19 +218,24 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: Colors.orange.shade300, width: 2),
+                            color: const Color(0xFF419388).withOpacity(
+                                0.5), // Opcional: ajustar al verde suave
+                            width: 2,
+                          ),
                         ),
                         child: Column(
                           children: [
                             Text(
-                              'Si el afiliado se encuentra en Artículo 57, \nNO podrá realizar su préstamo formal. \nEsta evaluación es únicamente referencial. \nPara la solicitud de préstamo formal debe realizarlo en oficinas a nivel nacional de la MUSERPOL.',
+                              'Esta evaluación es solo referencial; '
+                              'para iniciar la solicitud formal del préstamo debes realizarlo de manera presencial en las oficinas de la MUSERPOL a nivel nacional.',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: Colors.orange.shade900,
+                                color: const Color(
+                                    0xFF2D6B61), // Usa tu tono de texto oscuro suave
                                 fontWeight: FontWeight.w600,
                                 height: 1.4,
                               ),
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.justify,
                             ),
                           ],
                         ),
@@ -334,10 +339,32 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       final firstModality = modalities.first;
       setState(() => _affiliateStateType = firstModality.affiliateStateType);
 
-      if (_affiliateStateType == 'Activo' &&
-          contributions != null &&
-          contributions.payload.contributions.isNotEmpty) {
-        _handleContributionsData(contributions.payload.contributions.first);
+      if (_affiliateStateType == 'Activo') {
+        if (contributions != null &&
+            contributions.payload.contributions.isNotEmpty) {
+          _handleContributionsData(contributions.payload.contributions.first);
+        } else {
+          // No payment slip available but affiliate is active.
+          // Initialize editable fields to 0 so the user can fill them.
+          setState(() {
+            _isFetchingSueldo = false;
+            _hasLoadedActivoData = true;
+            _liquidoPagable = 0.0;
+            _totalBonos = 0.0;
+            _liquidoParaCalificacion = 0.0;
+            sueldoBase = 0.0;
+
+            // Open the breakdown when everything is zero so user can edit fields
+            _isBonusExpanded = true;
+
+            liquidoPagableController.text = 0.00.toStringAsFixed(2);
+            seniorityBonusController.text = 0.00.toStringAsFixed(2);
+            studyBonusController.text = 0.00.toStringAsFixed(2);
+            positionBonusController.text = 0.00.toStringAsFixed(2);
+            borderBonusController.text = 0.00.toStringAsFixed(2);
+            eastBonusController.text = 0.00.toStringAsFixed(2);
+          });
+        }
       } else {
         _updateSueldoBase();
       }
@@ -367,17 +394,32 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             contributionData.parseAmount(contributionData.borderBonus);
         eastBonus = contributionData.parseAmount(contributionData.eastBonus);
       } else if (contributionData is QuotableContribution) {
-        // The quotable response provides only a "quotable" value; use it as liquidoPagable
-        // Guardar contra tipos inesperados
-        final rawQuotable = contributionData.quotable;
-        if (rawQuotable is String) {
-          liquidoPagable = EvaluationService.parseCurrency(rawQuotable) ?? 0.0;
-        } else if (rawQuotable is num) {
-          liquidoPagable = (rawQuotable as num).toDouble();
-        } else {
-          debugPrint('Unexpected quotable type: ${rawQuotable.runtimeType}');
-        }
-        // Bonus breakdown isn't available in this response, assume 0
+        // Use detailed fields if available (some responses include payable_liquid and bonus fields)
+        final rawPayable = contributionData.payableLiquid.isNotEmpty
+            ? contributionData.payableLiquid
+            : contributionData.quotable;
+
+        liquidoPagable = EvaluationService.parseCurrency(rawPayable) ?? 0.0;
+
+        seniorityBonus =
+            EvaluationService.parseCurrency(contributionData.seniorityBonus) ??
+                0.0;
+        studyBonus =
+            EvaluationService.parseCurrency(contributionData.studyBonus) ?? 0.0;
+        positionBonus =
+            EvaluationService.parseCurrency(contributionData.positionBonus) ??
+                0.0;
+        borderBonus =
+            EvaluationService.parseCurrency(contributionData.borderBonus) ??
+                0.0;
+        eastBonus =
+            EvaluationService.parseCurrency(contributionData.eastBonus) ?? 0.0;
+
+        // Debug: print raw and parsed values for visibility
+        debugPrint(
+            'QuotableContribution raw values -> payable_liquid: ${contributionData.payableLiquid}, seniority_bonus: ${contributionData.seniorityBonus}, study_bonus: ${contributionData.studyBonus}, position_bonus: ${contributionData.positionBonus}, border_bonus: ${contributionData.borderBonus}, east_bonus: ${contributionData.eastBonus}');
+        debugPrint(
+            'Parsed values -> liquidoPagable: $liquidoPagable, seniority: $seniorityBonus, study: $studyBonus, position: $positionBonus, border: $borderBonus, east: $eastBonus');
       }
 
       final totalBonuses =
@@ -390,6 +432,9 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         _liquidoParaCalificacion = liquidoCalificacion;
         sueldoBase = liquidoCalificacion;
         _hasLoadedActivoData = true;
+
+        // If all values are zero, open the breakdown by default so user can edit
+        _isBonusExpanded = (liquidoPagable == 0.0 && totalBonuses == 0.0);
 
         liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
         seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
@@ -438,7 +483,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _refreshData,
-                child: const Text('Reintentar'),
+                child: const Text('Reestablecer'),
               ),
             ],
           ),
@@ -486,8 +531,13 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       child: Column(
         children: [
           if (isActivo) _buildSueldoActivo() else _buildPasivoFields(),
-          if (isActivo || ((!isActivo) && _showModalitiesForPasivo))
+
+          // For active affiliates, only show modalities if liquidoParaCalificacion > 0
+          if ((isActivo && _liquidoParaCalificacion > 0) ||
+              ((!isActivo) && _showModalitiesForPasivo))
             _buildModalitiesSection(modalities)
+          else if (isActivo && _liquidoParaCalificacion <= 0)
+            _buildActivoInvalidPrompt()
           else if (!isActivo && !_showModalitiesForPasivo)
             _buildPromptForPasivo(),
         ],
@@ -551,6 +601,58 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildActivoInvalidPrompt() {
+    final theme = Theme.of(context);
+    final primaryGreen = const Color(0xFF419388); // Tu color principal
+    final softGreenBg = const Color(0xFFE8F4F2); // Fondo suave
+    final mediumGreen = const Color(
+        0xFF2D6B61); // Para texto y borde (más oscuro que el principal)
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: softGreenBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: mediumGreen.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.info_outline, size: 48, color: primaryGreen),
+            const SizedBox(height: 8),
+            Text(
+              'Su "Líquido para Calificación" debe ser mayor a 0 para acceder a nuestras modalidades de préstamo.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: mediumGreen,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _refreshData,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'REESTABLECER',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // === WIDGETS DE SUELDO ACTIVO ===
 
   Widget _buildSueldoActivo() {
@@ -589,12 +691,12 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _liquidoParaCalificacion > 0
+              color: _liquidoParaCalificacion >= 0
                   ? const Color(0xff419388).withAlpha(26)
                   : Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _liquidoParaCalificacion > 0
+                color: _liquidoParaCalificacion >= 0
                     ? const Color(0xff419388).withAlpha(77)
                     : Colors.red.shade200,
               ),
@@ -612,8 +714,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                           Text(
                             "Líquido para Calificación",
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              fontSize: 14,
-                              color: _liquidoParaCalificacion > 0
+                              fontSize: 18,
+                              color: _liquidoParaCalificacion >= 0
                                   ? const Color(0xff419388)
                                   : Colors.red.shade600,
                               fontWeight: FontWeight.w500,
@@ -622,13 +724,13 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _liquidoParaCalificacion > 0
+                            _liquidoParaCalificacion >= 0
                                 ? "${EvaluationService.formatMoney(_liquidoParaCalificacion)} Bs"
                                 : "Límite Excedido",
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               fontSize: 22.sp,
-                              color: _liquidoParaCalificacion > 0
+                              color: _liquidoParaCalificacion >= 0
                                   ? const Color(0xff2d6b61)
                                   : Colors.red.shade700,
                               letterSpacing: -0.5,
@@ -643,7 +745,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                       duration: const Duration(milliseconds: 300),
                       child: Icon(
                         Icons.expand_more,
-                        color: _liquidoParaCalificacion > 0
+                        color: _liquidoParaCalificacion >= 0
                             ? const Color(0xff419388)
                             : Colors.red.shade600,
                         size: 28,
@@ -656,9 +758,9 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      'Toca para ver desglose',
+                      'Ver mas detalles',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: _liquidoParaCalificacion > 0
+                        color: _liquidoParaCalificacion >= 0
                             ? const Color(0xff419388)
                             : Colors.red.shade600,
                         fontStyle: FontStyle.italic,
