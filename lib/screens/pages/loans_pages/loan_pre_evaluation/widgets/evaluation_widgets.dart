@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../model/evaluation_models.dart';
+import '../../../../../model/loan_pre_evaluation_model.dart';
 import '../../../../../services/evaluation_service.dart';
 
 /// Widgets reutilizables unificados para la evaluación referencial
@@ -75,7 +76,7 @@ class EvaluationWidgets {
   }) {
     final primary = primaryColor ?? Colors.white;
     final secondary = secondaryColor ?? Colors.grey.shade50;
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [primary, secondary]),
@@ -241,7 +242,7 @@ class EvaluationWidgets {
   }) {
     final bgColor = backgroundColor ?? const Color(0xff419388).withAlpha(26);
     final txtColor = textColor ?? const Color(0xff2d6b61);
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -365,8 +366,10 @@ class EvaluationWidgets {
     required LoanParameters params,
   }) {
     final termType = EvaluationService.getTermType(params.loanMonthTerm);
-    final paymentFrequency = EvaluationService.getPaymentFrequency(params.loanMonthTerm);
-    final interestLabel = EvaluationService.getInterestLabel(params.loanMonthTerm);
+    final paymentFrequency =
+        EvaluationService.getPaymentFrequency(params.loanMonthTerm);
+    final interestLabel =
+        EvaluationService.getInterestLabel(params.loanMonthTerm);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -488,8 +491,10 @@ class EvaluationWidgets {
     required LoanParameters params,
   }) {
     final termType = EvaluationService.getTermType(params.loanMonthTerm);
-    final paymentFrequency = EvaluationService.getPaymentFrequency(params.loanMonthTerm);
-    final interestLabel = EvaluationService.getInterestLabel(params.loanMonthTerm);
+    final paymentFrequency =
+        EvaluationService.getPaymentFrequency(params.loanMonthTerm);
+    final interestLabel =
+        EvaluationService.getInterestLabel(params.loanMonthTerm);
 
     return Column(
       children: [
@@ -557,11 +562,13 @@ class EvaluationWidgets {
           ),
           child: Column(
             children: [
-              _detailRow(Icons.attach_money, 'Monto', '${EvaluationService.formatMoney(amount)} Bs'),
+              _detailRow(Icons.attach_money, 'Monto',
+                  '${EvaluationService.formatMoney(amount)} Bs'),
               const SizedBox(height: 12),
               _detailRow(Icons.calendar_today, 'Plazo', '$term $termType'),
               const SizedBox(height: 12),
-              _detailRow(Icons.percent, interestLabel, '${params.periodInterest.toStringAsFixed(2)}%'),
+              _detailRow(Icons.percent, interestLabel,
+                  '${params.periodInterest.toStringAsFixed(2)}%'),
               const SizedBox(height: 12),
               _detailRow(Icons.people, 'Garantes', '${params.guarantors}'),
             ],
@@ -642,7 +649,8 @@ class EvaluationWidgets {
     required Function(int) onTermChanged,
   }) {
     final termType = EvaluationService.getTermType(loanMonthTerm);
-    final termTypeSingular = EvaluationService.getTermTypeSingular(loanMonthTerm);
+    final termTypeSingular =
+        EvaluationService.getTermTypeSingular(loanMonthTerm);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,7 +737,8 @@ class EvaluationWidgets {
     );
   }
 
-  static Widget _termButton(IconData icon, bool enabled, VoidCallback onPressed) {
+  static Widget _termButton(
+      IconData icon, bool enabled, VoidCallback onPressed) {
     return ElevatedButton(
       onPressed: enabled ? onPressed : null,
       style: ElevatedButton.styleFrom(
@@ -749,7 +758,7 @@ class EvaluationWidgets {
 
   /// Card de modalidad para grid o lista
   static Widget modalityCard(
-    LoanModality modality, {
+    LoanModalityNew modality, {
     required bool isGridView,
     required VoidCallback onTap,
   }) {
@@ -785,7 +794,7 @@ class EvaluationWidgets {
     );
   }
 
-  static Widget _buildModalityGridContent(LoanModality modality) {
+  static Widget _buildModalityGridContent(LoanModalityNew modality) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -831,7 +840,7 @@ class EvaluationWidgets {
     );
   }
 
-  static Widget _buildModalityListContent(LoanModality modality) {
+  static Widget _buildModalityListContent(LoanModalityNew modality) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -889,7 +898,8 @@ class EvaluationWidgets {
     );
   }
 
-  static Widget _buildModalityInfoRow(IconData icon, String label, String value) {
+  static Widget _buildModalityInfoRow(
+      IconData icon, String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -924,7 +934,8 @@ class EvaluationWidgets {
     );
   }
 
-  static Widget _buildModalityInfoCell(IconData icon, String label, String value) {
+  static Widget _buildModalityInfoCell(
+      IconData icon, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -959,10 +970,10 @@ class EvaluationWidgets {
 
   /// Sección completa de modalidades con toggle de vista
   static Widget modalitiesSection({
-    required List<LoanModality> modalities,
+    required List<LoanModalityNew> modalities,
     required bool isGridView,
     required VoidCallback onToggleView,
-    required Function(LoanModality) onModalitySelected,
+    required Function(LoanModalityNew) onModalitySelected,
   }) {
     return Column(
       children: [
@@ -1001,8 +1012,8 @@ class EvaluationWidgets {
   }
 
   static Widget _buildModalitiesGrid(
-    List<LoanModality> modalities,
-    Function(LoanModality) onModalitySelected,
+    List<LoanModalityNew> modalities,
+    Function(LoanModalityNew) onModalitySelected,
   ) {
     return GridView.builder(
       shrinkWrap: true,
@@ -1023,8 +1034,8 @@ class EvaluationWidgets {
   }
 
   static Widget _buildModalitiesList(
-    List<LoanModality> modalities,
-    Function(LoanModality) onModalitySelected,
+    List<LoanModalityNew> modalities,
+    Function(LoanModalityNew) onModalitySelected,
   ) {
     return ListView.builder(
       shrinkWrap: true,
@@ -1126,5 +1137,4 @@ class EvaluationWidgets {
   // ============================================================================
   // FUNCIONES DE CÁLCULO (de calculation_widgets.dart)
   // ============================================================================
-
 }

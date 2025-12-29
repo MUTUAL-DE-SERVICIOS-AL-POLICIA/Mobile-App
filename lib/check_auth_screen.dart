@@ -16,7 +16,7 @@ class CheckAuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //Widget que verifica que auth este con datos para redirigirlo 
+    //Widget que verifica que auth este con datos para redirigirlo
     final authService = Provider.of<AuthService>(context, listen: false);
     return Scaffold(
       body: Center(
@@ -27,10 +27,11 @@ class CheckAuthScreen extends StatelessWidget {
               print('🔄 CheckAuthScreen: Cargando token...');
               return const CircularProgressIndicator();
             }
-            
+
             final token = snapshot.data ?? '';
-            print('🔍 CheckAuthScreen: Token leído: "${token.isEmpty ? 'VACÍO' : 'EXISTE'}"');
-            
+            print(
+                '🔍 CheckAuthScreen: Token leído: "${token.isEmpty ? 'VACÍO' : 'EXISTE'}"');
+
             if (token == '') {
               //Primer Ingreso de la aplicacion
               print('➡️ CheckAuthScreen: No hay token, yendo a goFirstInto()');
@@ -68,10 +69,11 @@ class CheckAuthScreen extends StatelessWidget {
   goFirstInto(BuildContext context) async {
     print('🚀 goFirstInto: Iniciando...');
     final authService = Provider.of<AuthService>(context, listen: false);
-    
+
     // MODO DE PRUEBA: Siempre ir al TestLoginScreen
     // Comentar las siguientes líneas y descomentar las de abajo para volver al flujo normal
-    print('🧪 goFirstInto: MODO DE PRUEBA - Yendo directamente a TestLoginScreen');
+    print(
+        '🧪 goFirstInto: MODO DE PRUEBA - Yendo directamente a TestLoginScreen');
     if (!context.mounted) return;
     Navigator.pushReplacement(
       context,
@@ -80,7 +82,7 @@ class CheckAuthScreen extends StatelessWidget {
         transitionDuration: const Duration(seconds: 0),
       ),
     );
-    
+
     /* FLUJO NORMAL (comentado para pruebas):
     if (await authService.readFirstTime() == '') {
       if (!context.mounted) return;

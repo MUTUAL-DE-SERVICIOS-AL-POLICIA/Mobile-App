@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan_pre_evaluation/loan_pre_evaluation_bloc.dart';
 import 'package:muserpol_pvt/model/evaluation_models.dart';
+import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
 import 'package:muserpol_pvt/services/evaluation_service.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/documents_screen.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
@@ -43,8 +44,8 @@ class CalculationResultScreen extends StatefulWidget {
 }
 
 class _CalculationResultScreenState extends State<CalculationResultScreen> {
-  LoanModality? _modality;
-  LoanParameters? _params;
+  LoanModalityNew? _modality;
+  LoanParametersNew? _params;
 
   late double _montoSolicitado;
   late int _plazoMeses;
@@ -85,7 +86,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     _showErrorAndExit('No se pudieron cargar las modalidades');
   }
 
-  List<LoanModality>? _getModalitiesFromState(LoanPreEvaluationState state) {
+  List<LoanModalityNew>? _getModalitiesFromState(LoanPreEvaluationState state) {
     if (state is LoanModalitiesLoaded) return state.modalities;
     if (state is LoanModalitiesWithContributionsLoaded) return state.modalities;
     return null;
@@ -283,6 +284,11 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   void _navigateToDocuments(LoanDocumentsLoaded state) {
     final documents = state.documents.documents;
 
+    // Convert backend LoanDocument -> RequiredDocument expected by DocumentsScreen
+    final requiredDocuments = documents
+        .map((d) => RequiredDocument(id: d.id, number: d.number, name: d.name))
+        .toList();
+
     final currentBloc = context.read<LoanPreEvaluationBloc>();
     final userState = context.read<UserBloc>().state;
 
@@ -296,7 +302,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
               // Navegar de vuelta a la pantalla principal de préstamos
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
-            documents: documents,
+            documents: requiredDocuments,
             modalityName: _modality?.name ?? '',
             amount: _montoSolicitado,
             term: _plazoMeses,

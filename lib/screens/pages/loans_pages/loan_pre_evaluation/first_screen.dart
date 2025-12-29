@@ -7,6 +7,7 @@ import 'package:muserpol_pvt/model/evaluation_models.dart';
 import 'package:muserpol_pvt/services/evaluation_service.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/calculation_result_screen.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
+import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
 import 'widgets/evaluation_widgets.dart';
 
 class FirstScreen extends StatefulWidget {
@@ -37,8 +38,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   // Controllers simplificados
   final TextEditingController sueldoController = TextEditingController();
   final TextEditingController rentaDignidadController = TextEditingController();
-  final TextEditingController liquidoPagableController = TextEditingController();
-  final TextEditingController seniorityBonusController = TextEditingController();
+  final TextEditingController liquidoPagableController =
+      TextEditingController();
+  final TextEditingController seniorityBonusController =
+      TextEditingController();
   final TextEditingController studyBonusController = TextEditingController();
   final TextEditingController positionBonusController = TextEditingController();
   final TextEditingController borderBonusController = TextEditingController();
@@ -51,7 +54,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initData();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _showArticle57Warning());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _showArticle57Warning());
   }
 
   @override
@@ -71,23 +75,34 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   }
 
   void _disposeControllers() {
-    [sueldoController, rentaDignidadController, liquidoPagableController,
-     seniorityBonusController, studyBonusController, positionBonusController,
-     borderBonusController, eastBonusController, _scrollController]
-        .forEach((controller) => controller.dispose());
+    [
+      sueldoController,
+      rentaDignidadController,
+      liquidoPagableController,
+      seniorityBonusController,
+      studyBonusController,
+      positionBonusController,
+      borderBonusController,
+      eastBonusController,
+      _scrollController
+    ].forEach((controller) => controller.dispose());
   }
 
   void _initData() {
     final userState = context.read<UserBloc>().state;
     if (userState.user?.affiliateId != null) {
       _affiliateId = userState.user!.affiliateId!;
-      context.read<LoanPreEvaluationBloc>().add(LoadLoanModalitiesPreEval(_affiliateId));
+      context
+          .read<LoanPreEvaluationBloc>()
+          .add(LoadLoanModalitiesPreEval(_affiliateId));
     }
   }
 
   void _refreshData() {
     if (_affiliateId > 0) {
-      context.read<LoanPreEvaluationBloc>().add(LoadLoanModalitiesPreEval(_affiliateId));
+      context
+          .read<LoanPreEvaluationBloc>()
+          .add(LoadLoanModalitiesPreEval(_affiliateId));
     }
   }
 
@@ -96,8 +111,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   void _updateSueldoBase() {
     if (_affiliateStateType != 'Pasivo') return;
 
-    final sueldo = EvaluationService.parseCurrency(sueldoController.text) ?? 0.0;
-    final renta = EvaluationService.parseCurrency(rentaDignidadController.text) ?? 0.0;
+    final sueldo =
+        EvaluationService.parseCurrency(sueldoController.text) ?? 0.0;
+    final renta =
+        EvaluationService.parseCurrency(rentaDignidadController.text) ?? 0.0;
     final nuevoSueldoBase = sueldo - renta;
 
     if ((sueldoBase ?? 0.0) != nuevoSueldoBase) {
@@ -109,12 +126,18 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   }
 
   void _onActivoFieldChanged(String value) {
-    final liquidoPagable = EvaluationService.parseCurrency(liquidoPagableController.text) ?? 0.0;
-    final totalBonos = [seniorityBonusController, studyBonusController, 
-                       positionBonusController, borderBonusController, eastBonusController]
+    final liquidoPagable =
+        EvaluationService.parseCurrency(liquidoPagableController.text) ?? 0.0;
+    final totalBonos = [
+      seniorityBonusController,
+      studyBonusController,
+      positionBonusController,
+      borderBonusController,
+      eastBonusController
+    ]
         .map((c) => EvaluationService.parseCurrency(c.text) ?? 0.0)
         .reduce((a, b) => a + b);
-    
+
     final liquidoCalificacion = liquidoPagable - totalBonos;
 
     setState(() {
@@ -131,7 +154,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           contentPadding: EdgeInsets.zero,
           content: Container(
             width: MediaQuery.of(context).size.width * 0.85,
@@ -169,12 +193,16 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                           color: Colors.white.withAlpha(51),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 36),
+                        child: const Icon(Icons.warning_amber_rounded,
+                            color: Colors.white, size: 36),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'Advertencia Importante',
-                        style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -189,7 +217,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.orange.shade300, width: 2),
+                          border: Border.all(
+                              color: Colors.orange.shade300, width: 2),
                         ),
                         child: Column(
                           children: [
@@ -215,12 +244,16 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                             backgroundColor: Colors.orange[600],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             elevation: 4,
                           ),
                           child: Text(
                             'ENTENDIDO',
-                            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                            style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5),
                           ),
                         ),
                       ),
@@ -255,16 +288,19 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             if (state is LoanModalitiesLoaded) {
               _handleModalitiesLoaded(state.modalities);
             } else if (state is LoanModalitiesWithContributionsLoaded) {
-              _handleModalitiesWithContributionsLoaded(state.modalities, state.contributions);
+              _handleModalitiesWithContributionsLoaded(
+                  state.modalities, state.contributions);
             } else if (state is LoanModalitiesError) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+                SnackBar(
+                    content: Text(state.message), backgroundColor: Colors.red),
               );
             } else if (state is QuotableContributionsLoaded) {
               // Handle contributions loaded separately if needed
             } else if (state is QuotableContributionsError) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+                SnackBar(
+                    content: Text(state.message), backgroundColor: Colors.red),
               );
             }
           },
@@ -276,25 +312,31 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _handleModalitiesLoaded(List<LoanModality> modalities) {
+  void _handleModalitiesLoaded(List<LoanModalityNew> modalities) {
     if (modalities.isNotEmpty) {
       final firstModality = modalities.first;
       setState(() => _affiliateStateType = firstModality.affiliateStateType);
 
       if (_affiliateStateType == 'Activo') {
-        context.read<LoanPreEvaluationBloc>().add(LoadQuotableContributions(_affiliateId));
+        context
+            .read<LoanPreEvaluationBloc>()
+            .add(LoadQuotableContributions(_affiliateId));
       } else {
         _updateSueldoBase();
       }
     }
   }
 
-  void _handleModalitiesWithContributionsLoaded(List<LoanModality> modalities, ContributionsResponse? contributions) {
+  void _handleModalitiesWithContributionsLoaded(
+      List<LoanModalityNew> modalities,
+      QuotableContributionsResponse? contributions) {
     if (modalities.isNotEmpty) {
       final firstModality = modalities.first;
       setState(() => _affiliateStateType = firstModality.affiliateStateType);
 
-      if (_affiliateStateType == 'Activo' && contributions != null && contributions.payload.contributions.isNotEmpty) {
+      if (_affiliateStateType == 'Activo' &&
+          contributions != null &&
+          contributions.payload.contributions.isNotEmpty) {
         _handleContributionsData(contributions.payload.contributions.first);
       } else {
         _updateSueldoBase();
@@ -302,43 +344,78 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     }
   }
 
-  void _handleContributionsData(Contribution contributionData) {
+  void _handleContributionsData(dynamic contributionData) {
     setState(() => _isFetchingSueldo = true);
 
-    // Parse the payable_liquid amount - this is the correct field for loan calculations
-    final liquidoPagable = contributionData.parseAmount(contributionData.payableLiquid);
-    
-    // Parse individual bonuses from the contribution data
-    final seniorityBonus = contributionData.parseAmount(contributionData.seniorityBonus);
-    final studyBonus = contributionData.parseAmount(contributionData.studyBonus);
-    final positionBonus = contributionData.parseAmount(contributionData.positionBonus);
-    final borderBonus = contributionData.parseAmount(contributionData.borderBonus);
-    final eastBonus = contributionData.parseAmount(contributionData.eastBonus);
+    double liquidoPagable = 0.0;
+    double seniorityBonus = 0.0;
+    double studyBonus = 0.0;
+    double positionBonus = 0.0;
+    double borderBonus = 0.0;
+    double eastBonus = 0.0;
 
-    final totalBonuses = seniorityBonus + studyBonus + positionBonus + borderBonus + eastBonus;
-    final liquidoCalificacion = liquidoPagable - totalBonuses;
+    try {
+      if (contributionData is Contribution) {
+        liquidoPagable =
+            contributionData.parseAmount(contributionData.payableLiquid);
+        seniorityBonus =
+            contributionData.parseAmount(contributionData.seniorityBonus);
+        studyBonus = contributionData.parseAmount(contributionData.studyBonus);
+        positionBonus =
+            contributionData.parseAmount(contributionData.positionBonus);
+        borderBonus =
+            contributionData.parseAmount(contributionData.borderBonus);
+        eastBonus = contributionData.parseAmount(contributionData.eastBonus);
+      } else if (contributionData is QuotableContribution) {
+        // The quotable response provides only a "quotable" value; use it as liquidoPagable
+        // Guardar contra tipos inesperados
+        final rawQuotable = contributionData.quotable;
+        if (rawQuotable is String) {
+          liquidoPagable = EvaluationService.parseCurrency(rawQuotable) ?? 0.0;
+        } else if (rawQuotable is num) {
+          liquidoPagable = (rawQuotable as num).toDouble();
+        } else {
+          debugPrint('Unexpected quotable type: ${rawQuotable.runtimeType}');
+        }
+        // Bonus breakdown isn't available in this response, assume 0
+      }
 
-    setState(() {
-      _liquidoPagable = liquidoPagable;
-      _totalBonos = totalBonuses;
-      _liquidoParaCalificacion = liquidoCalificacion;
-      sueldoBase = liquidoCalificacion;
-      _hasLoadedActivoData = true;
+      final totalBonuses =
+          seniorityBonus + studyBonus + positionBonus + borderBonus + eastBonus;
+      final liquidoCalificacion = liquidoPagable - totalBonuses;
 
-      liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
-      seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
-      studyBonusController.text = studyBonus.toStringAsFixed(2);
-      positionBonusController.text = positionBonus.toStringAsFixed(2);
-      borderBonusController.text = borderBonus.toStringAsFixed(2);
-      eastBonusController.text = eastBonus.toStringAsFixed(2);
+      setState(() {
+        _liquidoPagable = liquidoPagable;
+        _totalBonos = totalBonuses;
+        _liquidoParaCalificacion = liquidoCalificacion;
+        sueldoBase = liquidoCalificacion;
+        _hasLoadedActivoData = true;
 
-      _isFetchingSueldo = false;
-    });
+        liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
+        seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
+        studyBonusController.text = studyBonus.toStringAsFixed(2);
+        positionBonusController.text = positionBonus.toStringAsFixed(2);
+        borderBonusController.text = borderBonus.toStringAsFixed(2);
+        eastBonusController.text = eastBonus.toStringAsFixed(2);
+
+        _isFetchingSueldo = false;
+      });
+    } catch (e, st) {
+      debugPrint('Error parsing contribution data: $e\n$st');
+      setState(() {
+        _isFetchingSueldo = false;
+        _hasLoadedActivoData = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('No se pudo procesar la boleta de pago.'),
+          backgroundColor: Colors.red));
+    }
   }
 
   Widget _buildContent(BuildContext context, LoanPreEvaluationState? state) {
     if (state is LoanModalitiesLoading) {
-      return Center(child: CircularProgressIndicator(color: const Color(0xff419388)));
+      return Center(
+          child: CircularProgressIndicator(color: const Color(0xff419388)));
     }
 
     if (state is LoanModalitiesError) {
@@ -353,7 +430,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
               Text(
                 state.message,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.red),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(color: Colors.red),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -366,7 +446,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       );
     }
 
-    List<LoanModality>? modalities;
+    List<LoanModalityNew>? modalities;
     if (state is LoanModalitiesLoaded) {
       modalities = state.modalities;
     } else if (state is LoanModalitiesWithContributionsLoaded) {
@@ -395,7 +475,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     return _buildMainContent(modalities);
   }
 
-  Widget _buildMainContent(List<LoanModality> modalities) {
+  Widget _buildMainContent(List<LoanModalityNew> modalities) {
     final bool isActivo = _affiliateStateType == 'Activo';
     final bool isBaja = _affiliateStateType == 'Baja';
 
@@ -428,7 +508,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             Text(
               'Actualice su información en oficinas presenciales.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium?.copyWith(color: Colors.orange, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: Colors.orange, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -454,13 +535,15 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             Text(
               'Ingrese su sueldo para ver las modalidades disponibles',
               textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium?.copyWith(color: Colors.blue.shade700, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                  color: Colors.blue.shade700, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Complete los campos de sueldo y renta dignidad para calcular su sueldo base y ver las opciones de préstamo.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.blue.shade600),
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: Colors.blue.shade600),
             ),
           ],
         ),
@@ -480,7 +563,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
           else if (_hasLoadedActivoData)
             _buildLiquidoCalificacionExpandable()
           else
-            Text('No se pudo obtener la información de pago.', style: TextStyle(color: Colors.red, fontSize: 15.sp)),
+            Text('No se pudo obtener la información de pago.',
+                style: TextStyle(color: Colors.red, fontSize: 15.sp)),
         ],
       ),
     );
@@ -505,10 +589,14 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _liquidoParaCalificacion > 0 ? const Color(0xff419388).withAlpha(26) : Colors.red.shade50,
+              color: _liquidoParaCalificacion > 0
+                  ? const Color(0xff419388).withAlpha(26)
+                  : Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _liquidoParaCalificacion > 0 ? const Color(0xff419388).withAlpha(77) : Colors.red.shade200,
+                color: _liquidoParaCalificacion > 0
+                    ? const Color(0xff419388).withAlpha(77)
+                    : Colors.red.shade200,
               ),
             ),
             child: Column(
@@ -525,18 +613,24 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                             "Líquido para Calificación",
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontSize: 14,
-                              color: _liquidoParaCalificacion > 0 ? const Color(0xff419388) : Colors.red.shade600,
+                              color: _liquidoParaCalificacion > 0
+                                  ? const Color(0xff419388)
+                                  : Colors.red.shade600,
                               fontWeight: FontWeight.w500,
                             ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _liquidoParaCalificacion > 0 ? "${EvaluationService.formatMoney(_liquidoParaCalificacion)} Bs" : "Límite Excedido",
+                            _liquidoParaCalificacion > 0
+                                ? "${EvaluationService.formatMoney(_liquidoParaCalificacion)} Bs"
+                                : "Límite Excedido",
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               fontSize: 22.sp,
-                              color: _liquidoParaCalificacion > 0 ? const Color(0xff2d6b61) : Colors.red.shade700,
+                              color: _liquidoParaCalificacion > 0
+                                  ? const Color(0xff2d6b61)
+                                  : Colors.red.shade700,
                               letterSpacing: -0.5,
                             ),
                             textAlign: TextAlign.center,
@@ -549,7 +643,9 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                       duration: const Duration(milliseconds: 300),
                       child: Icon(
                         Icons.expand_more,
-                        color: _liquidoParaCalificacion > 0 ? const Color(0xff419388) : Colors.red.shade600,
+                        color: _liquidoParaCalificacion > 0
+                            ? const Color(0xff419388)
+                            : Colors.red.shade600,
                         size: 28,
                       ),
                     ),
@@ -562,7 +658,9 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                     child: Text(
                       'Toca para ver desglose',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: _liquidoParaCalificacion > 0 ? const Color(0xff419388) : Colors.red.shade600,
+                        color: _liquidoParaCalificacion > 0
+                            ? const Color(0xff419388)
+                            : Colors.red.shade600,
                         fontStyle: FontStyle.italic,
                         fontSize: 13.sp,
                       ),
@@ -576,17 +674,23 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                       ? Column(
                           children: [
                             const SizedBox(height: 16),
-                            _buildDesgloseLine('+ Líquido Pagable', liquidoPagableController),
+                            _buildDesgloseLine(
+                                '+ Líquido Pagable', liquidoPagableController),
                             const SizedBox(height: 12),
-                            _buildDesgloseLine('- Bono Antigüedad', seniorityBonusController),
+                            _buildDesgloseLine(
+                                '- Bono Antigüedad', seniorityBonusController),
                             const SizedBox(height: 12),
-                            _buildDesgloseLine('- Bono Estudios', studyBonusController),
+                            _buildDesgloseLine(
+                                '- Bono Estudios', studyBonusController),
                             const SizedBox(height: 12),
-                            _buildDesgloseLine('- Bono Cargo', positionBonusController),
+                            _buildDesgloseLine(
+                                '- Bono Cargo', positionBonusController),
                             const SizedBox(height: 12),
-                            _buildDesgloseLine('- Bono Frontera', borderBonusController),
+                            _buildDesgloseLine(
+                                '- Bono Frontera', borderBonusController),
                             const SizedBox(height: 12),
-                            _buildDesgloseLine('- Bono Oriente', eastBonusController),
+                            _buildDesgloseLine(
+                                '- Bono Oriente', eastBonusController),
                           ],
                         )
                       : const SizedBox.shrink(),
@@ -602,39 +706,51 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   Widget _buildDesgloseLine(String label, TextEditingController controller) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 16)),
+              Text(label,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16)),
               const SizedBox(height: 6),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: isDark ? Colors.grey.shade600 : Colors.grey.shade300, width: 1),
+                  border: Border.all(
+                      color:
+                          isDark ? Colors.grey.shade600 : Colors.grey.shade300,
+                      width: 1),
                 ),
                 child: TextField(
                   controller: controller,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   onChanged: _onActivoFieldChanged,
-                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
                   textAlign: TextAlign.right,
                   decoration: InputDecoration(
                     hintText: "0,00",
-                    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 16),
+                    hintStyle:
+                        TextStyle(color: Colors.grey.shade400, fontSize: 16),
                     suffixText: "Bs",
                     suffixStyle: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                      color:
+                          isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 12),
                     filled: true,
                     fillColor: theme.cardColor,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none),
                   ),
                 ),
               ),
@@ -656,7 +772,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         children: [
           Text(
             'Información del Sueldo para Calificación',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 20.sp),
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold, fontSize: 20.sp),
           ),
           const SizedBox(height: 16),
           EvaluationWidgets.moneyInputField(
@@ -682,15 +799,18 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       title: "Sueldo base calculado",
       value: "${EvaluationService.formatMoney(sueldoBase!)} Bs",
       icon: Icons.account_balance_wallet,
-      backgroundColor: sueldoBase! > 0 ? const Color(0xff419388).withAlpha(26) : Colors.red.shade50,
-      textColor: sueldoBase! > 0 ? const Color(0xff2d6b61) : Colors.red.shade700,
+      backgroundColor: sueldoBase! > 0
+          ? const Color(0xff419388).withAlpha(26)
+          : Colors.red.shade50,
+      textColor:
+          sueldoBase! > 0 ? const Color(0xff2d6b61) : Colors.red.shade700,
       isHighlighted: true,
     );
   }
 
   // === WIDGETS DE MODALIDADES ===
 
-  Widget _buildModalitiesSection(List<LoanModality> modalities) {
+  Widget _buildModalitiesSection(List<LoanModalityNew> modalities) {
     return EvaluationWidgets.modalitiesSection(
       modalities: modalities,
       isGridView: _isGridView,
@@ -699,19 +819,23 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _onModalitySelected(LoanModality modality) {
+  void _onModalitySelected(LoanModalityNew modality) {
     final isActivo = _affiliateStateType == 'Activo';
 
     if (isActivo && (sueldoBase == null || sueldoBase == 0)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo obtener el sueldo. Intente más tarde.'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('No se pudo obtener el sueldo. Intente más tarde.'),
+            backgroundColor: Colors.red),
       );
       return;
     }
 
     if (!isActivo && (sueldoBase == null || sueldoBase! <= 0)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El sueldo base debe ser mayor a 0.'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('El sueldo base debe ser mayor a 0.'),
+            backgroundColor: Colors.red),
       );
       return;
     }
@@ -731,14 +855,27 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             modalityId: modality.id,
             sueldoBase: sueldoBase!,
             affiliateStateType: _affiliateStateType,
-            liquidoPagable: _affiliateStateType == 'Activo' ? _liquidoPagable : null,
+            liquidoPagable:
+                _affiliateStateType == 'Activo' ? _liquidoPagable : null,
             totalBonos: _affiliateStateType == 'Activo' ? _totalBonos : null,
-            seniorityBonus: _affiliateStateType == 'Activo' ? EvaluationService.parseCurrency(seniorityBonusController.text) : null,
-            studyBonus: _affiliateStateType == 'Activo' ? EvaluationService.parseCurrency(studyBonusController.text) : null,
-            positionBonus: _affiliateStateType == 'Activo' ? EvaluationService.parseCurrency(positionBonusController.text) : null,
-            borderBonus: _affiliateStateType == 'Activo' ? EvaluationService.parseCurrency(borderBonusController.text) : null,
-            eastBonus: _affiliateStateType == 'Activo' ? EvaluationService.parseCurrency(eastBonusController.text) : null,
-            rentaDignidad: _affiliateStateType == 'Pasivo' ? EvaluationService.parseCurrency(rentaDignidadController.text) : null,
+            seniorityBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(seniorityBonusController.text)
+                : null,
+            studyBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(studyBonusController.text)
+                : null,
+            positionBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(positionBonusController.text)
+                : null,
+            borderBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(borderBonusController.text)
+                : null,
+            eastBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(eastBonusController.text)
+                : null,
+            rentaDignidad: _affiliateStateType == 'Pasivo'
+                ? EvaluationService.parseCurrency(rentaDignidadController.text)
+                : null,
           ),
         ),
       ),
