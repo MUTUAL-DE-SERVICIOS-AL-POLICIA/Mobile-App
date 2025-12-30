@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:muserpol_pvt/model/evaluation_models.dart';
 import 'package:muserpol_pvt/model/saved_loan_evaluation.dart';
-import 'package:muserpol_pvt/services/services.dart';
-import 'package:muserpol_pvt/services/service_method.dart';
 
 /// Unified service for loan evaluation functionality
 /// Consolidates storage, calculations, utilities, and API calls

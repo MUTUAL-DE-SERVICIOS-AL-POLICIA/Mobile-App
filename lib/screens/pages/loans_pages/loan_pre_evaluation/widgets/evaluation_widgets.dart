@@ -368,8 +368,7 @@ class EvaluationWidgets {
     final termType = EvaluationService.getTermType(params.loanMonthTerm);
     final paymentFrequency =
         EvaluationService.getPaymentFrequency(params.loanMonthTerm);
-    final interestLabel =
-        EvaluationService.getInterestLabel(params.loanMonthTerm);
+    EvaluationService.getInterestLabel(params.loanMonthTerm);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -493,7 +492,6 @@ class EvaluationWidgets {
     final termType = EvaluationService.getTermType(params.loanMonthTerm);
     final paymentFrequency =
         EvaluationService.getPaymentFrequency(params.loanMonthTerm);
-    final interestLabel = 'Interes Anual';
 
     return Column(
       children: [

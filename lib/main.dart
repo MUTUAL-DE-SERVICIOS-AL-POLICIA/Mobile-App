@@ -15,8 +15,6 @@ import 'package:muserpol_pvt/model/register_number/files_state_veritify.dart';
 import 'package:muserpol_pvt/provider/app_session_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
-import 'package:muserpol_pvt/screens/test_login.dart';
-import 'package:muserpol_pvt/clear_test_data.dart';
 import 'package:muserpol_pvt/screens/inbox/notification.dart';
 import 'package:muserpol_pvt/services/push_notifications.dart';
 import 'package:muserpol_pvt/swipe/slider.dart';
@@ -200,7 +198,6 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
           'check_auth': (_) => const CheckAuthScreen(),
           'slider': (_) => const PageSlider(),
           'newlogin': (_) => const ScreenNewLogin(),
-          'testlogin': (_) => const TestLoginScreen(),
           'contacts': (_) => const ScreenContact(),
           'message': (_) => const ScreenNotification(),
         },
