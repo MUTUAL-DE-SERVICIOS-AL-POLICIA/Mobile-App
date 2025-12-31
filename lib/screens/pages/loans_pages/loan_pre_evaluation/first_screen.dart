@@ -1,813 +1,803 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan_pre_evaluation/loan_pre_evaluation_bloc.dart';
-import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
+import 'package:muserpol_pvt/model/evaluation_models.dart';
+import 'package:muserpol_pvt/services/evaluation_service.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/calculation_result_screen.dart';
+import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
+import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
+import 'widgets/evaluation_widgets.dart';
 
-// =================== PANTALLA PRINCIPAL ===================
 class FirstScreen extends StatefulWidget {
-  const FirstScreen({Key? key}) : super(key: key);
+  const FirstScreen({super.key});
 
   @override
   State<FirstScreen> createState() => _FirstScreenState();
 }
 
 class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
+  // State variables
   double? sueldoBase;
   bool _isFetchingSueldo = false;
-  bool _isGridView = true; // Para controlar la vista de modalidades
-
-  final TextEditingController sueldoController = TextEditingController();
-  final TextEditingController rentaDignidadController = TextEditingController();
-  final FocusNode sueldoFocusNode = FocusNode();
-  final FocusNode rentaFocusNode = FocusNode();
-  
-  bool _isFirstTapSueldo = true;
-  bool _isFirstTapRenta = true;
+  bool _isGridView = true;
+  bool _showModalitiesForPasivo = false;
+  bool _isBonusExpanded = false;
+  bool _hasNavigatedAway = false;
 
   String _affiliateStateType = '';
   int _affiliateId = 0;
-  bool _hasNavigatedAway = false;
+
+  // Variables para afiliados activos
+  double _liquidoPagable = 0.0;
+  double _totalBonos = 0.0;
+  double _liquidoParaCalificacion = 0.0;
+  bool _hasLoadedActivoData = false;
+
+  // Controllers simplificados
+  final TextEditingController sueldoController = TextEditingController();
+  final TextEditingController rentaDignidadController = TextEditingController();
+  final TextEditingController liquidoPagableController =
+      TextEditingController();
+  final TextEditingController seniorityBonusController =
+      TextEditingController();
+  final TextEditingController studyBonusController = TextEditingController();
+  final TextEditingController positionBonusController = TextEditingController();
+  final TextEditingController borderBonusController = TextEditingController();
+  final TextEditingController eastBonusController = TextEditingController();
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initData();
-    _setupFocusListeners();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _showArticle57Warning());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _disposeControllers();
+    super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed && _hasNavigatedAway) {
-      // La app volvió a primer plano y habíamos navegado, recargar datos
       _refreshData();
       _hasNavigatedAway = false;
     }
   }
 
-  void _setupFocusListeners() {
-    sueldoFocusNode.addListener(() {
-      if (!sueldoFocusNode.hasFocus) _isFirstTapSueldo = true;
-    });
-    
-    rentaFocusNode.addListener(() {
-      if (!rentaFocusNode.hasFocus) _isFirstTapRenta = true;
-    });
+  void _disposeControllers() {
+    [
+      sueldoController,
+      rentaDignidadController,
+      liquidoPagableController,
+      seniorityBonusController,
+      studyBonusController,
+      positionBonusController,
+      borderBonusController,
+      eastBonusController,
+      _scrollController
+    ].forEach((controller) => controller.dispose());
   }
 
   void _initData() {
     final userState = context.read<UserBloc>().state;
     if (userState.user?.affiliateId != null) {
       _affiliateId = userState.user!.affiliateId!;
-      context.read<LoanPreEvaluationBloc>().add(LoadLoanModalitiesPreEval(_affiliateId));
+      context
+          .read<LoanPreEvaluationBloc>()
+          .add(LoadLoanModalitiesPreEval(_affiliateId));
     }
   }
 
   void _refreshData() {
     if (_affiliateId > 0) {
-      // Recargar las modalidades cuando volvemos a la pantalla
-      context.read<LoanPreEvaluationBloc>().add(LoadLoanModalitiesPreEval(_affiliateId));
+      context
+          .read<LoanPreEvaluationBloc>()
+          .add(LoadLoanModalitiesPreEval(_affiliateId));
     }
   }
+
+  // === LÓGICA DE NEGOCIO ===
 
   void _updateSueldoBase() {
     if (_affiliateStateType != 'Pasivo') return;
 
-    double sueldo = _parseCurrency(sueldoController.text) ?? 0.0;
-    double renta = _parseCurrency(rentaDignidadController.text) ?? 0.0;
-    double nuevoSueldoBase = sueldo - renta;
+    final sueldo =
+        EvaluationService.parseCurrency(sueldoController.text) ?? 0.0;
+    final renta =
+        EvaluationService.parseCurrency(rentaDignidadController.text) ?? 0.0;
+    final nuevoSueldoBase = sueldo - renta;
 
     if ((sueldoBase ?? 0.0) != nuevoSueldoBase) {
       setState(() {
         sueldoBase = nuevoSueldoBase;
+        _showModalitiesForPasivo = sueldo > 0;
       });
     }
   }
 
-  double? _parseCurrency(String text) {
-    if (text.isEmpty) return 0.0;
-    String cleaned = text.replaceAll(RegExp(r'[^\d,\.]'), '');
-    if (!RegExp(r'\d').hasMatch(cleaned)) return 0.0;
+  void _onActivoFieldChanged(String value) {
+    final liquidoPagable =
+        EvaluationService.parseCurrency(liquidoPagableController.text) ?? 0.0;
+    final totalBonos = [
+      seniorityBonusController,
+      studyBonusController,
+      positionBonusController,
+      borderBonusController,
+      eastBonusController
+    ]
+        .map((c) => EvaluationService.parseCurrency(c.text) ?? 0.0)
+        .reduce((a, b) => a + b);
 
-    String normalized = cleaned.replaceAll(',', '.');
-    List<String> parts = normalized.split('.');
-    if (parts.length > 2) {
-      String integer = parts.take(parts.length - 1).join('');
-      String decimal = parts.last;
-      normalized = '$integer.$decimal';
-    }
+    final liquidoCalificacion = liquidoPagable - totalBonos;
 
-    return double.tryParse(normalized);
+    setState(() {
+      _liquidoPagable = liquidoPagable;
+      _totalBonos = totalBonos;
+      _liquidoParaCalificacion = liquidoCalificacion;
+      sueldoBase = liquidoCalificacion;
+    });
   }
 
-  void _obtenerUltimoPago(int affiliateId) {
-    setState(() => _isFetchingSueldo = true);
-    context.read<LoanPreEvaluationBloc>().add(LoadQuotableContributions(affiliateId));
-  }
-
-  void _handleQuotableContributionsLoaded(QuotableContributionsResponse contributions) {
-    if (contributions.payload.contributions.isEmpty) {
-      _showErrorMessage('No hay información de pago. Actualice en oficinas presenciales.');
-      return;
-    }
-
-    final lastContribution = contributions.payload.contributions.first;
-    final quotable = _parseSpanishNumber(lastContribution.quotable);
-    
-    if (quotable > 0) {
-      setState(() {
-        sueldoBase = quotable;
-        _isFetchingSueldo = false;
-      });
-    } else {
-      _showErrorMessage('Sueldo base no válido: valor parseado es $quotable');
-    }
-  }
-
-  double _parseSpanishNumber(String value) {
-    String cleaned = value.replaceAll(' ', '');
-    
-    if (cleaned.contains('.') && cleaned.contains(',')) {
-      cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
-    } else if (cleaned.contains(',')) {
-      cleaned = cleaned.replaceAll(',', '.');
-    }
-    
-    return double.tryParse(cleaned) ?? 0.0;
-  }
-
-  void _showErrorMessage(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.orange),
-      );
-      setState(() {
-        sueldoBase = 0;
-        _isFetchingSueldo = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    sueldoController.dispose();
-    rentaDignidadController.dispose();
-    sueldoFocusNode.dispose();
-    rentaFocusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
-    return GestureDetector(
-      // Quitar foco al tocar fuera de los campos
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Pre-evaluación de Préstamo',
-            style: theme.appBarTheme.titleTextStyle?.copyWith(
-              fontWeight: FontWeight.bold,
+  void _showArticle57Warning() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          contentPadding: EdgeInsets.zero,
+          content: Container(
+            width: MediaQuery.of(context).size.width * 0.85,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [Colors.orange.shade50, Colors.orange.shade100],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-        ),
-        body: MultiBlocListener(
-        listeners: [
-          BlocListener<LoanPreEvaluationBloc, LoanPreEvaluationState>(
-            listener: (context, state) {
-              if (state is LoanModalitiesLoaded && state.modalities.isNotEmpty) {
-                final firstModality = state.modalities.first;
-                setState(() {
-                  _affiliateStateType = firstModality.affiliateStateType;
-                });
-
-                if (_affiliateStateType == 'Activo') {
-                  _obtenerUltimoPago(_affiliateId);
-                } else {
-                  _updateSueldoBase();
-                }
-              } else if (state is LoanModalitiesWithContributionsLoaded && state.contributions != null) {
-                _handleQuotableContributionsLoaded(state.contributions!);
-              } else if (state is LoanModalitiesError) {
-                _showErrorMessage('Error al cargar modalidades: ${state.message}');
-              } else if (state is QuotableContributionsLoaded) {
-                _handleQuotableContributionsLoaded(state.contributions);
-              } else if (state is QuotableContributionsError) {
-                _showErrorMessage(state.message);
-              }
-            },
-          ),
-        ],
-        child: BlocBuilder<LoanPreEvaluationBloc, LoanPreEvaluationState>(
-          builder: (context, state) {
-            if (state is LoanModalitiesLoading) {
-              String loadingText = 'Cargando modalidades de préstamo...';
-              if (state.currentAttempt != null && state.maxAttempts != null) {
-                if (state.currentAttempt! > 1) {
-                  loadingText = 'Reintentando... (${state.currentAttempt}/${state.maxAttempts})';
-                }
-              }
-              
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(loadingText),
-                    if (state.currentAttempt != null && state.currentAttempt! > 1)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          'Verificando conexión...',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            }
-            
-            if (state is LoanModalitiesError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange[600]!, Colors.orange[700]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 60, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error al cargar modalidades',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(51),
+                          shape: BoxShape.circle,
                         ),
+                        child: const Icon(Icons.warning_amber_rounded,
+                            color: Colors.white, size: 36),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
-                        state.message,
+                        'IMPORTANTE',
+                        style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                         textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.red[700],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<LoanPreEvaluationBloc>().add(LoadLoanModalitiesPreEval(_affiliateId));
-                        },
-                        child: const Text('Reintentar'),
                       ),
                     ],
                   ),
                 ),
-              );
-            }
-            
-            // Manejar tanto LoanModalitiesLoaded como LoanModalitiesWithContributionsLoaded
-            if (state is LoanModalitiesLoaded || state is LoanModalitiesWithContributionsLoaded) {
-              List<LoanModalityNew> modalities;
-              
-              if (state is LoanModalitiesLoaded) {
-                modalities = state.modalities;
-              } else {
-                modalities = (state as LoanModalitiesWithContributionsLoaded).modalities;
-              }
-              
-              if (modalities.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.info_outline, size: 60, color: Colors.blue),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No hay modalidades disponibles',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF419388).withOpacity(
+                                0.5), // Opcional: ajustar al verde suave
+                            width: 2,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No se encontraron modalidades de préstamo para su perfil.',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium,
+                        child: Column(
+                          children: [
+                            Text(
+                              'Esta evaluación es solo referencial; '
+                              'para iniciar la solicitud formal del préstamo debes realizarlo de manera presencial en las oficinas de la MUSERPOL a nivel nacional.',
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                color: const Color(
+                                    0xFF2D6B61), // Usa tu tono de texto oscuro suave
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.justify,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              final bool isActivo = _affiliateStateType == 'Activo';
-              final bool isBaja = _affiliateStateType == 'Baja';
-
-              if (isBaja) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.warning_amber, size: 60, color: Colors.orange),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Actualice su información en oficinas presenciales.',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                                color: Colors.orange,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange[600],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            elevation: 4,
+                          ),
+                          child: Text(
+                            'ENTENDIDO',
+                            style: TextStyle(
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (isActivo)
-                      _buildSueldoActivo()
-                    else
-                      _buildPasivoFields(),
-                    
-                    // Vista de modalidades integrada
-                    _buildModalitiesSection(modalities, (modality) {
-                        if (isActivo && (sueldoBase == null || sueldoBase == 0)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('No se pudo obtener el sueldo. Intente más tarde.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-
-                        if (!isActivo && (sueldoBase == null || sueldoBase! <= 0)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('El sueldo base debe ser mayor a 0.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-
-                        // Quitar foco antes de navegar
-                        FocusScope.of(context).unfocus();
-                        
-                        // Marcar que hemos navegado para recargar cuando volvamos
-                        _hasNavigatedAway = true;
-                        
-                        // Obtener el BLoC actual antes de navegar
-                        final currentBloc = context.read<LoanPreEvaluationBloc>();
-                        
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BlocProvider.value(
-                              value: currentBloc,
-                              child: CalculationResultScreen(
-                                modalityId: modality.id,
-                                sueldoBase: sueldoBase!,
-                              ),
-                            ),
+                                letterSpacing: 0.5),
                           ),
-                        ).then((_) {
-                          // Cuando volvemos de la navegación, recargar datos
-                          _refreshData();
-                          _hasNavigatedAway = false;
-                        });
-                      }),
-                  ],
-                ),
-              );
-            }
-            
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Inicializando...'),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-      ),
-    );
-  }
-
-  Widget _buildSueldoActivo() {
-    final theme = Theme.of(context);
-    
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Información del afiliado activo',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          if (_isFetchingSueldo)
-            const LinearProgressIndicator()
-          else if (sueldoBase != null && sueldoBase! > 0)
-            Text(
-              'Sueldo base: ${_formatMoney(sueldoBase!)} Bs',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.green[700],
-                    fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-            )
-          else
-            Text(
-              'No se pudo obtener el sueldo.',
-              style: TextStyle(color: Colors.red),
+                ),
+              ],
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPasivoFields() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Información del afiliado pasivo',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          _buildInputField(
-            label: 'Sueldo',
-            controller: sueldoController,
-            onChanged: _onSueldoChanged,
-            hint: "Ingrese el sueldo",
-            suffix: "",
-          ),
-          const SizedBox(height: 12),
-          _buildInputField(
-            label: 'Renta Dignidad',
-            controller: rentaDignidadController,
-            onChanged: _onRentaChanged,
-            hint: "Ingrese la renta",
-            suffix: "",
-          ),
-          const SizedBox(height: 16),
-          if (sueldoBase != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: sueldoBase! > 0 
-                  ? (isDark ? Colors.green.withOpacity(0.1) : Colors.green.shade50)
-                  : (isDark ? Colors.red.withOpacity(0.1) : Colors.red.shade50),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: sueldoBase! > 0 
-                    ? Colors.green.shade200
-                    : Colors.red.shade200,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "Sueldo base calculado",
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
-                      color: sueldoBase! > 0 ? Colors.green.shade600 : Colors.red.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "${_formatMoney(sueldoBase!)} Bs",
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: sueldoBase! > 0 ? Colors.green.shade700 : Colors.red.shade700,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required String label,
-    required TextEditingController controller,
-    required ValueChanged<String> onChanged,
-    required String hint,
-    required String suffix,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final bool isSueldo = label == 'Sueldo';
-    final FocusNode focusNode = isSueldo ? sueldoFocusNode : rentaFocusNode;
-    final bool isFirstTap = isSueldo ? _isFirstTapSueldo : _isFirstTapRenta;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "💰 $label",
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold, 
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade300, 
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: GestureDetector(
-            onTap: () => _handleFieldTap(controller, focusNode, isSueldo),
-            onDoubleTap: () => _selectAllText(controller),
-            child: TextField(
-              controller: controller,
-              focusNode: focusNode,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              onChanged: onChanged,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1E3A8A),
-                letterSpacing: 0.5,
-              ),
-              textAlign: TextAlign.right,
-              decoration: InputDecoration(
-                hintText: "0,00",
-                hintStyle: theme.textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey.shade400,
-                  fontWeight: FontWeight.w400,
-                ),
-                suffixText: "Bs",
-                suffixStyle: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                filled: true,
-                fillColor: theme.cardColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _handleFieldTap(TextEditingController controller, FocusNode focusNode, bool isSueldo) {
-    focusNode.requestFocus();
-    
-    final isFirstTap = isSueldo ? _isFirstTapSueldo : _isFirstTapRenta;
-    if (isFirstTap) {
-      _selectAllText(controller);
-      setState(() {
-        if (isSueldo) {
-          _isFirstTapSueldo = false;
-        } else {
-          _isFirstTapRenta = false;
-        }
-      });
-    }
-  }
-
-  void _selectAllText(TextEditingController controller) {
-    controller.selection = TextSelection(baseOffset: 0, extentOffset: controller.text.length);
-  }
-
-  String _formatMoney(double amount) {
-    return NumberFormat('#,##0.00', 'es_ES').format(amount).replaceAll('.', ' ');
-  }
-
-  void _onSueldoChanged(String text) {
-    _updateSueldoBase();
-  }
-
-  void _onRentaChanged(String text) {
-    _updateSueldoBase();
-  }
-
-  Widget _buildModalitiesSection(List<LoanModalityNew> modalities, Function(LoanModalityNew) onModalitySelected) {
-    final theme = Theme.of(context);
-    
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Modalidades disponibles',
-                style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              IconButton(
-                icon: Icon(
-                  _isGridView ? Icons.view_list : Icons.grid_view,
-                  color: theme.iconTheme.color,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isGridView = !_isGridView;
-                  });
-                },
-                tooltip: _isGridView ? 'Ver como lista' : 'Ver como cuadrícula',
-              ),
-            ],
-          ),
-        ),
-        // Vista dinámica de modalidades
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: _isGridView ? _buildGridView(modalities, onModalitySelected) : _buildListView(modalities, onModalitySelected),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGridView(List<LoanModalityNew> modalities, Function(LoanModalityNew) onModalitySelected) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: modalities.length,
-      itemBuilder: (context, index) {
-        return ModalityCard(
-          modality: modalities[index],
-          onPressed: () => onModalitySelected(modalities[index]),
-          isGridView: true,
-        );
-      },
-    );
-  }
-
-  Widget _buildListView(List<LoanModalityNew> modalities, Function(LoanModalityNew) onModalitySelected) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: modalities.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: ModalityCard(
-            modality: modalities[index],
-            onPressed: () => onModalitySelected(modalities[index]),
-            isGridView: false,
           ),
         );
       },
     );
   }
 
-}
-
-
-
-// =================== TARJETA DE MODALIDAD ===================
-class ModalityCard extends StatelessWidget {
-  final LoanModalityNew modality;
-  final VoidCallback onPressed;
-  final bool isGridView;
-
-  const ModalityCard({
-    Key? key,
-    required this.modality,
-    required this.onPressed,
-    this.isGridView = true,
-  }) : super(key: key);
-
-  String formatAmount(double amount) {
-    return NumberFormat('#,##0', 'es_ES').format(amount).replaceAll('.', ' ');
-  }
+  // === BUILD UI ===
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Card(
-      elevation: 2,
-      color: theme.cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.green[600]!.withOpacity(0.3), width: 1),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: isGridView ? _buildGridLayout(context) : _buildListLayout(context),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).cardColor,
+        appBar: AppBar(
+          title: const LoanProgressIndicator(currentStep: 1),
+          centerTitle: true,
+          backgroundColor: const Color(0xff419388),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: BlocListener<LoanPreEvaluationBloc, LoanPreEvaluationState>(
+          listener: (context, state) {
+            if (state is LoanModalitiesLoaded) {
+              _handleModalitiesLoaded(state.modalities);
+            } else if (state is LoanModalitiesWithContributionsLoaded) {
+              _handleModalitiesWithContributionsLoaded(
+                  state.modalities, state.contributions);
+            } else if (state is LoanModalitiesError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(state.message), backgroundColor: Colors.red),
+              );
+            } else if (state is QuotableContributionsLoaded) {
+              // Handle contributions loaded separately if needed
+            } else if (state is QuotableContributionsError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(state.message), backgroundColor: Colors.red),
+              );
+            }
+          },
+          child: BlocBuilder<LoanPreEvaluationBloc, LoanPreEvaluationState>(
+            builder: (context, state) => _buildContent(context, state),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildGridLayout(BuildContext context) {
+  void _handleModalitiesLoaded(List<LoanModalityNew> modalities) {
+    if (modalities.isNotEmpty) {
+      final firstModality = modalities.first;
+      setState(() => _affiliateStateType = firstModality.affiliateStateType);
+
+      if (_affiliateStateType == 'Activo') {
+        context
+            .read<LoanPreEvaluationBloc>()
+            .add(LoadQuotableContributions(_affiliateId));
+      } else {
+        _updateSueldoBase();
+      }
+    }
+  }
+
+  void _handleModalitiesWithContributionsLoaded(
+      List<LoanModalityNew> modalities,
+      QuotableContributionsResponse? contributions) {
+    if (modalities.isNotEmpty) {
+      final firstModality = modalities.first;
+      setState(() => _affiliateStateType = firstModality.affiliateStateType);
+
+      if (_affiliateStateType == 'Activo') {
+        if (contributions != null &&
+            contributions.payload.contributions.isNotEmpty) {
+          _handleContributionsData(contributions.payload.contributions.first);
+        } else {
+          // No payment slip available but affiliate is active.
+          // Initialize editable fields to 0 so the user can fill them.
+          setState(() {
+            _isFetchingSueldo = false;
+            _hasLoadedActivoData = true;
+            _liquidoPagable = 0.0;
+            _totalBonos = 0.0;
+            _liquidoParaCalificacion = 0.0;
+            sueldoBase = 0.0;
+
+            // Open the breakdown when everything is zero so user can edit fields
+            _isBonusExpanded = true;
+
+            liquidoPagableController.text = 0.00.toStringAsFixed(2);
+            seniorityBonusController.text = 0.00.toStringAsFixed(2);
+            studyBonusController.text = 0.00.toStringAsFixed(2);
+            positionBonusController.text = 0.00.toStringAsFixed(2);
+            borderBonusController.text = 0.00.toStringAsFixed(2);
+            eastBonusController.text = 0.00.toStringAsFixed(2);
+          });
+        }
+      } else {
+        _updateSueldoBase();
+      }
+    }
+  }
+
+  void _handleContributionsData(dynamic contributionData) {
+    setState(() => _isFetchingSueldo = true);
+
+    double liquidoPagable = 0.0;
+    double seniorityBonus = 0.0;
+    double studyBonus = 0.0;
+    double positionBonus = 0.0;
+    double borderBonus = 0.0;
+    double eastBonus = 0.0;
+
+    try {
+      if (contributionData is Contribution) {
+        liquidoPagable =
+            contributionData.parseAmount(contributionData.payableLiquid);
+        seniorityBonus =
+            contributionData.parseAmount(contributionData.seniorityBonus);
+        studyBonus = contributionData.parseAmount(contributionData.studyBonus);
+        positionBonus =
+            contributionData.parseAmount(contributionData.positionBonus);
+        borderBonus =
+            contributionData.parseAmount(contributionData.borderBonus);
+        eastBonus = contributionData.parseAmount(contributionData.eastBonus);
+      } else if (contributionData is QuotableContribution) {
+        // Use detailed fields if available (some responses include payable_liquid and bonus fields)
+        final rawPayable = contributionData.payableLiquid.isNotEmpty
+            ? contributionData.payableLiquid
+            : contributionData.quotable;
+
+        liquidoPagable = EvaluationService.parseCurrency(rawPayable) ?? 0.0;
+
+        seniorityBonus =
+            EvaluationService.parseCurrency(contributionData.seniorityBonus) ??
+                0.0;
+        studyBonus =
+            EvaluationService.parseCurrency(contributionData.studyBonus) ?? 0.0;
+        positionBonus =
+            EvaluationService.parseCurrency(contributionData.positionBonus) ??
+                0.0;
+        borderBonus =
+            EvaluationService.parseCurrency(contributionData.borderBonus) ??
+                0.0;
+        eastBonus =
+            EvaluationService.parseCurrency(contributionData.eastBonus) ?? 0.0;
+
+        // Debug: print raw and parsed values for visibility
+        debugPrint(
+            'QuotableContribution raw values -> payable_liquid: ${contributionData.payableLiquid}, seniority_bonus: ${contributionData.seniorityBonus}, study_bonus: ${contributionData.studyBonus}, position_bonus: ${contributionData.positionBonus}, border_bonus: ${contributionData.borderBonus}, east_bonus: ${contributionData.eastBonus}');
+        debugPrint(
+            'Parsed values -> liquidoPagable: $liquidoPagable, seniority: $seniorityBonus, study: $studyBonus, position: $positionBonus, border: $borderBonus, east: $eastBonus');
+      }
+
+      final totalBonuses =
+          seniorityBonus + studyBonus + positionBonus + borderBonus + eastBonus;
+      final liquidoCalificacion = liquidoPagable - totalBonuses;
+
+      setState(() {
+        _liquidoPagable = liquidoPagable;
+        _totalBonos = totalBonuses;
+        _liquidoParaCalificacion = liquidoCalificacion;
+        sueldoBase = liquidoCalificacion;
+        _hasLoadedActivoData = true;
+
+        // If all values are zero, open the breakdown by default so user can edit
+        _isBonusExpanded = (liquidoPagable == 0.0 && totalBonuses == 0.0);
+
+        liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
+        seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
+        studyBonusController.text = studyBonus.toStringAsFixed(2);
+        positionBonusController.text = positionBonus.toStringAsFixed(2);
+        borderBonusController.text = borderBonus.toStringAsFixed(2);
+        eastBonusController.text = eastBonus.toStringAsFixed(2);
+
+        _isFetchingSueldo = false;
+      });
+    } catch (e, st) {
+      debugPrint('Error parsing contribution data: $e\n$st');
+      setState(() {
+        _isFetchingSueldo = false;
+        _hasLoadedActivoData = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('No se pudo procesar la boleta de pago.'),
+          backgroundColor: Colors.red));
+    }
+  }
+
+  Widget _buildContent(BuildContext context, LoanPreEvaluationState? state) {
+    if (state is LoanModalitiesLoading) {
+      return Center(
+          child: CircularProgressIndicator(color: const Color(0xff419388)));
+    }
+
+    if (state is LoanModalitiesError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 60, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                state.message,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(color: Colors.red),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _refreshData,
+                child: const Text('Reestablecer'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    List<LoanModalityNew>? modalities;
+    if (state is LoanModalitiesLoaded) {
+      modalities = state.modalities;
+    } else if (state is LoanModalitiesWithContributionsLoaded) {
+      modalities = state.modalities;
+    }
+
+    if (modalities == null || modalities.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: const Color(0xff419388)),
+              const SizedBox(height: 16),
+              Text(
+                'Cargando modalidades...',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return _buildMainContent(modalities);
+  }
+
+  Widget _buildMainContent(List<LoanModalityNew> modalities) {
+    final bool isActivo = _affiliateStateType == 'Activo';
+    final bool isBaja = _affiliateStateType == 'Baja';
+
+    if (isBaja) return _buildBajaState();
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      child: Column(
+        children: [
+          if (isActivo) _buildSueldoActivo() else _buildPasivoFields(),
+
+          // For active affiliates, only show modalities if liquidoParaCalificacion > 0
+          if ((isActivo && _liquidoParaCalificacion > 0) ||
+              ((!isActivo) && _showModalitiesForPasivo))
+            _buildModalitiesSection(modalities)
+          else if (isActivo && _liquidoParaCalificacion <= 0)
+            _buildActivoInvalidPrompt()
+          else if (!isActivo && !_showModalitiesForPasivo)
+            _buildPromptForPasivo(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBajaState() {
     final theme = Theme.of(context);
-    
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.warning_amber, size: 60, color: Colors.orange),
+            const SizedBox(height: 16),
+            Text(
+              'Actualice su información en oficinas presenciales.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: Colors.orange, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPromptForPasivo() {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.blue.shade200),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.info_outline, size: 48, color: Colors.blue.shade600),
+            const SizedBox(height: 12),
+            Text(
+              'Ingrese su sueldo para ver las modalidades disponibles',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                  color: Colors.blue.shade700, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Complete los campos de sueldo y renta dignidad para calcular su sueldo base y ver las opciones de préstamo.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: Colors.blue.shade600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivoInvalidPrompt() {
+    final theme = Theme.of(context);
+    final primaryGreen = const Color(0xFF419388); // Tu color principal
+    final softGreenBg = const Color(0xFFE8F4F2); // Fondo suave
+    final mediumGreen = const Color(
+        0xFF2D6B61); // Para texto y borde (más oscuro que el principal)
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: softGreenBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: mediumGreen.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.info_outline, size: 48, color: primaryGreen),
+            const SizedBox(height: 8),
+            Text(
+              'Su "Líquido para Calificación" debe ser mayor a 0 para acceder a nuestras modalidades de préstamo.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: mediumGreen,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _refreshData,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'REESTABLECER',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // === WIDGETS DE SUELDO ACTIVO ===
+
+  Widget _buildSueldoActivo() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          if (_isFetchingSueldo)
+            LinearProgressIndicator(color: const Color(0xff419388))
+          else if (_hasLoadedActivoData)
+            _buildLiquidoCalificacionExpandable()
+          else
+            Text('No se pudo obtener la información de pago.',
+                style: TextStyle(color: Colors.red, fontSize: 15.sp)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLiquidoCalificacionExpandable() {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          modality.name,
-          style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+          'COTIZABLE',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20.sp,
+            color: const Color(0xff2d6b61),
+          ),
         ),
         const SizedBox(height: 12),
-        _buildInfoRow(
-          context,
-          Icons.attach_money,
-          'Monto: ${formatAmount(modality.parameters.minimumAmountModality)} - ${formatAmount(modality.parameters.maximumAmountModality)}',
-          Colors.green[600]!,
-        ),
-        const SizedBox(height: 8),
-        _buildInfoRow(
-          context,
-          Icons.percent,
-          'Interés: ${modality.parameters.periodInterest.toStringAsFixed(2)}%',
-          Colors.orange[600]!,
-        ),
-        const SizedBox(height: 8),
-        _buildInfoRow(
-          context,
-          Icons.group,
-          'Garantes: ${modality.parameters.guarantors}',
-          Colors.blue[600]!,
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerRight,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 40),
-            child: ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[600]!,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                minimumSize: const Size(100, 36),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        GestureDetector(
+          onTap: () => setState(() => _isBonusExpanded = !_isBonusExpanded),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _liquidoParaCalificacion >= 0
+                  ? const Color(0xff419388).withAlpha(26)
+                  : Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _liquidoParaCalificacion >= 0
+                    ? const Color(0xff419388).withAlpha(77)
+                    : Colors.red.shade200,
               ),
-              child: const Text(
-                'Seleccionar',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Líquido para Calificación",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontSize: 18,
+                              color: _liquidoParaCalificacion >= 0
+                                  ? const Color(0xff419388)
+                                  : Colors.red.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _liquidoParaCalificacion >= 0
+                                ? "${EvaluationService.formatMoney(_liquidoParaCalificacion)} Bs"
+                                : "Límite Excedido",
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22.sp,
+                              color: _liquidoParaCalificacion >= 0
+                                  ? const Color(0xff2d6b61)
+                                  : Colors.red.shade700,
+                              letterSpacing: -0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _isBonusExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Icon(
+                        Icons.expand_more,
+                        color: _liquidoParaCalificacion >= 0
+                            ? const Color(0xff419388)
+                            : Colors.red.shade600,
+                        size: 28,
+                      ),
+                    ),
+                  ],
+                ),
+                if (!_isBonusExpanded) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      'Ver mas detalles',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: _liquidoParaCalificacion >= 0
+                            ? const Color(0xff419388)
+                            : Colors.red.shade600,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  ),
+                ],
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  child: _isBonusExpanded
+                      ? Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildDesgloseLine(
+                                '+ Líquido Pagable', liquidoPagableController),
+                            const SizedBox(height: 12),
+                            _buildDesgloseLine(
+                                '- Bono Antigüedad', seniorityBonusController),
+                            const SizedBox(height: 12),
+                            _buildDesgloseLine(
+                                '- Bono Estudios', studyBonusController),
+                            const SizedBox(height: 12),
+                            _buildDesgloseLine(
+                                '- Bono Cargo', positionBonusController),
+                            const SizedBox(height: 12),
+                            _buildDesgloseLine(
+                                '- Bono Frontera', borderBonusController),
+                            const SizedBox(height: 12),
+                            _buildDesgloseLine(
+                                '- Bono Oriente', eastBonusController),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
             ),
           ),
         ),
@@ -815,151 +805,185 @@ class ModalityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildListLayout(BuildContext context) {
+  Widget _buildDesgloseLine(String label, TextEditingController controller) {
     final theme = Theme.of(context);
-    
+    final isDark = theme.brightness == Brightness.dark;
+
     return Row(
       children: [
-        // Información principal expandida
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                modality.name,
-                style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+              Text(label,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16)),
+              const SizedBox(height: 6),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color:
+                          isDark ? Colors.grey.shade600 : Colors.grey.shade300,
+                      width: 1),
+                ),
+                child: TextField(
+                  controller: controller,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: _onActivoFieldChanged,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
+                  textAlign: TextAlign.right,
+                  decoration: InputDecoration(
+                    hintText: "0,00",
+                    hintStyle:
+                        TextStyle(color: Colors.grey.shade400, fontSize: 16),
+                    suffixText: "Bs",
+                    suffixStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                     ),
-                maxLines: 3,
-                overflow: TextOverflow.visible,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoColumn(
-                      context,
-                      Icons.attach_money,
-                      'Monto',
-                      '${formatAmount(modality.parameters.minimumAmountModality)} - ${formatAmount(modality.parameters.maximumAmountModality)} Bs',
-                      Colors.green[600]!,
-                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 12),
+                    filled: true,
+                    fillColor: theme.cardColor,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoColumn(
-                      context,
-                      Icons.percent,
-                      'Interés',
-                      '${modality.parameters.periodInterest.toStringAsFixed(2)}%',
-                      Colors.orange[600]!,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoColumn(
-                      context,
-                      Icons.group,
-                      'Garantes',
-                      '${modality.parameters.guarantors}',
-                      Colors.blue[600]!,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoColumn(
-                      context,
-                      Icons.calendar_today,
-                      'Plazo',
-                      '${modality.parameters.minimumTermModality}-${modality.parameters.maximumTermModality} ${(modality.parameters.loanMonthTerm == 1) ? 'meses' : 'semestres'}',
-                      Colors.purple[600]!,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 16),
-        // Botón de selección
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[600]!,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text(
-                'Seleccionar',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String text, Color color) {
+  // === WIDGETS DE PASIVO ===
+
+  Widget _buildPasivoFields() {
     final theme = Theme.of(context);
-    
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: 13,
-                ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Información del Sueldo para Calificación',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold, fontSize: 20.sp),
+          ),
+          const SizedBox(height: 16),
+          EvaluationWidgets.moneyInputField(
+            label: 'Sueldo',
+            controller: sueldoController,
+            onChanged: (_) => _updateSueldoBase(),
+          ),
+          const SizedBox(height: 12),
+          EvaluationWidgets.moneyInputField(
+            label: 'Renta Dignidad',
+            controller: rentaDignidadController,
+            onChanged: (_) => _updateSueldoBase(),
+          ),
+          const SizedBox(height: 16),
+          if (sueldoBase != null) _buildSueldoBaseCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSueldoBaseCard() {
+    return EvaluationWidgets.infoCard(
+      title: "Sueldo base calculado",
+      value: "${EvaluationService.formatMoney(sueldoBase!)} Bs",
+      icon: Icons.account_balance_wallet,
+      backgroundColor: sueldoBase! > 0
+          ? const Color(0xff419388).withAlpha(26)
+          : Colors.red.shade50,
+      textColor:
+          sueldoBase! > 0 ? const Color(0xff2d6b61) : Colors.red.shade700,
+      isHighlighted: true,
+    );
+  }
+
+  // === WIDGETS DE MODALIDADES ===
+
+  Widget _buildModalitiesSection(List<LoanModalityNew> modalities) {
+    return EvaluationWidgets.modalitiesSection(
+      modalities: modalities,
+      isGridView: _isGridView,
+      onToggleView: () => setState(() => _isGridView = !_isGridView),
+      onModalitySelected: (modality) => _onModalitySelected(modality),
+    );
+  }
+
+  void _onModalitySelected(LoanModalityNew modality) {
+    final isActivo = _affiliateStateType == 'Activo';
+
+    if (isActivo && (sueldoBase == null || sueldoBase == 0)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('No se pudo obtener el sueldo. Intente más tarde.'),
+            backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    if (!isActivo && (sueldoBase == null || sueldoBase! <= 0)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('El sueldo base debe ser mayor a 0.'),
+            backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    _hasNavigatedAway = true;
+
+    // Capturar el BLoC antes de navegar
+    final currentBloc = context.read<LoanPreEvaluationBloc>();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: currentBloc,
+          child: CalculationResultScreen(
+            modalityId: modality.id,
+            sueldoBase: sueldoBase!,
+            affiliateStateType: _affiliateStateType,
+            liquidoPagable:
+                _affiliateStateType == 'Activo' ? _liquidoPagable : null,
+            totalBonos: _affiliateStateType == 'Activo' ? _totalBonos : null,
+            seniorityBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(seniorityBonusController.text)
+                : null,
+            studyBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(studyBonusController.text)
+                : null,
+            positionBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(positionBonusController.text)
+                : null,
+            borderBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(borderBonusController.text)
+                : null,
+            eastBonus: _affiliateStateType == 'Activo'
+                ? EvaluationService.parseCurrency(eastBonusController.text)
+                : null,
+            rentaDignidad: _affiliateStateType == 'Pasivo'
+                ? EvaluationService.parseCurrency(rentaDignidadController.text)
+                : null,
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildInfoColumn(BuildContext context, IconData icon, String label, String value, Color color) {
-    final theme = Theme.of(context);
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-          maxLines: 2,
-          overflow: TextOverflow.visible,
-        ),
-      ],
-    );
+      ),
+    ).then((_) {
+      _refreshData();
+      _hasNavigatedAway = false;
+    });
   }
 }

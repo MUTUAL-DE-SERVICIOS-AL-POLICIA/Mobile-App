@@ -33,7 +33,8 @@ class _NavigatorBarGeneralState extends State<NavigatorBarGeneral> {
     } else if (_currentIndex == 1) {
       return const ScreenContributionsNew();
     } else if (_currentIndex == 2) {
-      return const ScreenLoansNew();
+      // Abrir modal automáticamente para pruebas
+      return const ScreenLoansNew(openModalOnInit: true);
     }
     return const PlaceholderScreen(title: 'Sin módulo');
   }

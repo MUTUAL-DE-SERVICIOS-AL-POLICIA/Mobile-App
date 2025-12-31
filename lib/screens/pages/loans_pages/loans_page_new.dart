@@ -2,20 +2,24 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 // import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
-// import 'package:muserpol_pvt/bloc/loan_pre_evaluation/loan_pre_evaluation_bloc.dart';
+import 'package:muserpol_pvt/bloc/loan_pre_evaluation/loan_pre_evaluation_bloc.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
 import 'package:muserpol_pvt/model/loan_model.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/card_loan.dart';
-// import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/first_screen.dart';
+import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/first_screen.dart';
+import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/saved_evaluations_screen.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:muserpol_pvt/services/services.dart';
 import 'package:provider/provider.dart';
 
 class ScreenLoansNew extends StatefulWidget {
-  const ScreenLoansNew({super.key});
+  final bool openModalOnInit;
+
+  const ScreenLoansNew({super.key, this.openModalOnInit = false});
 
   @override
   State<ScreenLoansNew> createState() => _ScreenLoansNewState();
@@ -25,6 +29,15 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
   @override
   void initState() {
     super.initState();
+
+    // Si se debe abrir el modal automáticamente
+    if (widget.openModalOnInit) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showPreEvaluationModal();
+        }
+      });
+    }
   }
 
   @override
@@ -112,23 +125,44 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
           ),
         ),
       ),
-      //ACA TINENE QUE ESTAR LA PRE - EVALUACION
-      // floatingActionButton: FloatingActionButton.extended(
-      //   foregroundColor: Colors.white,
-      //   backgroundColor: Colors.green[600],
-      //   onPressed: () {
-      //     showBarModalBottomSheet(
-      //       expand: true,
-      //       enableDrag: false,
-      //       isDismissible: true,
-      //       context: context,
-      //       builder: (context) => _buildPreEvaluationModal(),
-      //     );
-      //   },
-      //   icon: const Icon(Icons.calculate),
-      //   label: const Text('Pre-evaluación'),
-      // ),
+      //ACA TINENE QUE ESTAR LA EVALUACION REFERENCIAL
+      floatingActionButton: FloatingActionButton.extended(
+        foregroundColor: Colors.white,
+        backgroundColor: const Color(0xff419388),
+        onPressed: _showPreEvaluationModal,
+        icon: const Icon(Icons.calculate),
+        label: const Text('Evaluación Referencial'),
+      ),
     );
+  }
+
+  void _showPreEvaluationModal() async {
+    // Limpiar evaluaciones obsoletas antes de mostrar el modal
+    await _cleanObsoleteEvaluationsIfNeeded();
+
+    if (!mounted) return;
+
+    showBarModalBottomSheet(
+      expand: true,
+      enableDrag: false,
+      isDismissible: true,
+      context: context,
+      builder: (context) => _buildPreEvaluationModal(),
+    );
+  }
+
+  Future<void> _cleanObsoleteEvaluationsIfNeeded() async {
+    try {
+      final loanBloc = BlocProvider.of<LoanBloc>(context, listen: false);
+
+      if (loanBloc.state.existLoan && loanBloc.state.loan != null) {
+        // Aquí podrías implementar la limpieza si tienes acceso a las modalidades
+        // Por ahora, la limpieza se hará en saved_evaluations_screen
+        print('Verificando evaluaciones guardadas...');
+      }
+    } catch (e) {
+      print('Error al verificar evaluaciones: $e');
+    }
   }
 
   reloadLoans() async {
@@ -153,226 +187,216 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
     }
   }
 
-  // Widget _buildPreEvaluationModal() {
-  //   final theme = Theme.of(context);
-    
-  //   return BlocProvider(
-  //     create: (context) => LoanPreEvaluationBloc(context: context),
-  //     child: Container(
-  //       height: MediaQuery.of(context).size.height,
-  //       width: MediaQuery.of(context).size.width,
-  //       decoration: BoxDecoration(
-  //         color: theme.scaffoldBackgroundColor,
-  //         borderRadius: const BorderRadius.only(
-  //           topLeft: Radius.circular(20),
-  //           topRight: Radius.circular(20),
-  //         ),
-  //       ),
-  //       child: Scaffold(
-  //         backgroundColor: theme.scaffoldBackgroundColor,
-  //         appBar: AppBar(
-  //           leading: IconButton(
-  //             icon: Icon(Icons.close, color: theme.appBarTheme.iconTheme?.color),
-  //             onPressed: () => Navigator.pop(context),
-  //           ),
-  //           title: Row(
-  //             children: [
-  //               Container(
-  //                 width: 32,
-  //                 height: 32,
-  //                 decoration: BoxDecoration(
-  //                   color: Colors.green[600],
-  //                   borderRadius: BorderRadius.circular(8),
-  //                 ),
-  //                 child: const Icon(
-  //                   Icons.calculate,
-  //                   color: Colors.white,
-  //                   size: 20,
-  //                 ),
-  //               ),
-  //               const SizedBox(width: 12),
-  //               Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   Text(
-  //                     'Pre-evaluación de Préstamo',
-  //                     style: theme.textTheme.titleMedium?.copyWith(
-  //                       fontWeight: FontWeight.bold,
-  //                     ),
-  //                   ),
-  //                   Text(
-  //                     'Calcula tu capacidad de préstamo',
-  //                     style: theme.textTheme.bodySmall?.copyWith(
-  //                       color: Colors.grey,
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         body: Column(
-  //           children: [
-  //             // Content
-  //             Expanded(
-  //               child: SingleChildScrollView(
-  //                 padding: const EdgeInsets.all(24),
-  //                 child: Column(
-  //                   crossAxisAlignment: CrossAxisAlignment.start,
-  //                   children: [
-  //                     // Hero section
-  //                     Container(
-  //                       width: double.infinity,
-  //                       padding: const EdgeInsets.all(24),
-  //                       decoration: BoxDecoration(
-  //                         gradient: LinearGradient(
-  //                           colors: [Colors.green[600]!, Colors.green[700]!],
-  //                           begin: Alignment.topLeft,
-  //                           end: Alignment.bottomRight,
-  //                         ),
-  //                         borderRadius: BorderRadius.circular(16),
-  //                       ),
-  //                       child: Column(
-  //                         crossAxisAlignment: CrossAxisAlignment.start,
-  //                         children: [
-  //                           const Icon(
-  //                             Icons.trending_up,
-  //                             color: Colors.white,
-  //                             size: 32,
-  //                           ),
-  //                           const SizedBox(height: 12),
-  //                           const Text(
-  //                             '¡Descubre tu capacidad de préstamo!',
-  //                             style: TextStyle(
-  //                               fontSize: 20,
-  //                               fontWeight: FontWeight.bold,
-  //                               color: Colors.white,
-  //                             ),
-  //                           ),
-  //                           const SizedBox(height: 8),
-  //                           Text(
-  //                             'Simula diferentes modalidades y encuentra la mejor opción para ti.',
-  //                             style: TextStyle(
-  //                               fontSize: 14,
-  //                               color: Colors.white.withOpacity(0.9),
-  //                             ),
-  //                           ),
-  //                         ],
-  //                       ),
-  //                     ),
-                      
-  //                     const SizedBox(height: 32),
-                      
-  //                     // Info card
-  //                     Container(
-  //                       padding: const EdgeInsets.all(20),
-  //                       decoration: BoxDecoration(
-  //                         color: Colors.blue[50],
-  //                         borderRadius: BorderRadius.circular(16),
-  //                         border: Border.all(color: Colors.blue[200]!),
-  //                       ),
-  //                       child: Row(
-  //                         children: [
-  //                           Icon(Icons.info_outline, color: Colors.blue[600], size: 28),
-  //                           const SizedBox(width: 16),
-  //                           Expanded(
-  //                             child: Text(
-  //                               'Esta herramienta te permite realizar una simulación completa de préstamo sin compromiso.',
-  //                               style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-  //                             ),
-  //                           ),
-  //                         ],
-  //                       ),
-  //                     ),
-                      
-  //                     const SizedBox(height: 32),
-                      
-  //                     // Features section
-  //                     Text(
-  //                       'Lo que puedes hacer:',
-  //                       style: theme.textTheme.titleMedium?.copyWith(
-  //                         fontWeight: FontWeight.bold,
-  //                       ),
-  //                     ),
-  //                     const SizedBox(height: 20),
-                      
-  //                     const Column(
-  //                       children: [
-  //                         _FeatureItem(
-  //                           icon: Icons.account_balance_wallet,
-  //                           title: 'Modalidades disponibles',
-  //                           subtitle: 'Explora todas las opciones de préstamo según tu perfil',
-  //                         ),
-  //                         SizedBox(height: 20),
-  //                         _FeatureItem(
-  //                           icon: Icons.calculate,
-  //                           title: 'Cálculo automático',
-  //                           subtitle: 'Conoce tu cuota mensual y capacidad de endeudamiento',
-  //                         ),
-  //                         SizedBox(height: 20),
-  //                         _FeatureItem(
-  //                           icon: Icons.description,
-  //                           title: 'Documentos requeridos',
-  //                           subtitle: 'Lista completa de documentos necesarios para el trámite',
-  //                         ),
-  //                         SizedBox(height: 20),
-  //                         _FeatureItem(
-  //                           icon: Icons.security,
-  //                           title: 'Simulación segura',
-  //                           subtitle: 'Proceso completamente confidencial y sin compromiso',
-  //                         ),
-  //                       ],
-  //                     ),
-                      
-  //                     const SizedBox(height: 40),
-                      
-  //                     // Action button
-  //                     SizedBox(
-  //                       width: double.infinity,
-  //                       child: ElevatedButton(
-  //                         onPressed: () {
-  //                           Navigator.pop(context); // Cerrar modal
-  //                           Navigator.push(
-  //                             context,
-  //                             MaterialPageRoute(
-  //                               builder: (context) => BlocProvider(
-  //                                 create: (context) => LoanPreEvaluationBloc(context: context),
-  //                                 child: const FirstScreen(),
-  //                               ),
-  //                             ),
-  //                           );
-  //                         },
-  //                         style: ElevatedButton.styleFrom(
-  //                           backgroundColor: Colors.green[600],
-  //                           foregroundColor: Colors.white,
-  //                           padding: const EdgeInsets.symmetric(vertical: 18),
-  //                           shape: RoundedRectangleBorder(
-  //                             borderRadius: BorderRadius.circular(16),
-  //                           ),
-  //                           elevation: 4,
-  //                         ),
-  //                         child: Text(
-  //                           'INICIAR PRE-EVALUACIÓN',
-  //                           style: theme.textTheme.titleMedium?.copyWith(
-  //                             color: Colors.white,
-  //                             fontWeight: FontWeight.bold,
-  //                             letterSpacing: 0.5,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ),
-                      
-  //                     const SizedBox(height: 20),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget _buildPreEvaluationModal() {
+    final theme = Theme.of(context);
+
+    return BlocProvider(
+      create: (context) => LoanPreEvaluationBloc(context: context),
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xff419388), Color(0xff2d6b61)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
+          body: Column(
+            children: [
+              // Hero section con gradiente extendido
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xff419388), Color(0xff2d6b61)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Título principal
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.trending_up,
+                            color: Colors.white,
+                            size: 28.sp,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              '¡Descubre a qué modalidades de préstamo puedes acceder!',
+                              style: TextStyle(
+                                fontSize: 28.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Features section con fondo blanco
+                    Container(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            SizedBox(height: 12),
+                            _CompactFeature(
+                              icon: Icons.calculate,
+                              title: 'Calcula el monto y plazo referencial',
+                            ),
+                            SizedBox(height: 12),
+                            _CompactFeature(
+                              icon: Icons.folder_copy,
+                              title: 'Conoce que documentos debes presentar',
+                            ),
+                            SizedBox(height: 12),
+                            _CompactFeature(
+                              icon: Icons.security,
+                              title: 'Simula tu préstamo de forma segura',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Content con fondo del tema
+              Expanded(
+                child: Container(
+                  color: theme.scaffoldBackgroundColor,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+
+                        // Action buttons
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider(
+                                    create: (context) =>
+                                        LoanPreEvaluationBloc(context: context),
+                                    child: const FirstScreen(),
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xff419388),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 4,
+                            ),
+                            child: Text(
+                              'INICIAR EVALUACIÓN REFERENCIAL',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Botón Mis Evaluaciones
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const SavedEvaluationsScreen(),
+                                ),
+                              );
+
+                              if (result != null && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Función de recarga en desarrollo'),
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.history),
+                            label: Text(
+                              'MIS EVALUACIONES',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xff419388),
+                              side: const BorderSide(
+                                  color: Color(0xff419388), width: 2),
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget loans(String text, List<Widget> cards) {
     return Padding(
@@ -388,57 +412,44 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
   }
 }
 
-// class _FeatureItem extends StatelessWidget {
-//   final IconData icon;
-//   final String title;
-//   final String subtitle;
+class _CompactFeature extends StatelessWidget {
+  final IconData icon;
+  final String title;
 
-//   const _FeatureItem({
-//     required this.icon,
-//     required this.title,
-//     required this.subtitle,
-//   });
+  const _CompactFeature({
+    required this.icon,
+    required this.title,
+  });
 
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = Theme.of(context);
-    
-//     return Row(
-//       children: [
-//         Container(
-//           width: 48,
-//           height: 48,
-//           decoration: BoxDecoration(
-//             color: Colors.green[100],
-//             borderRadius: BorderRadius.circular(12),
-//           ),
-//           child: Icon(
-//             icon,
-//             color: Colors.green[600],
-//             size: 24,
-//           ),
-//         ),
-//         const SizedBox(width: 16),
-//         Expanded(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(
-//                 title,
-//                 style: theme.textTheme.titleSmall?.copyWith(
-//                   fontWeight: FontWeight.w600,
-//                 ),
-//               ),
-//               Text(
-//                 subtitle,
-//                 style: theme.textTheme.bodySmall?.copyWith(
-//                   color: Colors.grey,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            icon,
+            color: const Color(0xff2d6b61),
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xff2d6b61),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

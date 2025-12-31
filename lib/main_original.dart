@@ -1,18 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; 
 import 'package:muserpol_pvt/bloc/contribution/contribution_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/database/db_provider.dart';
 import 'package:muserpol_pvt/model/register_number/files_state_veritify.dart';
-import 'package:muserpol_pvt/provider/app_session_state.dart';
 import 'package:muserpol_pvt/provider/files_state.dart';
 import 'package:muserpol_pvt/screens/access/newlogin.dart';
 import 'package:muserpol_pvt/screens/inbox/notification.dart';
@@ -26,6 +25,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/check_auth_screen.dart';
 import 'package:muserpol_pvt/services/auth_service.dart';
 import 'package:provider/provider.dart';
+
 import 'bloc/procedure/procedure_bloc.dart';
 import 'bloc/user/user_bloc.dart';
 import 'provider/app_state.dart';
@@ -44,41 +44,28 @@ class MyHttpOverrides extends HttpOverrides {
 SharedPreferences? prefs;
 
 Future<void> main() async {
-  // Asegura binding
+  // 1) Carga .env y binding
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Bloquea orientación una sola vez (no en cada build)
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // 2) Tema y prefs
+  final savedThemeMode = await AdaptiveTheme.getThemeMode();
+  prefs = await SharedPreferences.getInstance();
 
-  // Carga .env
-  await dotenv.load(fileName: ".env");
+  // 3) Inicializa Firebase una sola vez aquí
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Http override global
-  HttpOverrides.global = MyHttpOverrides();
-
-  // Lanzamos algunas cosas en paralelo: tema y SharedPreferences
-  final savedThemeModeFuture = AdaptiveTheme.getThemeMode();
-  final prefsFuture = SharedPreferences.getInstance();
-
-  // Inicializa Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // Handler de mensajes en background (debe ser top-level)
+  // 4) 🔥 REGISTRA EL HANDLER DE BACKGROUND **ANTES** de cualquier uso de messaging
+  //    Este handler debe ser top-level con @pragma('vm:entry-point') en push_notifications.dart
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  // Inicializa tu servicio de notificaciones (usa FirebaseMessaging)
-  await PushNotificationService.initializeapp();
+  // 5) Inicializa tu servicio de notificaciones (con await)
+  await PushNotificationService.initializeapp(); // ✅ AÑADE await
 
-  // Esperamos resultados de tema y prefs (que ya se iban cargando)
-  final savedThemeMode = await savedThemeModeFuture;
-  prefs = await prefsFuture;
+  // 6) Overrides opcionales
+  HttpOverrides.global = MyHttpOverrides();
 
-  // Arranca la app
+  // 7) Arranca la app
   runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 
@@ -88,6 +75,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
     return MultiBlocProvider(
       providers: [
@@ -107,7 +98,6 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => TabProcedureState()),
           ChangeNotifierProvider(create: (_) => ProcessingState()),
           ChangeNotifierProvider(create: (_) => FilesStateVeritify()),
-          ChangeNotifierProvider(create: (_) => AppSessionState()),
         ],
         child: ScreenUtilInit(
           designSize: const Size(360, 690),
@@ -179,7 +169,6 @@ class _MuserpolState extends State<Muserpol> with WidgetsBindingObserver {
       initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
       builder: (theme, darkTheme) => MaterialApp(
         localizationsDelegates: const [
-          CountryLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
