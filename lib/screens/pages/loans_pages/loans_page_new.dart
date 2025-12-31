@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-// import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:muserpol_pvt/bloc/loan/loan_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan_pre_evaluation/loan_pre_evaluation_bloc.dart';
 import 'package:muserpol_pvt/model/biometric_user_model.dart';
@@ -30,14 +29,14 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
   void initState() {
     super.initState();
 
-    // Si se debe abrir el modal automáticamente
-    if (widget.openModalOnInit) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _showPreEvaluationModal();
-        }
-      });
-    }
+    // // Si se debe abrir el modal automáticamente
+    // if (widget.openModalOnInit) {
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     if (mounted) {
+    //       _showPreEvaluationModal();
+    //     }
+    //   });
+    // }
   }
 
   @override
@@ -125,7 +124,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
           ),
         ),
       ),
-      //ACA TINENE QUE ESTAR LA EVALUACION REFERENCIAL
       floatingActionButton: FloatingActionButton.extended(
         foregroundColor: Colors.white,
         backgroundColor: const Color(0xff419388),
@@ -137,7 +135,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
   }
 
   void _showPreEvaluationModal() async {
-    // Limpiar evaluaciones obsoletas antes de mostrar el modal
     await _cleanObsoleteEvaluationsIfNeeded();
 
     if (!mounted) return;
@@ -156,8 +153,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
       final loanBloc = BlocProvider.of<LoanBloc>(context, listen: false);
 
       if (loanBloc.state.existLoan && loanBloc.state.loan != null) {
-        // Aquí podrías implementar la limpieza si tienes acceso a las modalidades
-        // Por ahora, la limpieza se hará en saved_evaluations_screen
         print('Verificando evaluaciones guardadas...');
       }
     } catch (e) {
@@ -223,7 +218,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
           ),
           body: Column(
             children: [
-              // Hero section con gradiente extendido
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -235,7 +229,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                 ),
                 child: Column(
                   children: [
-                    // Título principal
                     Padding(
                       padding: const EdgeInsets.all(24),
                       child: Row(
@@ -259,15 +252,13 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                         ],
                       ),
                     ),
-
-                    // Features section con fondo blanco
                     Container(
                       color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      child: const Padding(
+                        padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             SizedBox(height: 12),
                             _CompactFeature(
                               icon: Icons.calculate,
@@ -291,7 +282,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                 ),
               ),
 
-              // Content con fondo del tema
               Expanded(
                 child: Container(
                   color: theme.scaffoldBackgroundColor,
@@ -301,8 +291,7 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 20),
-
-                        // Action buttons
+      
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -341,7 +330,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
 
                         const SizedBox(height: 12),
 
-                        // Botón Mis Evaluaciones
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(

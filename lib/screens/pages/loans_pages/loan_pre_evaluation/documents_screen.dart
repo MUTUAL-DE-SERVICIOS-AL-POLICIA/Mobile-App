@@ -75,11 +75,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   List<GroupedDocument> _groupDocumentsByNumber() {
     final Map<int, List<RequiredDocument>> grouped = {};
-    
+
     for (final doc in widget.documents.where((d) => d.number != 0)) {
       grouped.putIfAbsent(doc.number, () => []).add(doc);
     }
-    
+
     return grouped.entries
         .map((entry) => GroupedDocument(
               number: entry.key,
@@ -123,7 +123,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             .map((doc) => {
                   'number': doc.number,
                   'message': doc.message,
-                  'options': doc.options.map((opt) => {'id': opt.id, 'name': opt.name}).toList(),
+                  'options': doc.options
+                      .map((opt) => {'id': opt.id, 'name': opt.name})
+                      .toList(),
                 })
             .toList(),
       );
@@ -131,11 +133,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       final userBloc = context.read<UserBloc>();
       final userId = userBloc.state.user?.affiliateId;
 
-      final isDuplicate = await _evaluationService.isDuplicate(evaluation, userId: userId);
+      final isDuplicate =
+          await _evaluationService.isDuplicate(evaluation, userId: userId);
 
       if (!isDuplicate) {
         await _evaluationService.saveEvaluation(evaluation, userId: userId);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -145,32 +148,28 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             ),
           );
         }
-        return true; // Guardado exitoso
+        return true;
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Esta evaluación ya existe en el historial'), 
-              backgroundColor: Colors.orange
-            ),
+                content: Text('Esta evaluación ya existe en el historial'),
+                backgroundColor: Colors.orange),
           );
         }
-        return false; // No se guardó porque ya existe
+        return false;
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar evaluación: $e'), 
-            backgroundColor: Colors.red
-          ),
+              content: Text('Error al guardar evaluación: $e'),
+              backgroundColor: Colors.red),
         );
       }
-      return false; // Error al guardar
+      return false;
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -222,8 +221,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xff419388).withAlpha(77), width: 2),
-          boxShadow: [BoxShadow(color: const Color(0xff419388).withAlpha(26), blurRadius: 8, offset: const Offset(0, 3))],
+          border: Border.all(
+              color: const Color(0xff419388).withAlpha(77), width: 2),
+          boxShadow: [
+            BoxShadow(
+                color: const Color(0xff419388).withAlpha(26),
+                blurRadius: 8,
+                offset: const Offset(0, 3))
+          ],
         ),
         padding: const EdgeInsets.all(20),
         child: Row(
@@ -243,18 +248,26 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xff419388), const Color(0xff2d6b61)],
+        gradient: const LinearGradient(
+          colors: [Color(0xff419388), Color(0xff2d6b61)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: const Color(0xff419388).withAlpha(77), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+              color: const Color(0xff419388).withAlpha(77),
+              blurRadius: 8,
+              offset: const Offset(0, 2))
+        ],
       ),
       child: Center(
         child: Text(
           number.toString(),
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20.sp),
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 20.sp),
         ),
       ),
     );
@@ -271,10 +284,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         ],
       );
     }
-    
+
     return Text(
       groupedDoc.documents.first.message ?? "Documento ${groupedDoc.number}",
-      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, height: 1.4, color: Colors.grey.shade800),
+      style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16.sp,
+          height: 1.4,
+          color: Colors.grey.shade800),
     );
   }
 
@@ -282,8 +299,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return Text(
       "Una de las siguientes opciones:",
       style: TextStyle(
-        fontWeight: FontWeight.bold, 
-        color: Colors.grey.shade700, 
+        fontWeight: FontWeight.bold,
+        color: Colors.grey.shade700,
         fontSize: 15.sp,
         fontStyle: FontStyle.italic,
       ),
@@ -300,13 +317,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             margin: const EdgeInsets.only(top: 4),
             width: 6,
             height: 6,
-            decoration: BoxDecoration(color: const Color(0xff419388), shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+                color: Color(0xff419388), shape: BoxShape.circle),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               doc.message ?? "Documento ${doc.number}",
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp, height: 1.4, color: Colors.grey.shade800),
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15.sp,
+                  height: 1.4,
+                  color: Colors.grey.shade800),
             ),
           ),
         ],
@@ -359,18 +381,30 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  Widget _buildSummaryRow({required IconData icon, required String label, required String value, bool isHighlighted = false}) {
+  Widget _buildSummaryRow(
+      {required IconData icon,
+      required String label,
+      required String value,
+      bool isHighlighted = false}) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.9), size: 20),
+        Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(fontSize: 14.sp, color: Colors.white.withOpacity(0.8), fontWeight: FontWeight.w500)),
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w500)),
               const SizedBox(height: 4),
-              Text(value, style: TextStyle(fontSize: isHighlighted ? 20.sp : 17.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(value,
+                  style: TextStyle(
+                      fontSize: isHighlighted ? 20.sp : 17.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
             ],
           ),
         ),
@@ -383,13 +417,22 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       margin: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xff419388).withAlpha(26), const Color(0xff419388).withAlpha(38)],
+          colors: [
+            const Color(0xff419388).withAlpha(26),
+            const Color(0xff419388).withAlpha(38)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xff419388).withAlpha(77), width: 2),
-        boxShadow: [BoxShadow(color: const Color(0xff419388).withAlpha(51), blurRadius: 8, offset: const Offset(0, 3))],
+        border:
+            Border.all(color: const Color(0xff419388).withAlpha(77), width: 2),
+        boxShadow: [
+          BoxShadow(
+              color: const Color(0xff419388).withAlpha(51),
+              blurRadius: 8,
+              offset: const Offset(0, 3))
+        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -397,7 +440,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xff419388), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+                color: const Color(0xff419388),
+                borderRadius: BorderRadius.circular(12)),
             child: const Icon(Icons.info, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 16),
@@ -407,12 +452,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               children: [
                 Text(
                   "Información Importante",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: const Color(0xff2d6b61), fontSize: 17.sp),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xff2d6b61),
+                      fontSize: 17.sp),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   "Todos los documentos son obligatorios y deben ser presentados al realizar su préstamo formal en oficinas a nivel nacional.",
-                  style: TextStyle(color: const Color(0xff2d6b61), fontSize: 15.sp, height: 1.4),
+                  style: TextStyle(
+                      color: const Color(0xff2d6b61),
+                      fontSize: 15.sp,
+                      height: 1.4),
                 ),
               ],
             ),
@@ -431,7 +482,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         onPressed: () async {
           final saved = await _saveEvaluation();
           if (saved) {
-            // Solo salir si se guardó exitosamente
             Navigator.of(context).popUntil((route) => route.isFirst);
           }
         },

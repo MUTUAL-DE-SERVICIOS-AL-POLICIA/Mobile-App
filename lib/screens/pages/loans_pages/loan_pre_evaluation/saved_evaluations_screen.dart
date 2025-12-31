@@ -28,15 +28,12 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
 
   Future<void> _loadEvaluations() async {
     setState(() => _isLoading = true);
-
-    // Obtener userId del usuario actual
     final userBloc = context.read<UserBloc>();
     final userId = userBloc.state.user?.affiliateId;
-
-    // Limpiar evaluaciones obsoletas primero
     await _cleanObsoleteEvaluations();
 
-    final evaluations = await _evaluationService.getSavedEvaluations(userId: userId);
+    final evaluations =
+        await _evaluationService.getSavedEvaluations(userId: userId);
     setState(() {
       _evaluations = evaluations;
       _isLoading = false;
@@ -75,8 +72,8 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
       }
 
       if (currentModalities != null && currentModalities.isNotEmpty) {
-        final removedCount =
-            await _evaluationService.cleanObsoleteEvaluations(currentModalities);
+        final removedCount = await _evaluationService
+            .cleanObsoleteEvaluations(currentModalities);
 
         if (removedCount > 0 && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -101,7 +98,8 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
       final userBloc = context.read<UserBloc>();
       final userId = userBloc.state.user?.affiliateId;
 
-      final success = await _evaluationService.deleteEvaluation(id, userId: userId);
+      final success =
+          await _evaluationService.deleteEvaluation(id, userId: userId);
       if (success) {
         _loadEvaluations();
         if (mounted) {
@@ -138,7 +136,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
   }
 
   Future<void> _toggleFavorite(String id) async {
-    // Obtener userId del usuario actual
     final userBloc = context.read<UserBloc>();
     final userId = userBloc.state.user?.affiliateId;
 
@@ -147,7 +144,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
   }
 
   void _reloadEvaluation(SavedLoanEvaluation evaluation) async {
-    // Mostrar indicador de carga
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -157,24 +153,19 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
     );
 
     try {
-      // Crear un nuevo bloc y cargar las modalidades
       final newBloc = LoanPreEvaluationBloc(context: context);
-      
-      // Obtener el affiliateId del usuario actual
       final userBloc = context.read<UserBloc>();
       final affiliateId = userBloc.state.user?.affiliateId;
-      
+
       if (affiliateId == null) {
         throw Exception('No se pudo obtener el ID del afiliado');
       }
 
-      // Cargar modalidades
       newBloc.add(LoadLoanModalitiesPreEval(affiliateId));
 
-      // Esperar a que se carguen las modalidades correctamente
       await for (final state in newBloc.stream) {
-        if (state is LoanModalitiesLoaded || state is LoanModalitiesWithContributionsLoaded) {
-          // Modalidades cargadas exitosamente
+        if (state is LoanModalitiesLoaded ||
+            state is LoanModalitiesWithContributionsLoaded) {
           break;
         } else if (state is LoanModalitiesError) {
           throw Exception(state.message);
@@ -183,10 +174,8 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
 
       if (!mounted) return;
 
-      // Cerrar el diálogo de carga
       Navigator.pop(context);
 
-      // Navegar a CalculationResultScreen con los datos guardados
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -210,7 +199,7 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
       );
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Cerrar diálogo de carga
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al recargar: $e'),
@@ -220,8 +209,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
       }
     }
   }
-
-
 
   String _formatMoney(double amount) {
     return NumberFormat('#,##0.00', 'es_ES')
@@ -239,7 +226,8 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? theme.scaffoldBackgroundColor : Colors.grey.shade50,
+      backgroundColor:
+          isDark ? theme.scaffoldBackgroundColor : Colors.grey.shade50,
       appBar: AppBar(
         title: const Text('Mis Evaluaciones'),
         centerTitle: true,
@@ -263,7 +251,7 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -295,7 +283,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
   }
 
   Widget _buildEvaluationsList(ThemeData theme, bool isDark) {
-    // Ordenar: favoritas primero, luego por fecha
     final sortedEvaluations = List<SavedLoanEvaluation>.from(_evaluations)
       ..sort((a, b) {
         if (a.isFavorite && !b.isFavorite) return -1;
@@ -321,7 +308,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
     ThemeData theme,
     bool isDark,
   ) {
-    // Verificar si la evaluación tiene más de 30 días
     final daysSinceCreation =
         DateTime.now().difference(evaluation.createdAt).inDays;
     final isOld = daysSinceCreation > 30;
@@ -339,7 +325,7 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -347,7 +333,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
       ),
       child: Column(
         children: [
-          // Advertencia si es antigua
           if (isOld)
             Container(
               width: double.infinity,
@@ -361,7 +346,8 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber, color: Colors.orange.shade700, size: 16),
+                  Icon(Icons.warning_amber,
+                      color: Colors.orange.shade700, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -376,7 +362,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
                 ],
               ),
             ),
-          // Header con favorito y fecha
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -422,8 +407,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
               ],
             ),
           ),
-
-          // Contenido
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -459,8 +442,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
               ],
             ),
           ),
-
-          // Acciones
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -499,7 +480,6 @@ class _SavedEvaluationsScreenState extends State<SavedEvaluationsScreen> {
                     ),
                   ],
                 ),
-
               ],
             ),
           ),

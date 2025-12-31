@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../model/evaluation_models.dart';
-import '../../../../../model/loan_pre_evaluation_model.dart';
-import '../../../../../services/evaluation_service.dart';
+import 'package:muserpol_pvt/model/evaluation_models.dart';
+import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
+import 'package:muserpol_pvt/services/evaluation_service.dart';
 
-/// Widgets reutilizables unificados para la evaluación referencial
-/// Unifica: common_widgets.dart, calculation_widgets.dart, modality_widgets.dart
 class EvaluationWidgets {
   // ============================================================================
   // HEADERS Y CONTENEDORES
@@ -769,7 +767,7 @@ class EvaluationWidgets {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -1130,8 +1128,4 @@ class EvaluationWidgets {
       ),
     );
   }
-
-  // ============================================================================
-  // FUNCIONES DE CÁLCULO (de calculation_widgets.dart)
-  // ============================================================================
 }

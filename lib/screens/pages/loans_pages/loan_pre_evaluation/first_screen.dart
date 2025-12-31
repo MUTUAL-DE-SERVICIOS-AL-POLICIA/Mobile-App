@@ -18,7 +18,6 @@ class FirstScreen extends StatefulWidget {
 }
 
 class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
-  // State variables
   double? sueldoBase;
   bool _isFetchingSueldo = false;
   bool _isGridView = true;
@@ -29,13 +28,11 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   String _affiliateStateType = '';
   int _affiliateId = 0;
 
-  // Variables para afiliados activos
   double _liquidoPagable = 0.0;
   double _totalBonos = 0.0;
   double _liquidoParaCalificacion = 0.0;
   bool _hasLoadedActivoData = false;
 
-  // Controllers simplificados
   final TextEditingController sueldoController = TextEditingController();
   final TextEditingController rentaDignidadController = TextEditingController();
   final TextEditingController liquidoPagableController =
@@ -75,7 +72,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
   }
 
   void _disposeControllers() {
-    [
+    final textControllers = <TextEditingController>[
       sueldoController,
       rentaDignidadController,
       liquidoPagableController,
@@ -84,8 +81,13 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       positionBonusController,
       borderBonusController,
       eastBonusController,
-      _scrollController
-    ].forEach((controller) => controller.dispose());
+    ];
+
+    for (final c in textControllers) {
+      c.dispose();
+    }
+
+    _scrollController.dispose();
   }
 
   void _initData() {
@@ -218,8 +220,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF419388).withOpacity(
-                                0.5), // Opcional: ajustar al verde suave
+                            color:
+                                const Color(0xFF419388).withValues(alpha: 0.5),
                             width: 2,
                           ),
                         ),
@@ -230,8 +232,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                               'para iniciar la solicitud formal del préstamo debes realizarlo de manera presencial en las oficinas de la MUSERPOL a nivel nacional.',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: const Color(
-                                    0xFF2D6B61), // Usa tu tono de texto oscuro suave
+                                color: const Color(0xFF2D6B61),
                                 fontWeight: FontWeight.w600,
                                 height: 1.4,
                               ),
@@ -344,8 +345,6 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             contributions.payload.contributions.isNotEmpty) {
           _handleContributionsData(contributions.payload.contributions.first);
         } else {
-          // No payment slip available but affiliate is active.
-          // Initialize editable fields to 0 so the user can fill them.
           setState(() {
             _isFetchingSueldo = false;
             _hasLoadedActivoData = true;
@@ -353,10 +352,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             _totalBonos = 0.0;
             _liquidoParaCalificacion = 0.0;
             sueldoBase = 0.0;
-
-            // Open the breakdown when everything is zero so user can edit fields
             _isBonusExpanded = true;
-
             liquidoPagableController.text = 0.00.toStringAsFixed(2);
             seniorityBonusController.text = 0.00.toStringAsFixed(2);
             studyBonusController.text = 0.00.toStringAsFixed(2);
@@ -394,7 +390,6 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             contributionData.parseAmount(contributionData.borderBonus);
         eastBonus = contributionData.parseAmount(contributionData.eastBonus);
       } else if (contributionData is QuotableContribution) {
-        // Use detailed fields if available (some responses include payable_liquid and bonus fields)
         final rawPayable = contributionData.payableLiquid.isNotEmpty
             ? contributionData.payableLiquid
             : contributionData.quotable;
@@ -415,11 +410,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         eastBonus =
             EvaluationService.parseCurrency(contributionData.eastBonus) ?? 0.0;
 
-        // Debug: print raw and parsed values for visibility
-        debugPrint(
-            'QuotableContribution raw values -> payable_liquid: ${contributionData.payableLiquid}, seniority_bonus: ${contributionData.seniorityBonus}, study_bonus: ${contributionData.studyBonus}, position_bonus: ${contributionData.positionBonus}, border_bonus: ${contributionData.borderBonus}, east_bonus: ${contributionData.eastBonus}');
-        debugPrint(
-            'Parsed values -> liquidoPagable: $liquidoPagable, seniority: $seniorityBonus, study: $studyBonus, position: $positionBonus, border: $borderBonus, east: $eastBonus');
+        // debugPrint(
+        //     'QuotableContribution raw values -> payable_liquid: ${contributionData.payableLiquid}, seniority_bonus: ${contributionData.seniorityBonus}, study_bonus: ${contributionData.studyBonus}, position_bonus: ${contributionData.positionBonus}, border_bonus: ${contributionData.borderBonus}, east_bonus: ${contributionData.eastBonus}');
+        // debugPrint(
+        //     'Parsed values -> liquidoPagable: $liquidoPagable, seniority: $seniorityBonus, study: $studyBonus, position: $positionBonus, border: $borderBonus, east: $eastBonus');
       }
 
       final totalBonuses =
@@ -432,10 +426,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         _liquidoParaCalificacion = liquidoCalificacion;
         sueldoBase = liquidoCalificacion;
         _hasLoadedActivoData = true;
-
-        // If all values are zero, open the breakdown by default so user can edit
         _isBonusExpanded = (liquidoPagable == 0.0 && totalBonuses == 0.0);
-
         liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
         seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
         studyBonusController.text = studyBonus.toStringAsFixed(2);
@@ -459,8 +450,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
   Widget _buildContent(BuildContext context, LoanPreEvaluationState? state) {
     if (state is LoanModalitiesLoading) {
-      return Center(
-          child: CircularProgressIndicator(color: const Color(0xff419388)));
+      return const Center(
+          child: CircularProgressIndicator(color: Color(0xff419388)));
     }
 
     if (state is LoanModalitiesError) {
@@ -505,7 +496,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: const Color(0xff419388)),
+              const CircularProgressIndicator(color: Color(0xff419388)),
               const SizedBox(height: 16),
               Text(
                 'Cargando modalidades...',
@@ -531,8 +522,6 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       child: Column(
         children: [
           if (isActivo) _buildSueldoActivo() else _buildPasivoFields(),
-
-          // For active affiliates, only show modalities if liquidoParaCalificacion > 0
           if ((isActivo && _liquidoParaCalificacion > 0) ||
               ((!isActivo) && _showModalitiesForPasivo))
             _buildModalitiesSection(modalities)
@@ -603,10 +592,9 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
   Widget _buildActivoInvalidPrompt() {
     final theme = Theme.of(context);
-    final primaryGreen = const Color(0xFF419388); // Tu color principal
-    final softGreenBg = const Color(0xFFE8F4F2); // Fondo suave
-    final mediumGreen = const Color(
-        0xFF2D6B61); // Para texto y borde (más oscuro que el principal)
+    const primaryGreen = Color(0xFF419388);
+    const softGreenBg = Color(0xFFE8F4F2);
+    const mediumGreen = Color(0xFF2D6B61);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -615,11 +603,11 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         decoration: BoxDecoration(
           color: softGreenBg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: mediumGreen.withOpacity(0.3)),
+          border: Border.all(color: mediumGreen.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
-            Icon(Icons.info_outline, size: 48, color: primaryGreen),
+            const Icon(Icons.info_outline, size: 48, color: primaryGreen),
             const SizedBox(height: 8),
             Text(
               'Su "Líquido para Calificación" debe ser mayor a 0 para acceder a nuestras modalidades de préstamo.',
@@ -661,7 +649,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       child: Column(
         children: [
           if (_isFetchingSueldo)
-            LinearProgressIndicator(color: const Color(0xff419388))
+            const LinearProgressIndicator(color: Color(0xff419388))
           else if (_hasLoadedActivoData)
             _buildLiquidoCalificacionExpandable()
           else
@@ -944,8 +932,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
     FocusScope.of(context).unfocus();
     _hasNavigatedAway = true;
-
-    // Capturar el BLoC antes de navegar
+    
     final currentBloc = context.read<LoanPreEvaluationBloc>();
 
     Navigator.push(

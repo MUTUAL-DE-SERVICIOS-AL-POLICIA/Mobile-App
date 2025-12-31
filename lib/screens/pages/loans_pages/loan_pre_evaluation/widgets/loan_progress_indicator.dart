@@ -17,7 +17,7 @@ class LoanProgressIndicator extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -129,9 +129,9 @@ class LoanProgressIndicator extends StatelessWidget {
 
     return StepColors(
       backgroundColor: Colors.transparent,
-      borderColor: Colors.white.withOpacity(0.5),
-      iconColor: Colors.white.withOpacity(0.5),
-      textColor: Colors.white.withOpacity(0.5),
+      borderColor: Colors.white.withValues(alpha: 0.5),
+      iconColor: Colors.white.withValues(alpha: 0.5),
+      textColor: Colors.white.withValues(alpha: 0.5),
       shadowColor: Colors.transparent,
     );
   }
@@ -142,7 +142,7 @@ class LoanProgressIndicator extends StatelessWidget {
       height: 3,
       margin: const EdgeInsets.symmetric(horizontal: 8).copyWith(bottom: 24),
       decoration: BoxDecoration(
-        color: isCompleted ? Colors.white : Colors.white.withOpacity(0.3),
+        color: isCompleted ? Colors.white : Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(2),
       ),
     );

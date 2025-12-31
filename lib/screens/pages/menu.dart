@@ -48,7 +48,6 @@ class _MenuDrawerState extends State<MenuDrawer> {
       }
       return biometricUserModelFromJson(raw);
     } catch (_) {
-      // Si el valor guardado está corrupto, devolvemos uno “limpio”
       return BiometricUserModel(biometricUser: defaultFlag);
     }
   }
@@ -160,11 +159,6 @@ class _MenuDrawerState extends State<MenuDrawer> {
                       valueSwitch: colorValue,
                       onChangedSwitch: (v) => switchTheme(v),
                     ),
-                    // SectiontitleSwitchComponent(
-                    //   title: 'Autenticación Biométrica',
-                    //   valueSwitch: biometricValue,
-                    //   onChangedSwitch: (v) => authBiometric(v),
-                    // ),
                     Divider(height: 0.03.sh),
                     const Text('Configuración general',
                         style: TextStyle(fontWeight: FontWeight.bold)),

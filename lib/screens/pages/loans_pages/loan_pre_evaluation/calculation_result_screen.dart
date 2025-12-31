@@ -235,9 +235,8 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
           body: BlocBuilder<LoanPreEvaluationBloc, LoanPreEvaluationState>(
             builder: (context, state) {
               if (state is LoanModalitiesLoading) {
-                return Center(
-                    child: CircularProgressIndicator(
-                        color: const Color(0xff419388)));
+                return const Center(
+                    child: CircularProgressIndicator(color: Color(0xff419388)));
               }
 
               if (state is LoanModalitiesLoaded ||
@@ -261,9 +260,9 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
               }
 
               return _modality == null
-                  ? Center(
-                      child: CircularProgressIndicator(
-                          color: const Color(0xff419388)))
+                  ? const Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xff419388)))
                   : SingleChildScrollView(
                       padding: const EdgeInsets.all(16), child: _buildBody());
             },
@@ -282,10 +281,9 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     }
 
     if (state is QuotableContributionsError) {
-      // Si ya cargamos la modalidad, permitimos continuar (usuario puede editar cotizable en la pantalla anterior)
       if (_modality != null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const Text(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
                 'No se encontraron contribuciones. Ingresa los datos manualmente.'),
             backgroundColor: Colors.orange));
       } else {
@@ -298,7 +296,6 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   void _navigateToDocuments(LoanDocumentsLoaded state) {
     final documents = state.documents.documents;
 
-    // Convert backend LoanDocument -> RequiredDocument expected by DocumentsScreen
     final requiredDocuments = documents
         .map((d) => RequiredDocument(id: d.id, number: d.number, name: d.name))
         .toList();
@@ -313,7 +310,6 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
           value: currentBloc,
           child: DocumentsScreen(
             onExit: () {
-              // Navegar de vuelta a la pantalla principal de préstamos
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
             documents: requiredDocuments,
@@ -364,10 +360,8 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
   Widget _buildModalityInfo() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment
-          .start, // Esto afecta solo a los hijos directos que no ocupan todo el ancho
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Título: alineado a la izquierda
         Text(
           'MODALIDAD DE PRÉSTAMO',
           style: TextStyle(
@@ -376,7 +370,6 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
             fontSize: 20.sp,
           ),
         ),
-        // Nombre de la modalidad: centrado
         if (_modality?.name != null)
           Center(
             child: Text(
