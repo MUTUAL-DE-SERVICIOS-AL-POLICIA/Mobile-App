@@ -265,14 +265,15 @@ class CiudadaniaButtonComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 300,
+      width: 150,
       height: 60,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromARGB(255, 60, 66, 121),
           foregroundColor: Colors.white,
           elevation: 0,
-          side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 2),
+          side: const BorderSide(
+              color: Color.fromARGB(255, 255, 255, 255), width: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -294,16 +295,108 @@ class CiudadaniaButtonComponent extends StatelessWidget {
                 children: [
                   Image.asset(
                     'assets/images/logo_ciudadania.png',
-                    width: 30,
-                    height: 30,
+                    width: 20,
+                    height: 20,
                   ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Ciudadania Digital',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color.fromARGB(255, 255, 255, 255),
-                    ),
+                  const SizedBox(width: 20),
+                  const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ciudadania',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
+                      Text(
+                        'Digital',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class BiometricButtonComponent extends StatelessWidget {
+  final bool stateLoading;
+  final bool enabled;
+  final VoidCallback? onPressed;
+
+  const BiometricButtonComponent({
+    super.key,
+    this.stateLoading = false,
+    this.enabled = true,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    
+    const activeColor =   Color.fromARGB(255, 71, 96, 207);
+    final disabledColor = activeColor.withValues(alpha: 120);
+
+    return SizedBox(
+      width: 150,
+      height: 60,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: enabled ? activeColor : disabledColor,
+          elevation: 0,
+          side: const BorderSide(
+              color: Color.fromARGB(255, 255, 255, 255), width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: EdgeInsets.zero,
+        ),
+        onPressed: (stateLoading || !enabled) ? null : onPressed,
+        child: stateLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2B3486)),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/finger.png',
+                    width: 20,
+                    height: 20,
+                  ),
+                  const SizedBox(width: 20),
+                  const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ingreso',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
+                      Text(
+                        'por biometria',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

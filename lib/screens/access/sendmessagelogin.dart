@@ -47,13 +47,18 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   bool canResend = false;
   bool isLoading = false;
   final SmsAutoFill _autoFill = SmsAutoFill();
+  StreamSubscription<String>? _smsSub;
 
   @override
   void initState() {
     super.initState();
     startCountdown();
-    debugPrint(widget.activeloading.toString());
     listenForSms();
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted && isLoading) {
+        setState(() => isLoading = false);
+      }
+    });
     if (widget.activeloading!) {
       sendServicesMesagge();
     } else {
@@ -102,7 +107,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
       }
     } else {
       if (dataJson['message'] ==
-          'Persona verificada, afiliado policial Login de prueba') {
+          'Persona verificada, afiliado policial, Inicio de sesión para pruebas') {
         userTest(response);
       }
       widget.body['messageId'] = dataJson['messageId'];
@@ -112,12 +117,14 @@ class _SendMessageLogin extends State<SendMessageLogin> {
 
   void listenForSms() async {
     await _autoFill.listenForCode();
-    SmsAutoFill().code.listen((code) {
+
+    _smsSub = _autoFill.code.listen((code) {
+      if (!mounted) return;
+
       if (code.length == 4) {
         setState(() {
           codeCtrl.text = code;
         });
-        verifyPinNew(code);
       } else {
         debugPrint('No se capturó un código válido.');
       }
@@ -127,15 +134,17 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   @override
   void dispose() {
     countdownTimer?.cancel();
+    _smsSub?.cancel();
+    _autoFill.unregisterListener();
     codeCtrl.dispose();
     node.dispose();
-    SmsAutoFill().unregisterListener();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     var numbercell = widget.body['cellphone'];
+    var countryCode = widget.body['countryCode'];
     return Stack(
       children: [
         PopScope(
@@ -172,17 +181,15 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                             children: [
                               SizedBox(height: 10.h),
                               Center(
-                                  child:
-                                      Text('PIN de Seguridad',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20.sp,
-                                            color:
-                                                Theme.of(context).brightness ==
-                                                        Brightness.dark
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                          ))),
+                                  child: Text('PIN de Seguridad',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20.sp,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ))),
                               SizedBox(height: 30.h),
                               PinCodeTextField(
                                 appContext: context,
@@ -222,7 +229,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                               ),
                               SizedBox(height: 30.h),
                               ButtonComponent(
-                                text: 'VERIFICAR',
+                                text: 'Iniciar Sesión',
                                 onPressed: () {
                                   final code = codeCtrl.text;
                                   if (code.length == 4) {
@@ -262,12 +269,11 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                   }
                                 },
                               ),
-                              SizedBox(height: 10.h),
+                              SizedBox(height: 30.h),
                               ButtonComponent(
-                                text: 'REENVIAR CÓDIGO',
+                                text: 'Reenviar código',
                                 onPressed: canResend
                                     ? () {
-                                        // Aquí llamás a la función para reenviar el SMS
                                         startCountdown();
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
@@ -277,7 +283,7 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                                           ),
                                         );
                                       }
-                                    : null, // deshabilitado si no puede reenviar
+                                    : null,
                               ),
                               Text(
                                 canResend
@@ -329,16 +335,28 @@ class _SendMessageLogin extends State<SendMessageLogin> {
                       ),
                     ),
                     SizedBox(height: 20.h),
-                    Text(
-                      'Enviando pin de seguridad mediante SMS',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
+                    if (countryCode == '+591')
+                      Text(
+                        'Enviando pin de seguridad mediante SMS',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Enviando pin de seguridad mediante WhatsApp',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
-                    ),
                     SizedBox(height: 20.h),
                     Text(
                       'al $numbercell',
@@ -402,89 +420,140 @@ class _SendMessageLogin extends State<SendMessageLogin> {
   }
 
   Future verifyPinNew(code) async {
+    if (widget.body['messageId'] == null) {
+    
+      return;
+    }
+
     final userBloc = BlocProvider.of<UserBloc>(context, listen: false);
     final notificationBloc =
         BlocProvider.of<NotificationBloc>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
     final tokenState = Provider.of<TokenState>(context, listen: false);
+
     FocusScope.of(context).unfocus();
 
     var requestBody = {'pin': code, 'messageId': widget.body['messageId']};
 
     if (!mounted) return;
+
     var response = await serviceMethod(
-        mounted, context, 'post', requestBody, verifyPin(), false, true);
+      mounted,
+      context,
+      'post',
+      requestBody,
+      verifyPin(),
+      false,
+      true,
+    );
 
-    if (response != null) {
-      final decoded = json.decode(response.body);
+    if (!mounted) return;
 
-      if (decoded['error'] == true) {
-        if (!mounted) return;
-        showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.warning_amber,
-                      size: 40,
-                      color: Colors.amber,
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "PIN, Verifique el SMS",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 20),
-                    ButtonComponent(
-                      text: 'CERRAR',
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
-                ),
-              );
-            });
-      }
-      // Código correcto: continúa flujo normal
-      await DBProvider.db.database;
-      final dataJson = json.decode(response.body)['data'];
-
-      UserModel user = UserModel.fromJson(
-          {"api_token": dataJson["apiToken"], "user": dataJson["information"]});
-
-      await authService.writeAuxtoken(user.apiToken!);
-      tokenState.updateStateAuxToken(true);
-      if (!mounted) return;
-      await authService.writeUser(context, userModelToJson(user));
-      userBloc.add(UpdateUser(user.user!));
-      final affiliateModel =
-          AffiliateModel(idAffiliate: user.user!.affiliateId!);
-      await DBProvider.db.newAffiliateModel(affiliateModel);
-      notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
-      if (!mounted) return;
-      if (widget.fileIdentityCard != null) {
-        var newrequestBody = {'attachments': widget.fileIdentityCard};
-        var newrequest = await serviceMethod(mounted, context, 'post',
-            newrequestBody, sendIdentityCard(), true, false);
-        if (newrequest != null) {
-          debugPrint("envio la fotografia correctamentes");
-        }
-      }
-      if (!mounted) return;
-      await AuthHelpers.initSessionUserApp(
-          context: context,
-          response: response,
-          userApp: UserAppMobile(
-              identityCard: widget.body['username'],
-              numberPhone: widget.body['cellphone']),
-          user: user);
+    if (response == null) {
+      return;
     }
+
+    final decoded = json.decode(response.body) as Map<String, dynamic>;
+
+    if (decoded['error'] == true) {
+      if (!mounted) return;
+      final String message =
+          decoded['message'] ?? 'PIN inválido, verifique el SMS';
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.warning_amber,
+                  size: 40,
+                  color: Colors.amber,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 20),
+                ButtonComponent(
+                  text: 'CERRAR',
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                )
+              ],
+            ),
+          );
+        },
+      );
+      return;
+    }
+
+    await DBProvider.db.database;
+
+    final dataJson = decoded['data'] as Map<String, dynamic>?;
+
+    if (dataJson == null ||
+        dataJson['apiToken'] == null ||
+        dataJson['information'] == null) {
+      if (!mounted) return;
+      AuthHelpers.callDialogActionErrorLogin(
+          context, 'Respuesta inválida del servidor (sin datos de usuario)');
+      return;
+    }
+
+    UserModel user = UserModel.fromJson(
+      {
+        "api_token": dataJson["apiToken"],
+        "user": dataJson["information"],
+      },
+    );
+
+    await authService.writeAuxtoken(user.apiToken!);
+    tokenState.updateStateAuxToken(true);
+
+    if (!mounted) return;
+    await authService.writeUser(context, userModelToJson(user));
+    userBloc.add(UpdateUser(user.user!));
+
+    final affiliateModel = AffiliateModel(idAffiliate: user.user!.affiliateId!);
+    await DBProvider.db.newAffiliateModel(affiliateModel);
+    notificationBloc.add(UpdateAffiliateId(user.user!.affiliateId!));
+
+    if (!mounted) return;
+
+    if (widget.fileIdentityCard != null) {
+      var newrequestBody = {'attachments': widget.fileIdentityCard};
+      var newrequest = await serviceMethod(
+        mounted,
+        context,
+        'post',
+        newrequestBody,
+        sendIdentityCard(),
+        true,
+        false,
+      );
+      if (newrequest != null) {
+        debugPrint("envio la fotografia correctamentes");
+      }
+    }
+
+    if (!mounted) return;
+
+    await AuthHelpers.initSessionUserApp(
+      context: context,
+      response: response,
+      userApp: UserAppMobile(
+        identityCard: widget.body['username'],
+        numberPhone: widget.body['cellphone'],
+      ),
+      user: user,
+    );
   }
 
   void startCountdown() {

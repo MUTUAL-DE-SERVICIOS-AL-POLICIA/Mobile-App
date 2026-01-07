@@ -85,8 +85,6 @@ class CheckAuthScreen extends StatelessWidget {
       );
     }
 
-  
-
     await getNotifications(notificationBloc);
     UserModel user = userModelFromJson(userJson);
     userBloc.add(UpdateUser(user.user!));

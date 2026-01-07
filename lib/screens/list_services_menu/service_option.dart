@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:muserpol_pvt/components/containers.dart';
 
 class ServiceOption extends StatelessWidget {
@@ -31,12 +32,13 @@ class ServiceOption extends StatelessWidget {
           borderRadius: 16,
           boxShadow: [
             BoxShadow(
-                color: isDarkMode
-                    ? Colors.white.withAlpha((0.2 * 255).toInt())
-                    : Colors.black.withAlpha((0.4 * 255).toInt()),
-                blurRadius: 10,
-                spreadRadius: 1,
-                offset: const Offset(0, 4))
+              color: isDarkMode
+                  ? Colors.white.withAlpha((0.2 * 255).toInt())
+                  : Colors.black.withAlpha((0.4 * 255).toInt()),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: const Offset(0, 4),
+            )
           ],
           child: Padding(
             padding: const EdgeInsets.all(12.0),
@@ -44,9 +46,9 @@ class ServiceOption extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 19.sp,
                     color: Colors.black,
                   ),
                   textAlign: TextAlign.center,
@@ -54,13 +56,13 @@ class ServiceOption extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    SizedBox(width: 60, height: 60, child: Image.asset(image)),
+                    SizedBox(width: 70, height: 80, child: Image.asset(image)),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
                         description,
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: 16.sp,
                           color: Colors.black,
                         ),
                         maxLines: 3,

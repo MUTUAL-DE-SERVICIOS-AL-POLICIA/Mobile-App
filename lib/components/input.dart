@@ -41,7 +41,7 @@ class InputComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      autofocus: stateAutofocus!,
+      autofocus: stateAutofocus ?? false,
       textAlignVertical: TextAlignVertical.center,
       textAlign: TextAlign.center,
       style: TextStyle(
@@ -55,7 +55,10 @@ class InputComponent extends StatelessWidget {
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
       onEditingComplete: onEditingComplete,
-      validator: (text) => validator(text!),
+      validator: (text) {
+        final value = text ?? '';
+        return validator(value);
+      },
       controller: controllerText,
       inputFormatters: inputFormatters,
       onChanged: onChanged,
@@ -63,12 +66,13 @@ class InputComponent extends StatelessWidget {
       keyboardType: keyboardType,
       obscureText: obscureText,
       decoration: InputDecoration(
-          suffixIcon: InkWell(
-        onTap: onTap,
-        child: Icon(
-          iconOnTap,
-        ),
-      )),
+        suffixIcon: iconOnTap != null
+            ? InkWell(
+                onTap: onTap,
+                child: Icon(iconOnTap),
+              )
+            : null,
+      ),
     );
   }
 }

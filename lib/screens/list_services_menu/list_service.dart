@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:muserpol_pvt/components/button.dart';
 import 'package:muserpol_pvt/components/susessful.dart';
+import 'package:muserpol_pvt/screens/list_services_menu/service_loader.dart';
 import 'package:muserpol_pvt/screens/modal_enrolled/modal.dart';
 import 'package:muserpol_pvt/services/service_method.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
@@ -14,7 +15,7 @@ import 'package:muserpol_pvt/components/dialog_action.dart';
 import 'package:muserpol_pvt/screens/navigation_general_pages.dart';
 import 'package:muserpol_pvt/screens/pages/menu.dart';
 import 'package:muserpol_pvt/components/header_muserpol.dart';
-import 'service_loader.dart';
+
 import 'service_option.dart';
 import 'tutorial_targets.dart';
 
@@ -33,6 +34,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
   final GlobalKey keyPrestamos = GlobalKey();
 
   TutorialCoachMark? tutorialCoachMark;
+  bool isGridView = false;
 
   @override
   void initState() {
@@ -46,8 +48,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
       }
     });
   }
-
-  Future<void> _loadInitialData() async {
+ Future<void> _loadInitialData() async {
     final userBloc =
         BlocProvider.of<UserBloc>(context, listen: false).state.user;
 
@@ -72,7 +73,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
       colorShadow: const Color(0xff419388),
       textSkip: "OMITIR",
       textStyleSkip: const TextStyle(
-        color: Color.fromARGB(255, 255, 255, 255),
+        color: Colors.white,
         fontWeight: FontWeight.bold,
         fontSize: 30,
       ),
@@ -92,7 +93,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
     }
   }
 
-  void _goToModule(int index) async {
+  void _goToModule(int index) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -101,7 +102,7 @@ class _ScreenListServiceState extends State<ScreenListService> {
     );
   }
 
-  _onBackPressed() async {
+  Future<bool?> _onBackPressed() async {
     return await showDialog<bool>(
       barrierDismissible: false,
       context: context,
@@ -122,12 +123,96 @@ class _ScreenListServiceState extends State<ScreenListService> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final services = <_ServiceData>[
+      _ServiceData(
+        key: keyComplemento,
+        image: 'assets/images/icon_complement_economic.png',
+        title: 'Complemento Económico',
+        description:
+            'Creación e historial de trámites de Complemento Económico.',
+        onPressed: () async {
+          final userBloc =
+              BlocProvider.of<UserBloc>(context, listen: false).state.user;
+
+          if (userBloc?.isEconomicComplement == true) {
+            if (userBloc?.enrolled == false) {
+              return showBarModalBottomSheet(
+                expand: false,
+                enableDrag: false,
+                isDismissible: false,
+                context: context,
+                builder: (contextModal) => ModalInsideModal(
+                  nextScreen: (message) {
+                    return showSuccessful(context, message, () async {
+                      Navigator.pop(contextModal);
+                      _goToModule(0);
+                    });
+                  },
+                ),
+              );
+            } else {
+              _goToModule(0);
+            }
+          } else {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext contextDialog) {
+                return AlertDialog(
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.warning_amber,
+                        size: 40,
+                        color: Colors.amber,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Usted no es beneficiario, contactarse con la MUSERPOL',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 20),
+                      ButtonComponent(
+                        text: 'OK',
+                        onPressed: () => Navigator.of(contextDialog).pop(),
+                      )
+                    ],
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+      _ServiceData(
+        key: keyAportes,
+        image: 'assets/images/icon_contributions.png',
+        title: 'Certificación de Aportes',
+        description:
+            'Consulta y descarga tus aportes individuales de activo o pasivo.',
+        onPressed: () => _goToModule(1),
+      ),
+      _ServiceData(
+        key: keyPrestamos,
+        image: 'assets/images/icon_loans.png',
+        title: 'Préstamos',
+        description:
+            'Consulta de historial de préstamos, Realiza tu calculo para tu nuevo préstamo.',
+        onPressed: () => _goToModule(2),
+      ),
+    ];
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         final exit = await _onBackPressed();
-        if (exit) SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+        if (exit == true) {
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+        }
       },
       child: Scaffold(
         appBar: AppBarDualTitle(keyMenuButton: keyMenuButton),
@@ -157,117 +242,149 @@ class _ScreenListServiceState extends State<ScreenListService> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Nuestros Servicios',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.sp,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Nuestros Servicios',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.sp,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.h),
-              ServiceOption(
-                key: keyComplemento,
-                image: 'assets/images/icon_complement_economic.png',
-                title: 'COMPLEMENTO ECONÓMICO',
-                description:
-                    'Creación e Historial de trámites de Complemento Económico.',
-                onPressed: () async {
-                  final userBloc =
-                      BlocProvider.of<UserBloc>(context, listen: false)
-                          .state
-                          .user;
 
-                  if (userBloc?.isEconomicComplement == true) {
-                    // Si tiene acceso, Ingresa a Complemento Economico
-                    if (userBloc?.enrolled == false) {
-                      return showBarModalBottomSheet(
-                          expand: false,
-                          enableDrag: false,
-                          isDismissible: false,
-                          context: context,
-                          builder: (contextModal) => ModalInsideModal(
-                                nextScreen: (message) {
-                                  return showSuccessful(context, message,
-                                      () async {
-                                    Navigator.pop(contextModal);
-                                    _goToModule(0);
-                                  });
-                                },
-                              ));
-                    } else {
-                      _goToModule(0);
-                    }
-                  } else {
-                    showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.warning_amber,
-                                  size: 40,
-                                  color: Colors.amber,
-                                ),
-                                const SizedBox(height: 20),
-                                const Text(
-                                  'Usted no es beneficiario, contactarse con la MUSERPOL',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(height: 20),
-                                ButtonComponent(
-                                  text: 'OK',
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                )
-                              ],
-                            ),
-                          );
+                    IconButton(
+                      icon: Icon(
+                        isGridView ? Icons.view_list : Icons.grid_view,
+                        color: const Color(0xff419388),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isGridView = !isGridView;
                         });
-                  }
-                },
-              ),
-              ServiceOption(
-                key: keyAportes,
-                image: 'assets/images/icon_contributions.png',
-                title: 'CERTIFICACIÓN DE APORTES',
-                description:
-                    'Consulta y Descarga tus aportes individuales de activo o pasivo.',
-                onPressed: () => _goToModule(1),
-              ),
-              ServiceOption(
-                key: keyPrestamos,
-                image: 'assets/images/icon_loans.png',
-                title: 'SERVICIOS DE PRÉSTAMOS',
-                description:
-                    'Consulta de historial de préstamos, Realiza tu calculo para tu nuevo préstamo.',
-                onPressed: () => _goToModule(2),
-              ),
-              SizedBox(height: 20.h),
-              Center(
-                child: Text(
-                  'Versión 4.0.1',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : const Color.fromARGB(255, 0, 0, 0),
-                  ),
+                      },
+                    ),
+                  ],
                 ),
               ),
+              SizedBox(height: 20.h),
+              if (!isGridView) ...[
+                for (final s in services)
+                  ServiceOption(
+                    key: s.key,
+                    image: s.image,
+                    title: s.title,
+                    description: s.description,
+                    onPressed: s.onPressed,
+                  ),
+              ] else ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: services.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 1,
+                    ),
+                    itemBuilder: (context, index) {
+                      final s = services[index];
+                      final isLastOdd =
+                          services.length.isOdd && index == services.length - 1;
+
+                      if (isLastOdd) {
+                        return Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width / 2 - 32,
+                            child: ServiceGridItem(
+                              service: s,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ServiceGridItem(service: s);
+                    },
+                  ),
+                ),
+              ],
+
+              SizedBox(height: 20.h),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ServiceData {
+  final Key key;
+  final String image;
+  final String title;
+  final String description;
+  final VoidCallback onPressed;
+
+  _ServiceData({
+    required this.key,
+    required this.image,
+    required this.title,
+    required this.description,
+    required this.onPressed,
+  });
+}
+
+class ServiceGridItem extends StatelessWidget {
+  final _ServiceData service;
+
+  const ServiceGridItem({super.key, required this.service});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: service.onPressed,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xffd9e9e7),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: Offset(0, 4),
+              color: Colors.black26,
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              service.image,
+              width: 64,
+              height: 64,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              service.title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ],
         ),
       ),
     );
