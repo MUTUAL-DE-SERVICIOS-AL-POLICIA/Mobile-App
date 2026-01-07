@@ -1,5 +1,3 @@
-
-
 // Model for loan modalities response
 class LoanModalitiesResponse {
   final List<LoanModalityNew> modalities;
@@ -49,7 +47,7 @@ class LoanModalityNew {
         subsector: json['subsector']?.toString() ?? '',
         parameters: LoanParametersNew.fromJson(json['parameters'] ?? {}),
       );
-      
+
       print('✅ LoanModalityNew parseado exitosamente: ${modality.name}');
       return modality;
     } catch (e) {
@@ -78,16 +76,16 @@ class LoanParametersNew {
   final int debtIndex;
   final int guarantors;
   final int maxLenders;
-  final double minLenderCategory;      // DEBE ser double (viene como 0.85)
-  final double maxLenderCategory;      // DEBE ser double (puede ser decimal)
-  final double maximumAmountModality;  // DEBE ser double (números grandes)
-  final double minimumAmountModality;  // DEBE ser double (números grandes)
+  final double minLenderCategory; // DEBE ser double (viene como 0.85)
+  final double maxLenderCategory; // DEBE ser double (puede ser decimal)
+  final double maximumAmountModality; // DEBE ser double (números grandes)
+  final double minimumAmountModality; // DEBE ser double (números grandes)
   final int maximumTermModality;
   final int minimumTermModality;
   final int loanMonthTerm;
-  final double coveragePercentage;     // DEBE ser double (viene como 0.8)
-  final double annualInterest;         // DEBE ser double (viene como 13.2)
-  final double periodInterest;         // DEBE ser double (viene como 1.66)
+  final double coveragePercentage; // DEBE ser double (viene como 0.8)
+  final double annualInterest; // DEBE ser double (viene como 13.2)
+  final double periodInterest; // DEBE ser double (viene como 1.66)
 
   LoanParametersNew({
     required this.debtIndex,
@@ -122,7 +120,7 @@ class LoanParametersNew {
         annualInterest: _safeToDouble(json['annualInterest']),
         periodInterest: _safeToDouble(json['periodInterest']),
       );
-      
+
       print('✅ LoanParametersNew parseado exitosamente:');
       print('   - debIndex: ${parameters.debtIndex}');
       print('   - annualInterest: ${parameters.annualInterest}');
@@ -168,6 +166,20 @@ class LoanParametersNew {
 }
 
 // Model for loan documents response
+// Helper top-level function to safely parse int values that might come as String or numeric types
+int _safeToInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  if (value is String) {
+    final parsed = int.tryParse(value);
+    if (parsed != null) return parsed;
+    final parsedDouble = double.tryParse(value);
+    if (parsedDouble != null) return parsedDouble.toInt();
+  }
+  return 0;
+}
+
 class LoanDocumentsResponse {
   final int affiliateId;
   final int procedureModalityId;
@@ -183,11 +195,12 @@ class LoanDocumentsResponse {
     // WORKAROUND: El servidor está devolviendo los valores intercambiados
     // Temporalmente intercambiamos los valores para corregir la inconsistencia
     return LoanDocumentsResponse(
-      affiliateId: json['procedureModalityId'] ?? 0, // Intercambiado
-      procedureModalityId: json['affiliateId'] ?? 0, // Intercambiado
+      affiliateId: _safeToInt(json['procedureModalityId']), // Intercambiado
+      procedureModalityId: _safeToInt(json['affiliateId']), // Intercambiado
       documents: (json['documents'] as List<dynamic>?)
-          ?.map((item) => LoanDocument.fromJson(item))
-          .toList() ?? [],
+              ?.map((item) => LoanDocument.fromJson(item))
+              .toList() ??
+          [],
     );
   }
 }
@@ -205,9 +218,9 @@ class LoanDocument {
 
   factory LoanDocument.fromJson(Map<String, dynamic> json) {
     return LoanDocument(
-      id: json['id'] ?? 0,
+      id: _safeToInt(json['id']),
       name: json['name'] ?? '',
-      number: json['number'] ?? 0,
+      number: _safeToInt(json['number']),
     );
   }
 }
@@ -251,8 +264,9 @@ class QuotablePayload {
     return QuotablePayload(
       totalContributions: json['total_contributions'] ?? 0,
       contributions: (json['contributions'] as List<dynamic>?)
-          ?.map((item) => QuotableContribution.fromJson(item))
-          .toList() ?? [],
+              ?.map((item) => QuotableContribution.fromJson(item))
+              .toList() ??
+          [],
       period: ContributionPeriod.fromJson(json['period'] ?? {}),
     );
   }
@@ -264,19 +278,42 @@ class QuotableContribution {
   final String quotable;
   final String state;
 
+  // Additional fields that the API may include
+  final String payableLiquid; // payable_liquid
+  final String seniorityBonus; // seniority_bonus
+  final String studyBonus; // study_bonus
+  final String positionBonus; // position_bonus
+  final String borderBonus; // border_bonus
+  final String eastBonus; // east_bonus
+  final String gain; // gain
+
   QuotableContribution({
     required this.id,
     required this.monthYear,
     required this.quotable,
     required this.state,
+    required this.payableLiquid,
+    required this.seniorityBonus,
+    required this.studyBonus,
+    required this.positionBonus,
+    required this.borderBonus,
+    required this.eastBonus,
+    required this.gain,
   });
 
   factory QuotableContribution.fromJson(Map<String, dynamic> json) {
     return QuotableContribution(
-      id: json['id'] ?? 0,
+      id: _safeToInt(json['id']),
       monthYear: json['month_year'] ?? '',
       quotable: json['quotable'] ?? '',
       state: json['state'] ?? '',
+      payableLiquid: json['payable_liquid']?.toString() ?? '',
+      seniorityBonus: json['seniority_bonus']?.toString() ?? '',
+      studyBonus: json['study_bonus']?.toString() ?? '',
+      positionBonus: json['position_bonus']?.toString() ?? '',
+      borderBonus: json['border_bonus']?.toString() ?? '',
+      eastBonus: json['east_bonus']?.toString() ?? '',
+      gain: json['gain']?.toString() ?? '',
     );
   }
 }

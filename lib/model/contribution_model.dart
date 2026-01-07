@@ -5,13 +5,15 @@
 
 import 'dart:convert';
 
-ContributionModel contributionModelFromJson(String str) => ContributionModel.fromJson(json.decode(str));
+ContributionModel contributionModelFromJson(String str) =>
+    ContributionModel.fromJson(json.decode(str));
 
-String contributionModelToJson(ContributionModel data) => json.encode(data.toJson());
+String contributionModelToJson(ContributionModel data) =>
+    json.encode(data.toJson());
 
 class ContributionModel {
   ContributionModel({
-    required this.error,      
+    required this.error,
     required this.message,
     required this.payload,
   });
@@ -20,18 +22,19 @@ class ContributionModel {
   String message;
   Payload payload;
 
-  ContributionModel copyWith({                                                                
+  ContributionModel copyWith({
     String? error,
     String? message,
     Payload? payload,
-  }) =>                        
+  }) =>
       ContributionModel(
         error: error ?? this.error,
         message: message ?? this.message,
         payload: payload ?? this.payload,
       );
 
-  factory ContributionModel.fromJson(Map<String, dynamic> json) => ContributionModel(
+  factory ContributionModel.fromJson(Map<String, dynamic> json) =>
+      ContributionModel(
         error: json["error"],
         message: json["message"],
         payload: Payload.fromJson(json["payload"]),
@@ -85,8 +88,10 @@ class Payload {
     List<ContributionsTotal>? contributionsTotal,
   }) =>
       Payload(
-        hasContributionsActive: hasContributionsActive ?? this.hasContributionsActive,
-        hasContributionsPassive: hasContributionsPassive ?? this.hasContributionsPassive,
+        hasContributionsActive:
+            hasContributionsActive ?? this.hasContributionsActive,
+        hasContributionsPassive:
+            hasContributionsPassive ?? this.hasContributionsPassive,
         degree: degree ?? this.degree,
         firstName: firstName ?? this.firstName,
         secondName: secondName ?? this.secondName,
@@ -109,7 +114,9 @@ class Payload {
         surnameHusband: json["surname_husband"],
         identityCard: json["identity_card"],
         cityIdentityCard: json["city_identity_card"],
-        contributionsTotal: List<ContributionsTotal>.from(json["contributions_total"].map((x) => ContributionsTotal.fromJson(x))),
+        contributionsTotal: List<ContributionsTotal>.from(
+            json["contributions_total"]
+                .map((x) => ContributionsTotal.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -123,7 +130,8 @@ class Payload {
         "surname_husband": surnameHusband,
         "identity_card": identityCard,
         "city_identity_card": cityIdentityCard,
-        "contributions_total": List<dynamic>.from(contributionsTotal!.map((x) => x.toJson())),
+        "contributions_total":
+            List<dynamic>.from(contributionsTotal!.map((x) => x.toJson())),
       };
 }
 
@@ -145,14 +153,17 @@ class ContributionsTotal {
         contributions: contributions ?? this.contributions,
       );
 
-  factory ContributionsTotal.fromJson(Map<String, dynamic> json) => ContributionsTotal(
+  factory ContributionsTotal.fromJson(Map<String, dynamic> json) =>
+      ContributionsTotal(
         year: json["year"],
-        contributions: List<Contribution>.from(json["contributions"].map((x) => Contribution.fromJson(x))),
+        contributions: List<Contribution>.from(
+            json["contributions"].map((x) => Contribution.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "year": year,
-        "contributions": List<dynamic>.from(contributions.map((x) => x.toJson())),
+        "contributions":
+            List<dynamic>.from(contributions.map((x) => x.toJson())),
       };
 }
 
@@ -210,19 +221,39 @@ class Contribution {
         type: type ?? this.type,
       );
 
-  factory Contribution.fromJson(Map<String, dynamic> json) => Contribution(
-        state: json["state"],
-        id: json["id"],
-        monthYear: DateTime.parse(json["month_year"]),
-        description: json["description"],
-        quotable: json["quotable"],
-        retirementFund: json["retirement_fund"],
-        mortuaryQuota: json["mortuary_quota"],
-        contributionTotal: json["contribution_total"],
-        reimbursementTotal: json["reimbursement_total"],
-        total: json["total"],
-        type: json["type"],
-      );
+  factory Contribution.fromJson(Map<String, dynamic> json) {
+    // Parse id safely when the backend returns it as String or int
+    int? parsedId;
+    final rawId = json["id"];
+    if (rawId is int)
+      parsedId = rawId;
+    else if (rawId is String)
+      parsedId = int.tryParse(rawId) ?? (double.tryParse(rawId)?.toInt());
+
+    DateTime? parsedMonth;
+    final rawMonth = json["month_year"];
+    if (rawMonth is String && rawMonth.isNotEmpty) {
+      try {
+        parsedMonth = DateTime.parse(rawMonth);
+      } catch (_) {
+        parsedMonth = null;
+      }
+    }
+
+    return Contribution(
+      state: json["state"],
+      id: parsedId,
+      monthYear: parsedMonth,
+      description: json["description"],
+      quotable: json["quotable"],
+      retirementFund: json["retirement_fund"],
+      mortuaryQuota: json["mortuary_quota"],
+      contributionTotal: json["contribution_total"],
+      reimbursementTotal: json["reimbursement_total"],
+      total: json["total"],
+      type: json["type"],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "state": state,
