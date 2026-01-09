@@ -229,13 +229,30 @@ class EvaluationService {
   }
 
   /// Format money amount with 2 decimals and thousand separators
+  /// Uses '.' as thousand separator and ',' as decimal separator
   static String formatMoney(double amount) {
-    final parts = amount.toStringAsFixed(2).split('.');
-    final integerPart = parts[0].replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => ',',
-    );
-    return '$integerPart.${parts[1]}';
+    // Handle negative values correctly
+    final isNegative = amount < 0;
+    final positiveAmount = amount.abs();
+
+    // Split into integer and fractional parts
+    final parts = positiveAmount.toStringAsFixed(2).split('.');
+    var integerPart = parts[0];
+    final decimalPart = parts[1];
+
+    // Add thousand separators (.) to the integer part
+    if (integerPart.length > 3) {
+      integerPart = integerPart.replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+        (match) => '${match.group(1)}.',
+      );
+    }
+
+    // Combine with ',' as decimal separator
+    final formatted = '$integerPart,$decimalPart';
+
+    // Re-add minus sign if needed
+    return isNegative ? '-$formatted' : formatted;
   }
 
   /// Clamp amount between min and max values

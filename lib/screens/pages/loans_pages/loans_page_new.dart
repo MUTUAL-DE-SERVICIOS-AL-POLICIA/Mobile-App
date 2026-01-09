@@ -125,11 +125,14 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        foregroundColor: Colors.white,
-        backgroundColor: const Color(0xff419388),
+        foregroundColor: const Color(0xFF2D2D2D),
+        backgroundColor: const Color(0xFFF2C94C),
         onPressed: _showPreEvaluationModal,
         icon: const Icon(Icons.calculate),
-        label: const Text('Evaluación Referencial'),
+        label: const Text(
+          'Evaluación Referencial',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

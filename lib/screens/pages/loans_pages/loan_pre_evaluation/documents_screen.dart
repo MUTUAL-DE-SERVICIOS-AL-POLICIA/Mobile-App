@@ -209,8 +209,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   Widget _buildHeader(ThemeData theme) {
     return EvaluationWidgets.gradientHeader(
-      title: "Documentos Requeridos",
-      subtitle: "Para trámite en plataforma",
+      title: "REQUISITOS",
+      subtitle: "Para Solicitar",
       icon: Icons.description,
     );
   }

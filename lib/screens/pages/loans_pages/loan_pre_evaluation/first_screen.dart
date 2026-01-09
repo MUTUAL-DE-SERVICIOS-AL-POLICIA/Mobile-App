@@ -233,7 +233,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                         child: Column(
                           children: [
                             Text(
-                              'Esta evaluación es solo referencial; '
+                              'Esta evaluación es solo referencial sin considerar los prestamos que este garantizando; '
                               'para iniciar la solicitud formal del préstamo debes realizarlo de manera presencial en las oficinas de la MUSERPOL a nivel nacional.',
                               style: TextStyle(
                                 fontSize: 16.sp,
@@ -671,7 +671,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'COTIZABLE',
+          'MONTO PARA EVALUAR',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20.sp,
@@ -866,7 +866,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'COTIZABLE',
+            'MONTO PARA EVALUAR',
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.bold, fontSize: 20.sp),
           ),
@@ -992,20 +992,6 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
           const SizedBox(height: 16),
         ],
       ),
-    );
-  }
-
-  Widget _buildSueldoBaseCard() {
-    return EvaluationWidgets.infoCard(
-      title: "Sueldo base calculado",
-      value: "${EvaluationService.formatMoney(sueldoBase!)} Bs",
-      icon: Icons.account_balance_wallet,
-      backgroundColor: sueldoBase! > 0
-          ? const Color(0xff419388).withAlpha(26)
-          : Colors.red.shade50,
-      textColor:
-          sueldoBase! > 0 ? const Color(0xff2d6b61) : Colors.red.shade700,
-      isHighlighted: true,
     );
   }
 
