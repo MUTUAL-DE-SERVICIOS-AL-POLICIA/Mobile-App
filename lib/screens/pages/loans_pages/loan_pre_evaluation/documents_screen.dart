@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:muserpol_pvt/screens/navigation_general_pages.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
 import 'package:muserpol_pvt/model/saved_loan_evaluation.dart';
 import 'package:muserpol_pvt/model/evaluation_models.dart';
 import 'package:muserpol_pvt/services/evaluation_service.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'widgets/evaluation_widgets.dart';
+// Import para redirigir a la pantalla de préstamos y abrir la evaluación
+import 'package:muserpol_pvt/screens/pages/loans_pages/loans_page_new.dart';
 
 class DocumentsScreen extends StatefulWidget {
   final VoidCallback? onExit;
@@ -482,9 +485,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         onPressed: () async {
           final saved = await _saveEvaluation();
           if (saved) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            _goToModule(2); // Índice del módulo de préstamos
           }
         },
+      ),
+    );
+  }
+
+  void _goToModule(int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NavigatorBarGeneral(initialIndex: index),
       ),
     );
   }

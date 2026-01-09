@@ -1,9 +1,11 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-//VERIFICA SI LA VARIBLE DE ENTORNO TIENE VALOR TRUE O FALSE 
+
+//VERIFICA SI LA VARIBLE DE ENTORNO TIENE VALOR TRUE O FALSE
 //PARA SABER CON QUE VARIABLE INGRESARA
 bool stateApp() => dotenv.env['STATE_PROD'] == 'true';
 //SI PREGUNTARA DEL BACKEND DE PRODUCCION O DE PRUEBAS
-String? hostSTI = stateApp() ? dotenv.env['HOST_STI_PROD'] : dotenv.env['HOST_STI_DEV'];
+String? hostSTI =
+    stateApp() ? dotenv.env['HOST_STI_PROD'] : dotenv.env['HOST_STI_DEV'];
 String? hostGATEWAY = stateApp()
     ? dotenv.env['HOST_GATEWAY_PROD']
     : dotenv.env['HOST_GATEWAY_DEV'];
@@ -24,42 +26,61 @@ String sendIdentityCard() => '$hostGATEWAY/$reazonMovil/ecoComSaveIdentity';
 //CONTACTOS
 String serviceGetContacts() => '$hostGATEWAY/$reazonMovil/globalCities';
 //POLITICAS Y PRIVACIDAD
-String serviceGetPrivacyPolicy() => 'https://www.muserpol.gob.bo/terminos-y-condiciones';
-//CARGAR COMPLEMENTO ECONOMICO 
-String serviceGetEconomicComplements(int page, bool current) => '$hostGATEWAY/$reazonMovil/ecoComEconomicComplements/?page=$page&current=$current';
+String serviceGetPrivacyPolicy() =>
+    'https://www.muserpol.gob.bo/terminos-y-condiciones';
+//CARGAR COMPLEMENTO ECONOMICO
+String serviceGetEconomicComplements(int page, bool current) =>
+    '$hostGATEWAY/$reazonMovil/ecoComEconomicComplements/?page=$page&current=$current';
 //CARGAR OBSERVACIONES PARA COMPLEMENTO ECONOMICO
-String serviceGetObservation(int affiliateId) => '$hostGATEWAY/$reazonMovil/ecoComAffiliateObservations/$affiliateId';
+String serviceGetObservation(int affiliateId) =>
+    '$hostGATEWAY/$reazonMovil/ecoComAffiliateObservations/$affiliateId';
 //CARGAR SI PUEDE REALIZAR EL TRAMITE
-String serviceGetProcessingPermit(int affiliateId) => '$hostGATEWAY/$reazonMovil/ecoComLivenessShow/$affiliateId';
+String serviceGetProcessingPermit(int affiliateId) =>
+    '$hostGATEWAY/$reazonMovil/ecoComLivenessShow/$affiliateId';
 //VERIFICA SI YA SE TIENE EL CARNET DEL BENEFICIARIO
-String serviceGetMessageFaceType(String type) => '$hostGATEWAY/$reazonMovil/message/$type';
+String serviceGetMessageFaceType(String type) =>
+    '$hostGATEWAY/$reazonMovil/message/$type';
 //MENSAJE CORRESPONDIENTE A LAS ACCIONES PARA EL ENROLAMIENTO COMPLETO O SOLO CONTROL DE VIVENCIA
 String serviceProcessEnrolled() => '$hostGATEWAY/$reazonMovil/ecoComLiveness';
 //SE ENVIA LAS FOTOGRAFIAS DEL ENROLAMIENTO O CONTROL DE VIVENCIA
-String serviceProcessEnrolledPost() => '$hostGATEWAY/$reazonMovil/ecoComLivenessStore';
+String serviceProcessEnrolledPost() =>
+    '$hostGATEWAY/$reazonMovil/ecoComLivenessStore';
 //SE ENVIA LOS DATOS Y FOTOGRAFIAS DEL CARNET
-String serviceSendImagesProcedure() => '$hostGATEWAY/$reazonMovil/ecoComEconomicComplementsStore';
+String serviceSendImagesProcedure() =>
+    '$hostGATEWAY/$reazonMovil/ecoComEconomicComplementsStore';
 //DESCARGAR EL DOCUMENTO DE CREACION DEL TRAMITE DE COMPLEMENTO ECONOMICO
-String serviceGetPDFEC(int economicComplementId) => '$hostGATEWAY/$reazonMovil/ecoComEconomicComplementsPrint/$economicComplementId';
+String serviceGetPDFEC(int economicComplementId) =>
+    '$hostGATEWAY/$reazonMovil/ecoComEconomicComplementsPrint/$economicComplementId';
 //SE ENVIA EL ID DEL COMPLEMENTO ECONOMICO - Y SE SABE QUE TIPO DE TRAMITE PUEDE REALIZAR
-String serviceEcoComProcedure(int ecoComId) => '$hostGATEWAY/$reazonMovil/ecoComProcedure/$ecoComId';
+String serviceEcoComProcedure(int ecoComId) =>
+    '$hostGATEWAY/$reazonMovil/ecoComProcedure/$ecoComId';
 //SE OBTIENE TODOS LOS APORTES DEL USUARIO
-String serviceContributions(int affiliateId) => '$hostGATEWAY/$reazonMovil/contributionsAll/$affiliateId';
-//IMPRIMIR SU DOCUMENTO RELACIONADO A SUS APORTES 
-String servicePrintContributionPasive(int affiliateId) => '$hostGATEWAY/$reazonMovil/contributionsPassive/$affiliateId';
-String servicePrintContributionActive(int affiliateId) => '$hostGATEWAY/$reazonMovil/contributionsActive/$affiliateId';
+String serviceContributions(int affiliateId) =>
+    '$hostGATEWAY/$reazonMovil/contributionsAll/$affiliateId';
+//IMPRIMIR SU DOCUMENTO RELACIONADO A SUS APORTES
+String servicePrintContributionPasive(int affiliateId) =>
+    '$hostGATEWAY/$reazonMovil/contributionsPassive/$affiliateId';
+String servicePrintContributionActive(int affiliateId) =>
+    '$hostGATEWAY/$reazonMovil/contributionsActive/$affiliateId';
 //INFORMACION SOBRE LOS PRESTAMOS DEL USUARIO
-String serviceLoans(int affiliateId) => '$hostGATEWAY/$reazonMovil/loanInformation/$affiliateId';
+String serviceLoans(int affiliateId) =>
+    '$hostGATEWAY/$reazonMovil/loanInformation/$affiliateId';
 //IMPRIMIR SOBRE EL PRESTAMO DEL USUARIO
-String servicePrintLoans(int loanId) => '$hostGATEWAY/$reazonMovil/loanPrintPlan/$loanId';
+String servicePrintLoans(int loanId) =>
+    '$hostGATEWAY/$reazonMovil/loanPrintPlan/$loanId';
 //IMPRIMIR EL KARDEX DEL PRESTAMO
-String servicePrintKadex(int loanId) => '$hostGATEWAY/$reazonMovil/loanPrintKardex/$loanId';
+String servicePrintKadex(int loanId) =>
+    '$hostGATEWAY/$reazonMovil/loanPrintKardex/$loanId';
 //"CIUDADANIA DIGITAL -SERVICIO DE AUTENTICACION"
-String serviceGetCredentials() => '$hostGATEWAY/$auth/credentialsCitizenshipDigital';
+String serviceGetCredentials() =>
+    '$hostGATEWAY/$auth/credentialsCitizenshipDigital';
 //PRE EVALUACION DE PRESTAMOS
 //obtener modulos y submodulos mediante el affiliateId
-String servicePreEvaluation(int affiliateId)=>'$hostGATEWAY/appMobile/preEvaluation/loanModalities/$affiliateId';
+String servicePreEvaluation(int affiliateId) =>
+    '$hostGATEWAY/appMobile/preEvaluation/loanModalities/$affiliateId';
 //Obtener contribuciones cotizables (ultimo pago)
-String serviceLastPayment(int affiliateId, int procedureModalityId)=>'$hostGATEWAY/appMobile/preEvaluation/quotable/$affiliateId';
+String serviceLastPayment(int affiliateId, int procedureModalityId) =>
+    '$hostGATEWAY/appMobile/preEvaluation/quotable/$affiliateId';
 //obtener documentos requeridos
-String serviceGetRequiredDocuments(int procedureModalityId,int affiliateId)=>'$hostGATEWAY/appMobile/preEvaluation/loanDocuments/$affiliateId/$procedureModalityId';
+String serviceGetRequiredDocuments(int procedureModalityId, int affiliateId) =>
+    '$hostGATEWAY/appMobile/preEvaluation/loanDocumentsModality/$affiliateId/$procedureModalityId';
