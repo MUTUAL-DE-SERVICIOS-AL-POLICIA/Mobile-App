@@ -119,9 +119,14 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         EvaluationService.parseCurrency(rentaDignidadController.text) ?? 0.0;
     final nuevoSueldoBase = sueldo - renta;
 
-    if ((sueldoBase ?? 0.0) != nuevoSueldoBase) {
+    if ((sueldoBase ?? 0.0) != nuevoSueldoBase ||
+        _liquidoPagable != sueldo ||
+        _totalBonos != renta) {
       setState(() {
         sueldoBase = nuevoSueldoBase;
+        _liquidoPagable = sueldo;
+        _totalBonos = renta; // here totalBonos acts as the renta deduction
+        _liquidoParaCalificacion = nuevoSueldoBase;
         _showModalitiesForPasivo = sueldo > 0;
       });
     }
@@ -861,11 +866,118 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Información del Sueldo para Calificación',
+            'COTIZABLE',
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.bold, fontSize: 20.sp),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () => setState(() => _isBonusExpanded = !_isBonusExpanded),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _liquidoParaCalificacion >= 0
+                    ? const Color(0xff419388).withAlpha(26)
+                    : Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _liquidoParaCalificacion >= 0
+                      ? const Color(0xff419388).withAlpha(77)
+                      : Colors.red.shade200,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Líquido para Calificación",
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontSize: 18,
+                                color: _liquidoParaCalificacion >= 0
+                                    ? const Color(0xff419388)
+                                    : Colors.red.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _liquidoParaCalificacion >= 0
+                                  ? "${EvaluationService.formatMoney(_liquidoParaCalificacion)} Bs"
+                                  : "Límite Excedido",
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22.sp,
+                                color: _liquidoParaCalificacion >= 0
+                                    ? const Color(0xff2d6b61)
+                                    : Colors.red.shade700,
+                                letterSpacing: -0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      AnimatedRotation(
+                        turns: _isBonusExpanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Icon(
+                          Icons.expand_more,
+                          color: _liquidoParaCalificacion >= 0
+                              ? const Color(0xff419388)
+                              : Colors.red.shade600,
+                          size: 28,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!_isBonusExpanded) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        'Ver mas detalles',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _liquidoParaCalificacion >= 0
+                              ? const Color(0xff419388)
+                              : Colors.red.shade600,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _isBonusExpanded
+                        ? Column(
+                            children: [
+                              const SizedBox(height: 16),
+                              // Liquido Pagable (Sueldo)
+                              _buildDesgloseLine(
+                                  '+ Líquido Pagable', sueldoController),
+                              const SizedBox(height: 12),
+                              // Renta Dignidad as the only deduction
+                              _buildDesgloseLine(
+                                  '- Renta Dignidad', rentaDignidadController),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // keep inputs visible for editing
           EvaluationWidgets.moneyInputField(
             label: 'Sueldo',
             controller: sueldoController,
@@ -878,7 +990,6 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             onChanged: (_) => _updateSueldoBase(),
           ),
           const SizedBox(height: 16),
-          if (sueldoBase != null) _buildSueldoBaseCard(),
         ],
       ),
     );
@@ -932,7 +1043,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
     FocusScope.of(context).unfocus();
     _hasNavigatedAway = true;
-    
+
     final currentBloc = context.read<LoanPreEvaluationBloc>();
 
     Navigator.push(

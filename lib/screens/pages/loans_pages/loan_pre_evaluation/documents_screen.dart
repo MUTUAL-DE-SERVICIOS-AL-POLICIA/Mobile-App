@@ -8,8 +8,6 @@ import 'package:muserpol_pvt/model/evaluation_models.dart';
 import 'package:muserpol_pvt/services/evaluation_service.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'widgets/evaluation_widgets.dart';
-// Import para redirigir a la pantalla de préstamos y abrir la evaluación
-import 'package:muserpol_pvt/screens/pages/loans_pages/loans_page_new.dart';
 
 class DocumentsScreen extends StatefulWidget {
   final VoidCallback? onExit;
