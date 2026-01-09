@@ -493,11 +493,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   void _goToModule(int index) {
-    Navigator.push(
-      context,
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (_) => NavigatorBarGeneral(initialIndex: index),
       ),
+      (route) => route.isFirst,
     );
   }
 }
