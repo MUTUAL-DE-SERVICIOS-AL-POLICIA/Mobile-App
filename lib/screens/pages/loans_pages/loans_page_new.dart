@@ -281,7 +281,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                   ],
                 ),
               ),
-
               Expanded(
                 child: Container(
                   color: theme.scaffoldBackgroundColor,
@@ -291,7 +290,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 20),
-      
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -327,9 +325,7 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 12),
-
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
@@ -372,7 +368,6 @@ class _ScreenLoansNewState extends State<ScreenLoansNew> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 20),
                       ],
                     ),
