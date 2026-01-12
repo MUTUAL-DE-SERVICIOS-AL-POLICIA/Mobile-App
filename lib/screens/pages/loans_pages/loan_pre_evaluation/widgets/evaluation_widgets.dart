@@ -18,15 +18,11 @@ class EvaluationWidgets {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xff419388), Color(0xff2d6b61)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFFB2DFDB), // Fondo sólido, sin gradiente
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xff419388).withAlpha(77),
+            color: const Color(0xFF80CBC4).withAlpha(60),
             blurRadius: 15,
             offset: const Offset(0, 5),
           )
@@ -37,14 +33,14 @@ class EvaluationWidgets {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 24.sp),
+              Icon(icon, color: const Color(0xFF00695C), size: 24.sp),
               const SizedBox(width: 12),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 23.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: const Color(0xFF00695C),
                 ),
               ),
             ],
@@ -54,7 +50,7 @@ class EvaluationWidgets {
             Text(
               subtitle,
               style: TextStyle(
-                color: Colors.white.withAlpha(230),
+                color: const Color(0xFF00695C).withAlpha(230),
                 fontSize: 15.sp,
               ),
               textAlign: TextAlign.center,
@@ -498,11 +494,14 @@ class EvaluationWidgets {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xff419388), Color(0xff2d6b61)],
+              colors: [
+                Color(0xFFE0F2F1),
+                Color(0xFFB2DFDB)
+              ], // Verde menta claro
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xff419388).withAlpha(77),
+              color: const Color(0xFF80CBC4).withAlpha(100),
               width: 2,
             ),
           ),
@@ -511,13 +510,14 @@ class EvaluationWidgets {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.payments, color: Colors.white, size: 22),
+                  const Icon(Icons.payments,
+                      color: Color(0xFF00695C), size: 22),
                   const SizedBox(width: 8),
                   Text(
                     'CUOTA ${paymentFrequency.toUpperCase()}',
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.white.withAlpha(242),
+                      color: const Color(0xFF00695C),
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
                     ),
@@ -530,7 +530,7 @@ class EvaluationWidgets {
                 style: TextStyle(
                   fontSize: 40.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: const Color(0xFF004D40),
                   letterSpacing: -0.5,
                 ),
               ),
@@ -539,7 +539,7 @@ class EvaluationWidgets {
                 'Bolivianos',
                 style: TextStyle(
                   fontSize: 13.sp,
-                  color: Colors.white.withAlpha(204),
+                  color: const Color(0xFF00695C).withAlpha(204),
                   fontWeight: FontWeight.w500,
                 ),
               ),

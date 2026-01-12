@@ -8,8 +8,6 @@ import 'package:muserpol_pvt/model/evaluation_models.dart';
 import 'package:muserpol_pvt/services/evaluation_service.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'widgets/evaluation_widgets.dart';
-// Import para redirigir a la pantalla de préstamos y abrir la evaluación
-import 'package:muserpol_pvt/screens/pages/loans_pages/loans_page_new.dart';
 
 class DocumentsScreen extends StatefulWidget {
   final VoidCallback? onExit;
@@ -211,8 +209,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   Widget _buildHeader(ThemeData theme) {
     return EvaluationWidgets.gradientHeader(
-      title: "Documentos Requeridos",
-      subtitle: "Para trámite en plataforma",
+      title: "REQUISITOS",
+      subtitle: "Para Solicitar",
       icon: Icons.description,
     );
   }
@@ -493,11 +491,11 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   void _goToModule(int index) {
-    Navigator.push(
-      context,
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (_) => NavigatorBarGeneral(initialIndex: index),
       ),
+      (route) => route.isFirst,
     );
   }
 }

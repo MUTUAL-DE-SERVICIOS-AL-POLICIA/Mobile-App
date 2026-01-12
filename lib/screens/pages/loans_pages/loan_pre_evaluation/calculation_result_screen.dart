@@ -158,7 +158,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
       if (limiteEndeudamiento > _params!.debtIndex) {
         _mensajeError =
-            'La cuota ${EvaluationService.getPaymentFrequency(_params!.loanMonthTerm)} excede el límite de endeudamiento permitido de ${_params!.debtIndex}% de tu Liquido para Calificación.';
+            'La cuota ${EvaluationService.getPaymentFrequency(_params!.loanMonthTerm)} excede el límite de endeudamiento permitido de tu Liquido para Calificación.';
       }
     });
   }
@@ -419,7 +419,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     _getMaxAmount();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Monto Solicitado',
+      Text('Monto a Acceder (Bs)',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               fontSize: 17.sp,
@@ -452,7 +452,6 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w400,
                 fontStyle: FontStyle.italic),
-            suffixText: 'Bs',
             suffixStyle: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
