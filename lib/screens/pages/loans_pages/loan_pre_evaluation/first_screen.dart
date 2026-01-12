@@ -9,6 +9,7 @@ import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/calcu
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
 import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
 import 'widgets/evaluation_widgets.dart';
+import 'package:flutter/services.dart';
 
 class FirstScreen extends StatefulWidget {
   const FirstScreen({super.key});
@@ -824,6 +825,9 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                   controller: controller,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    DecimalTextInputFormatter()
+                  ], // ← AGREGAR ESTA LÍNEA
                   onChanged: _onActivoFieldChanged,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
@@ -1069,5 +1073,56 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       _refreshData();
       _hasNavigatedAway = false;
     });
+  }
+}
+
+/// Formatter que permite edición libre pero limita a 2 decimales
+class DecimalTextInputFormatter extends TextInputFormatter {
+  final int decimalPlaces;
+
+  DecimalTextInputFormatter({this.decimalPlaces = 2});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Permitir campo vacío
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Permitir solo números, punto y coma
+    final String text = newValue.text;
+    if (!RegExp(r'^[0-9.,]*$').hasMatch(text)) {
+      return oldValue;
+    }
+
+    // Contar separadores decimales
+    final commaCount = text.split(',').length - 1;
+    final dotCount = text.split('.').length - 1;
+
+    // No permitir más de un separador decimal
+    if (commaCount + dotCount > 1) {
+      return oldValue;
+    }
+
+    // Verificar cantidad de decimales
+    String separator = '';
+    if (text.contains(',')) {
+      separator = ',';
+    } else if (text.contains('.')) {
+      separator = '.';
+    }
+
+    if (separator.isNotEmpty) {
+      final parts = text.split(separator);
+      if (parts.length == 2 && parts[1].length > decimalPlaces) {
+        // Si intenta agregar más decimales de los permitidos, rechazar
+        return oldValue;
+      }
+    }
+
+    return newValue;
   }
 }
