@@ -799,7 +799,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildDesgloseLine(String label, TextEditingController controller) {
+  Widget _buildDesgloseLine(String label, TextEditingController controller,
+      {ValueChanged<String>? onChanged}) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -828,7 +829,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                   inputFormatters: [
                     DecimalTextInputFormatter()
                   ], // ← AGREGAR ESTA LÍNEA
-                  onChanged: _onActivoFieldChanged,
+                  onChanged: onChanged ?? _onActivoFieldChanged,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
                   textAlign: TextAlign.right,
@@ -864,6 +865,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
   Widget _buildPasivoFields() {
     final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -947,7 +949,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        'Ver mas detalles',
+                        'Ver más detalles',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: _liquidoParaCalificacion >= 0
                               ? const Color(0xff419388)
@@ -965,13 +967,19 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                         ? Column(
                             children: [
                               const SizedBox(height: 16),
-                              // Liquido Pagable (Sueldo)
+                              // Líquido Pagable = Sueldo Base
                               _buildDesgloseLine(
-                                  '+ Líquido Pagable', sueldoController),
+                                '+ Líquido Pagable',
+                                sueldoController,
+                                onChanged: (_) => _updateSueldoBase(),
+                              ),
                               const SizedBox(height: 12),
-                              // Renta Dignidad as the only deduction
+                              // Renta Dignidad como única deducción
                               _buildDesgloseLine(
-                                  '- Renta Dignidad', rentaDignidadController),
+                                '- Renta Dignidad',
+                                rentaDignidadController,
+                                onChanged: (_) => _updateSueldoBase(),
+                              ),
                             ],
                           )
                         : const SizedBox.shrink(),
@@ -979,19 +987,6 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          // keep inputs visible for editing
-          EvaluationWidgets.moneyInputField(
-            label: 'Sueldo',
-            controller: sueldoController,
-            onChanged: (_) => _updateSueldoBase(),
-          ),
-          const SizedBox(height: 12),
-          EvaluationWidgets.moneyInputField(
-            label: 'Renta Dignidad',
-            controller: rentaDignidadController,
-            onChanged: (_) => _updateSueldoBase(),
           ),
           const SizedBox(height: 16),
         ],
