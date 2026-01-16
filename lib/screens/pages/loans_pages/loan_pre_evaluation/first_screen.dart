@@ -72,6 +72,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     }
   }
 
+  String _formatNumberWithComma(double value) {
+    return value.toStringAsFixed(2).replaceAll('.', ',');
+  }
+
   void _disposeControllers() {
     final textControllers = <TextEditingController>[
       sueldoController,
@@ -359,12 +363,12 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             _liquidoParaCalificacion = 0.0;
             sueldoBase = 0.0;
             _isBonusExpanded = true;
-            liquidoPagableController.text = 0.00.toStringAsFixed(2);
-            seniorityBonusController.text = 0.00.toStringAsFixed(2);
-            studyBonusController.text = 0.00.toStringAsFixed(2);
-            positionBonusController.text = 0.00.toStringAsFixed(2);
-            borderBonusController.text = 0.00.toStringAsFixed(2);
-            eastBonusController.text = 0.00.toStringAsFixed(2);
+            liquidoPagableController.text = _formatNumberWithComma(0.0);
+            seniorityBonusController.text = _formatNumberWithComma(0.0);
+            studyBonusController.text = _formatNumberWithComma(0.0);
+            positionBonusController.text = _formatNumberWithComma(0.0);
+            borderBonusController.text = _formatNumberWithComma(0.0);
+            eastBonusController.text = _formatNumberWithComma(0.0);
           });
         }
       } else {
@@ -433,12 +437,12 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         sueldoBase = liquidoCalificacion;
         _hasLoadedActivoData = true;
         _isBonusExpanded = (liquidoPagable == 0.0 && totalBonuses == 0.0);
-        liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
-        seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
-        studyBonusController.text = studyBonus.toStringAsFixed(2);
-        positionBonusController.text = positionBonus.toStringAsFixed(2);
-        borderBonusController.text = borderBonus.toStringAsFixed(2);
-        eastBonusController.text = eastBonus.toStringAsFixed(2);
+        liquidoPagableController.text = _formatNumberWithComma(liquidoPagable);
+        seniorityBonusController.text = _formatNumberWithComma(seniorityBonus);
+        studyBonusController.text = _formatNumberWithComma(studyBonus);
+        positionBonusController.text = _formatNumberWithComma(positionBonus);
+        borderBonusController.text = _formatNumberWithComma(borderBonus);
+        eastBonusController.text = _formatNumberWithComma(eastBonus);
 
         _isFetchingSueldo = false;
       });
