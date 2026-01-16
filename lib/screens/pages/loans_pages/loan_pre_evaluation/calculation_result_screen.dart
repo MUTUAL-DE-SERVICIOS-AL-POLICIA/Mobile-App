@@ -236,6 +236,10 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     Navigator.pop(context);
   }
 
+  double _roundDown(double value) {
+    return value.truncateToDouble();
+  }
+
   void _initValues() {
     if (_modality == null) return;
 
@@ -246,9 +250,9 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
     _calculate();
 
-    _montoSolicitado = _montoMaximoCalculado > 0
+    _montoSolicitado = _roundDown(_montoMaximoCalculado > 0
         ? _montoMaximoCalculado
-        : _params!.minimumAmountModality;
+        : _params!.minimumAmountModality);
 
     _montoController.text =
         NumberInputFormatter.formatDouble(_montoSolicitado, 2);
@@ -310,6 +314,23 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     } else {
       final value = double.tryParse(cleaned.replaceAll(',', '.'));
       if (value != null && value >= 0) {
+        final minAmount = _params?.minimumAmountModality ?? 0;
+
+        // Mostrar mensaje si intenta ingresar un monto menor al mínimo
+        if (value < minAmount && value > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Para montos menores a Bs ${NumberInputFormatter.formatDouble(minAmount, 2)}, cambia de modalidad de préstamo',
+                style: const TextStyle(color: Colors.white),
+              ),
+              duration: const Duration(seconds: 5),
+              backgroundColor: Colors.orange.shade700,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+
         _montoSolicitado = _clampAmount(value);
         if (_montoSolicitado != value) _updateControllerWithClampedValue();
       }
