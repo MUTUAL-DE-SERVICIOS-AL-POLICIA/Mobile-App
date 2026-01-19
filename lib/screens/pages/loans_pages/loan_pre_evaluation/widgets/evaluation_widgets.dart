@@ -856,7 +856,7 @@ class EvaluationWidgets {
               child: _buildModalityInfoCell(
                 Icons.attach_money,
                 'Monto',
-                '${EvaluationService.formatMoney(modality.parameters.minimumAmountModality)} - ${EvaluationService.formatMoney(modality.parameters.maximumAmountModality)} Bs',
+                'hasta ${EvaluationService.formatMoney(modality.parameters.maximumAmountModality)} Bs',
               ),
             ),
             const SizedBox(width: 12),

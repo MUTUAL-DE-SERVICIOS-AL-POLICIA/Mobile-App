@@ -9,6 +9,7 @@ import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/calcu
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
 import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
 import 'widgets/evaluation_widgets.dart';
+import 'package:flutter/services.dart';
 
 class FirstScreen extends StatefulWidget {
   const FirstScreen({super.key});
@@ -69,6 +70,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       _refreshData();
       _hasNavigatedAway = false;
     }
+  }
+
+  String _formatNumberWithComma(double value) {
+    return value.toStringAsFixed(2).replaceAll('.', ',');
   }
 
   void _disposeControllers() {
@@ -358,12 +363,12 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             _liquidoParaCalificacion = 0.0;
             sueldoBase = 0.0;
             _isBonusExpanded = true;
-            liquidoPagableController.text = 0.00.toStringAsFixed(2);
-            seniorityBonusController.text = 0.00.toStringAsFixed(2);
-            studyBonusController.text = 0.00.toStringAsFixed(2);
-            positionBonusController.text = 0.00.toStringAsFixed(2);
-            borderBonusController.text = 0.00.toStringAsFixed(2);
-            eastBonusController.text = 0.00.toStringAsFixed(2);
+            liquidoPagableController.text = _formatNumberWithComma(0.0);
+            seniorityBonusController.text = _formatNumberWithComma(0.0);
+            studyBonusController.text = _formatNumberWithComma(0.0);
+            positionBonusController.text = _formatNumberWithComma(0.0);
+            borderBonusController.text = _formatNumberWithComma(0.0);
+            eastBonusController.text = _formatNumberWithComma(0.0);
           });
         }
       } else {
@@ -432,12 +437,12 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         sueldoBase = liquidoCalificacion;
         _hasLoadedActivoData = true;
         _isBonusExpanded = (liquidoPagable == 0.0 && totalBonuses == 0.0);
-        liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
-        seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
-        studyBonusController.text = studyBonus.toStringAsFixed(2);
-        positionBonusController.text = positionBonus.toStringAsFixed(2);
-        borderBonusController.text = borderBonus.toStringAsFixed(2);
-        eastBonusController.text = eastBonus.toStringAsFixed(2);
+        liquidoPagableController.text = _formatNumberWithComma(liquidoPagable);
+        seniorityBonusController.text = _formatNumberWithComma(seniorityBonus);
+        studyBonusController.text = _formatNumberWithComma(studyBonus);
+        positionBonusController.text = _formatNumberWithComma(positionBonus);
+        borderBonusController.text = _formatNumberWithComma(borderBonus);
+        eastBonusController.text = _formatNumberWithComma(eastBonus);
 
         _isFetchingSueldo = false;
       });
@@ -798,7 +803,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildDesgloseLine(String label, TextEditingController controller) {
+  Widget _buildDesgloseLine(String label, TextEditingController controller,
+      {ValueChanged<String>? onChanged}) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -824,7 +830,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                   controller: controller,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: _onActivoFieldChanged,
+                  inputFormatters: [
+                    DecimalTextInputFormatter()
+                  ], // ← AGREGAR ESTA LÍNEA
+                  onChanged: onChanged ?? _onActivoFieldChanged,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
                   textAlign: TextAlign.right,
@@ -860,6 +869,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
   Widget _buildPasivoFields() {
     final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -943,7 +953,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        'Ver mas detalles',
+                        'Ver más detalles',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: _liquidoParaCalificacion >= 0
                               ? const Color(0xff419388)
@@ -961,13 +971,19 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                         ? Column(
                             children: [
                               const SizedBox(height: 16),
-                              // Liquido Pagable (Sueldo)
+                              // Líquido Pagable = Sueldo Base
                               _buildDesgloseLine(
-                                  '+ Líquido Pagable', sueldoController),
+                                '+ Líquido Pagable',
+                                sueldoController,
+                                onChanged: (_) => _updateSueldoBase(),
+                              ),
                               const SizedBox(height: 12),
-                              // Renta Dignidad as the only deduction
+                              // Renta Dignidad como única deducción
                               _buildDesgloseLine(
-                                  '- Renta Dignidad', rentaDignidadController),
+                                '- Renta Dignidad',
+                                rentaDignidadController,
+                                onChanged: (_) => _updateSueldoBase(),
+                              ),
                             ],
                           )
                         : const SizedBox.shrink(),
@@ -975,19 +991,6 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          // keep inputs visible for editing
-          EvaluationWidgets.moneyInputField(
-            label: 'Sueldo',
-            controller: sueldoController,
-            onChanged: (_) => _updateSueldoBase(),
-          ),
-          const SizedBox(height: 12),
-          EvaluationWidgets.moneyInputField(
-            label: 'Renta Dignidad',
-            controller: rentaDignidadController,
-            onChanged: (_) => _updateSueldoBase(),
           ),
           const SizedBox(height: 16),
         ],
@@ -1069,5 +1072,56 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       _refreshData();
       _hasNavigatedAway = false;
     });
+  }
+}
+
+/// Formatter que permite edición libre pero limita a 2 decimales
+class DecimalTextInputFormatter extends TextInputFormatter {
+  final int decimalPlaces;
+
+  DecimalTextInputFormatter({this.decimalPlaces = 2});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Permitir campo vacío
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Permitir solo números, punto y coma
+    final String text = newValue.text;
+    if (!RegExp(r'^[0-9.,]*$').hasMatch(text)) {
+      return oldValue;
+    }
+
+    // Contar separadores decimales
+    final commaCount = text.split(',').length - 1;
+    final dotCount = text.split('.').length - 1;
+
+    // No permitir más de un separador decimal
+    if (commaCount + dotCount > 1) {
+      return oldValue;
+    }
+
+    // Verificar cantidad de decimales
+    String separator = '';
+    if (text.contains(',')) {
+      separator = ',';
+    } else if (text.contains('.')) {
+      separator = '.';
+    }
+
+    if (separator.isNotEmpty) {
+      final parts = text.split(separator);
+      if (parts.length == 2 && parts[1].length > decimalPlaces) {
+        // Si intenta agregar más decimales de los permitidos, rechazar
+        return oldValue;
+      }
+    }
+
+    return newValue;
   }
 }
