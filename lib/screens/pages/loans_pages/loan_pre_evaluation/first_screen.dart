@@ -9,6 +9,7 @@ import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/calcu
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
 import 'package:muserpol_pvt/model/loan_pre_evaluation_model.dart';
 import 'widgets/evaluation_widgets.dart';
+import 'package:flutter/services.dart';
 
 class FirstScreen extends StatefulWidget {
   const FirstScreen({super.key});
@@ -71,6 +72,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     }
   }
 
+  String _formatNumberWithComma(double value) {
+    return value.toStringAsFixed(2).replaceAll('.', ',');
+  }
+
   void _disposeControllers() {
     final textControllers = <TextEditingController>[
       sueldoController,
@@ -119,9 +124,14 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         EvaluationService.parseCurrency(rentaDignidadController.text) ?? 0.0;
     final nuevoSueldoBase = sueldo - renta;
 
-    if ((sueldoBase ?? 0.0) != nuevoSueldoBase) {
+    if ((sueldoBase ?? 0.0) != nuevoSueldoBase ||
+        _liquidoPagable != sueldo ||
+        _totalBonos != renta) {
       setState(() {
         sueldoBase = nuevoSueldoBase;
+        _liquidoPagable = sueldo;
+        _totalBonos = renta; // here totalBonos acts as the renta deduction
+        _liquidoParaCalificacion = nuevoSueldoBase;
         _showModalitiesForPasivo = sueldo > 0;
       });
     }
@@ -228,7 +238,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                         child: Column(
                           children: [
                             Text(
-                              'Esta evaluación es solo referencial; '
+                              'Esta evaluación es solo referencial sin considerar los prestamos que este garantizando; '
                               'para iniciar la solicitud formal del préstamo debes realizarlo de manera presencial en las oficinas de la MUSERPOL a nivel nacional.',
                               style: TextStyle(
                                 fontSize: 16.sp,
@@ -353,12 +363,12 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
             _liquidoParaCalificacion = 0.0;
             sueldoBase = 0.0;
             _isBonusExpanded = true;
-            liquidoPagableController.text = 0.00.toStringAsFixed(2);
-            seniorityBonusController.text = 0.00.toStringAsFixed(2);
-            studyBonusController.text = 0.00.toStringAsFixed(2);
-            positionBonusController.text = 0.00.toStringAsFixed(2);
-            borderBonusController.text = 0.00.toStringAsFixed(2);
-            eastBonusController.text = 0.00.toStringAsFixed(2);
+            liquidoPagableController.text = _formatNumberWithComma(0.0);
+            seniorityBonusController.text = _formatNumberWithComma(0.0);
+            studyBonusController.text = _formatNumberWithComma(0.0);
+            positionBonusController.text = _formatNumberWithComma(0.0);
+            borderBonusController.text = _formatNumberWithComma(0.0);
+            eastBonusController.text = _formatNumberWithComma(0.0);
           });
         }
       } else {
@@ -427,12 +437,12 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
         sueldoBase = liquidoCalificacion;
         _hasLoadedActivoData = true;
         _isBonusExpanded = (liquidoPagable == 0.0 && totalBonuses == 0.0);
-        liquidoPagableController.text = liquidoPagable.toStringAsFixed(2);
-        seniorityBonusController.text = seniorityBonus.toStringAsFixed(2);
-        studyBonusController.text = studyBonus.toStringAsFixed(2);
-        positionBonusController.text = positionBonus.toStringAsFixed(2);
-        borderBonusController.text = borderBonus.toStringAsFixed(2);
-        eastBonusController.text = eastBonus.toStringAsFixed(2);
+        liquidoPagableController.text = _formatNumberWithComma(liquidoPagable);
+        seniorityBonusController.text = _formatNumberWithComma(seniorityBonus);
+        studyBonusController.text = _formatNumberWithComma(studyBonus);
+        positionBonusController.text = _formatNumberWithComma(positionBonus);
+        borderBonusController.text = _formatNumberWithComma(borderBonus);
+        eastBonusController.text = _formatNumberWithComma(eastBonus);
 
         _isFetchingSueldo = false;
       });
@@ -666,7 +676,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'COTIZABLE',
+          'MONTO PARA EVALUAR',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20.sp,
@@ -793,7 +803,8 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildDesgloseLine(String label, TextEditingController controller) {
+  Widget _buildDesgloseLine(String label, TextEditingController controller,
+      {ValueChanged<String>? onChanged}) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -819,7 +830,10 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
                   controller: controller,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: _onActivoFieldChanged,
+                  inputFormatters: [
+                    DecimalTextInputFormatter()
+                  ], // ← AGREGAR ESTA LÍNEA
+                  onChanged: onChanged ?? _onActivoFieldChanged,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
                   textAlign: TextAlign.right,
@@ -855,46 +869,132 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
   Widget _buildPasivoFields() {
     final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Información del Sueldo para Calificación',
+            'MONTO PARA EVALUAR',
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.bold, fontSize: 20.sp),
           ),
-          const SizedBox(height: 16),
-          EvaluationWidgets.moneyInputField(
-            label: 'Sueldo',
-            controller: sueldoController,
-            onChanged: (_) => _updateSueldoBase(),
-          ),
           const SizedBox(height: 12),
-          EvaluationWidgets.moneyInputField(
-            label: 'Renta Dignidad',
-            controller: rentaDignidadController,
-            onChanged: (_) => _updateSueldoBase(),
+          GestureDetector(
+            onTap: () => setState(() => _isBonusExpanded = !_isBonusExpanded),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _liquidoParaCalificacion >= 0
+                    ? const Color(0xff419388).withAlpha(26)
+                    : Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _liquidoParaCalificacion >= 0
+                      ? const Color(0xff419388).withAlpha(77)
+                      : Colors.red.shade200,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Líquido para Calificación",
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontSize: 18,
+                                color: _liquidoParaCalificacion >= 0
+                                    ? const Color(0xff419388)
+                                    : Colors.red.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _liquidoParaCalificacion >= 0
+                                  ? "${EvaluationService.formatMoney(_liquidoParaCalificacion)} Bs"
+                                  : "Límite Excedido",
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22.sp,
+                                color: _liquidoParaCalificacion >= 0
+                                    ? const Color(0xff2d6b61)
+                                    : Colors.red.shade700,
+                                letterSpacing: -0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      AnimatedRotation(
+                        turns: _isBonusExpanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Icon(
+                          Icons.expand_more,
+                          color: _liquidoParaCalificacion >= 0
+                              ? const Color(0xff419388)
+                              : Colors.red.shade600,
+                          size: 28,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!_isBonusExpanded) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        'Ver más detalles',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _liquidoParaCalificacion >= 0
+                              ? const Color(0xff419388)
+                              : Colors.red.shade600,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _isBonusExpanded
+                        ? Column(
+                            children: [
+                              const SizedBox(height: 16),
+                              // Líquido Pagable = Sueldo Base
+                              _buildDesgloseLine(
+                                '+ Líquido Pagable',
+                                sueldoController,
+                                onChanged: (_) => _updateSueldoBase(),
+                              ),
+                              const SizedBox(height: 12),
+                              // Renta Dignidad como única deducción
+                              _buildDesgloseLine(
+                                '- Renta Dignidad',
+                                rentaDignidadController,
+                                onChanged: (_) => _updateSueldoBase(),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 16),
-          if (sueldoBase != null) _buildSueldoBaseCard(),
         ],
       ),
-    );
-  }
-
-  Widget _buildSueldoBaseCard() {
-    return EvaluationWidgets.infoCard(
-      title: "Sueldo base calculado",
-      value: "${EvaluationService.formatMoney(sueldoBase!)} Bs",
-      icon: Icons.account_balance_wallet,
-      backgroundColor: sueldoBase! > 0
-          ? const Color(0xff419388).withAlpha(26)
-          : Colors.red.shade50,
-      textColor:
-          sueldoBase! > 0 ? const Color(0xff2d6b61) : Colors.red.shade700,
-      isHighlighted: true,
     );
   }
 
@@ -932,7 +1032,7 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
 
     FocusScope.of(context).unfocus();
     _hasNavigatedAway = true;
-    
+
     final currentBloc = context.read<LoanPreEvaluationBloc>();
 
     Navigator.push(
@@ -972,5 +1072,56 @@ class _FirstScreenState extends State<FirstScreen> with WidgetsBindingObserver {
       _refreshData();
       _hasNavigatedAway = false;
     });
+  }
+}
+
+/// Formatter que permite edición libre pero limita a 2 decimales
+class DecimalTextInputFormatter extends TextInputFormatter {
+  final int decimalPlaces;
+
+  DecimalTextInputFormatter({this.decimalPlaces = 2});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Permitir campo vacío
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Permitir solo números, punto y coma
+    final String text = newValue.text;
+    if (!RegExp(r'^[0-9.,]*$').hasMatch(text)) {
+      return oldValue;
+    }
+
+    // Contar separadores decimales
+    final commaCount = text.split(',').length - 1;
+    final dotCount = text.split('.').length - 1;
+
+    // No permitir más de un separador decimal
+    if (commaCount + dotCount > 1) {
+      return oldValue;
+    }
+
+    // Verificar cantidad de decimales
+    String separator = '';
+    if (text.contains(',')) {
+      separator = ',';
+    } else if (text.contains('.')) {
+      separator = '.';
+    }
+
+    if (separator.isNotEmpty) {
+      final parts = text.split(separator);
+      if (parts.length == 2 && parts[1].length > decimalPlaces) {
+        // Si intenta agregar más decimales de los permitidos, rechazar
+        return oldValue;
+      }
+    }
+
+    return newValue;
   }
 }

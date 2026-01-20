@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:muserpol_pvt/screens/navigation_general_pages.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
 import 'package:muserpol_pvt/model/saved_loan_evaluation.dart';
 import 'package:muserpol_pvt/model/evaluation_models.dart';
@@ -208,8 +209,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
   Widget _buildHeader(ThemeData theme) {
     return EvaluationWidgets.gradientHeader(
-      title: "Documentos Requeridos",
-      subtitle: "Para trámite en plataforma",
+      title: "REQUISITOS",
+      subtitle: "Para Solicitar",
       icon: Icons.description,
     );
   }
@@ -482,10 +483,19 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         onPressed: () async {
           final saved = await _saveEvaluation();
           if (saved) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            _goToModule(2); // Índice del módulo de préstamos
           }
         },
       ),
+    );
+  }
+
+  void _goToModule(int index) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => NavigatorBarGeneral(initialIndex: index),
+      ),
+      (route) => route.isFirst,
     );
   }
 }
