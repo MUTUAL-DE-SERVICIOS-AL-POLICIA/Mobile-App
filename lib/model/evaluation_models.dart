@@ -53,7 +53,7 @@ class LoanModality {
         subsector: json['subsector']?.toString() ?? '',
         parameters: LoanParameters.fromJson(json['parameters'] ?? {}),
       );
-      
+
       print('✅ LoanModality parseado exitosamente: ${modality.name}');
       return modality;
     } catch (e) {
@@ -125,7 +125,7 @@ class LoanParameters {
         annualInterest: _toDouble(json['annualInterest']),
         periodInterest: _toDouble(json['periodInterest']),
       );
-      
+
       print('✅ LoanParameters parseado exitosamente:');
       print('   - debtIndex: ${parameters.debtIndex}');
       print('   - annualInterest: ${parameters.annualInterest}');
@@ -210,8 +210,9 @@ class ContributionsPayload {
     return ContributionsPayload(
       totalContributions: json['total_contributions'] ?? 0,
       contributions: (json['contributions'] as List<dynamic>?)
-          ?.map((item) => Contribution.fromJson(item))
-          .toList() ?? [],
+              ?.map((item) => Contribution.fromJson(item))
+              .toList() ??
+          [],
       period: ContributionPeriod.fromJson(json['period'] ?? {}),
     );
   }
@@ -277,15 +278,17 @@ class Contribution {
   /// Método seguro para parsear números en formato español
   double parseAmount(String value) {
     final cleaned = value.replaceAll(' ', '');
-    
+
     if (cleaned.contains('.') && cleaned.contains(',')) {
       // Formato: 1.234,56 -> 1234.56
-      return double.tryParse(cleaned.replaceAll('.', '').replaceAll(',', '.')) ?? 0.0;
+      return double.tryParse(
+              cleaned.replaceAll('.', '').replaceAll(',', '.')) ??
+          0.0;
     } else if (cleaned.contains(',')) {
       // Formato: 1234,56 -> 1234.56
       return double.tryParse(cleaned.replaceAll(',', '.')) ?? 0.0;
     }
-    
+
     return double.tryParse(cleaned) ?? 0.0;
   }
 
@@ -328,8 +331,9 @@ class DocumentsResponse {
       affiliateId: json['procedureModalityId'] ?? 0, // Intercambiado
       procedureModalityId: json['affiliateId'] ?? 0, // Intercambiado
       documents: (json['documents'] as List<dynamic>?)
-          ?.map((item) => RequiredDocument.fromJson(item))
-          .toList() ?? [],
+              ?.map((item) => RequiredDocument.fromJson(item))
+              .toList() ??
+          [],
     );
   }
 }
@@ -353,8 +357,9 @@ class RequiredDocument {
       number: json['number'] ?? 0,
       name: json['name'] ?? '',
       options: (json['options'] as List<dynamic>?)
-          ?.map((opt) => DocumentOption.fromJson(opt))
-          .toList() ?? [],
+              ?.map((opt) => DocumentOption.fromJson(opt))
+              .toList() ??
+          [],
     );
   }
 
@@ -432,8 +437,10 @@ class EvaluationData {
   });
 
   String get termType => parameters.loanMonthTerm == 1 ? 'meses' : 'semestres';
-  String get paymentFrequency => parameters.loanMonthTerm == 1 ? 'mensual' : 'semestral';
-  String get interestLabel => parameters.loanMonthTerm == 1 ? 'Interés Mensual' : 'Interés Semestral';
+  String get paymentFrequency =>
+      parameters.loanMonthTerm == 1 ? 'mensual' : 'semestral';
+  String get interestLabel =>
+      parameters.loanMonthTerm == 1 ? 'Interés Mensual' : 'Interés Semestral';
 }
 
 // ============================================================================
@@ -470,25 +477,27 @@ class SafeParser {
   /// Parsea números en formato español (1.234,56)
   static double parseSpanishNumber(String value) {
     final cleaned = value.replaceAll(' ', '');
-    
+
     if (cleaned.contains('.') && cleaned.contains(',')) {
       // Formato: 1.234,56 -> 1234.56
-      return double.tryParse(cleaned.replaceAll('.', '').replaceAll(',', '.')) ?? 0.0;
+      return double.tryParse(
+              cleaned.replaceAll('.', '').replaceAll(',', '.')) ??
+          0.0;
     } else if (cleaned.contains(',')) {
       // Formato: 1234,56 -> 1234.56
       return double.tryParse(cleaned.replaceAll(',', '.')) ?? 0.0;
     }
-    
+
     return double.tryParse(cleaned) ?? 0.0;
   }
 
   /// Parsea moneda eliminando caracteres no numéricos
   static double? parseCurrency(String text) {
     if (text.isEmpty) return null;
-    
+
     final cleaned = text.replaceAll(RegExp(r'[^0-9.,]'), '');
     if (cleaned.isEmpty) return null;
-    
+
     return parseSpanishNumber(cleaned);
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/services.dart';
 import 'package:muserpol_pvt/bloc/user/user_bloc.dart';
 import 'package:muserpol_pvt/bloc/loan_pre_evaluation/loan_pre_evaluation_bloc.dart';
 import 'package:muserpol_pvt/model/evaluation_models.dart';
@@ -9,6 +10,142 @@ import 'package:muserpol_pvt/services/evaluation_service.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/documents_screen.dart';
 import 'package:muserpol_pvt/screens/pages/loans_pages/loan_pre_evaluation/widgets/loan_progress_indicator.dart';
 import 'widgets/evaluation_widgets.dart';
+
+class NumberInputFormatter extends TextInputFormatter {
+  final int decimalPlaces;
+  NumberInputFormatter({this.decimalPlaces = 2});
+
+  static String format(String text, int decimalPlaces) {
+    if (text.isEmpty) return '';
+    // remove spaces and invalid chars
+    String s = text.replaceAll(' ', '');
+    s = s.replaceAll(RegExp(r'[^0-9.,]'), '');
+    // unify decimal separator to comma
+    s = s.replaceAll('.', ',');
+
+    // keep only first comma if there are multiple
+    final firstComma = s.indexOf(',');
+    if (firstComma != -1) {
+      final before = s.substring(0, firstComma);
+      String after = s.substring(firstComma + 1).replaceAll(',', '');
+      if (after.length > decimalPlaces) {
+        after = after.substring(0, decimalPlaces);
+      }
+
+      var integerPart = before.replaceFirst(RegExp(r'^0+'), '');
+      if (integerPart.isEmpty) integerPart = '0';
+      final intFormatted = _addThousandSeparators(integerPart);
+
+      return after.isNotEmpty ? '$intFormatted,$after' : '$intFormatted,';
+    } else {
+      String integerPart = s.replaceAll(',', '');
+      integerPart = integerPart.replaceFirst(RegExp(r'^0+'), '');
+      if (integerPart.isEmpty) integerPart = '0';
+      return _addThousandSeparators(integerPart);
+    }
+  }
+
+  static String _addThousandSeparators(String digits) {
+    final chars = digits.split('').reversed.toList();
+    final sb = StringBuffer();
+    for (int i = 0; i < chars.length; i++) {
+      if (i > 0 && i % 3 == 0) sb.write(' ');
+      sb.write(chars[i]);
+    }
+    return sb.toString().split('').reversed.join('');
+  }
+
+  static String formatDouble(double value, int decimalPlaces) =>
+      format(value.toStringAsFixed(decimalPlaces), decimalPlaces);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    final oldText = oldValue.text;
+    final newText = newValue.text;
+    final oldCursorPosition = oldValue.selection.baseOffset;
+    final newCursorPosition = newValue.selection.baseOffset;
+
+    // Detectar si estamos borrando (backspace)
+    final isDeleting = newText.length < oldText.length &&
+        newCursorPosition < oldCursorPosition;
+
+    // Si estamos borrando y el cursor está justo después de un espacio,
+    // necesitamos borrar el dígito anterior al espacio
+    if (isDeleting &&
+        oldCursorPosition > 0 &&
+        oldText[oldCursorPosition - 1] == ' ') {
+      // Remover espacios para trabajar con dígitos puros
+      final oldDigits = oldText.replaceAll(' ', '');
+
+      // Contar dígitos antes del cursor en el texto antiguo
+      String textBeforeOldCursor = oldText.substring(0, oldCursorPosition);
+      int digitsBeforeOldCursor =
+          textBeforeOldCursor.replaceAll(' ', '').length;
+
+      // Borrar el dígito anterior
+      if (digitsBeforeOldCursor > 0) {
+        final newDigits = oldDigits.substring(0, digitsBeforeOldCursor - 1) +
+            oldDigits.substring(digitsBeforeOldCursor);
+
+        // Formatear el nuevo texto
+        final formatted = format(newDigits, decimalPlaces);
+
+        // Calcular nueva posición del cursor
+        int targetDigitCount = digitsBeforeOldCursor - 1;
+        int newPos = 0;
+        int digitCount = 0;
+
+        for (int i = 0; i < formatted.length; i++) {
+          if (formatted[i] != ' ') {
+            digitCount++;
+          }
+          if (digitCount >= targetDigitCount) {
+            newPos = i + 1;
+            break;
+          }
+        }
+
+        return TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: newPos),
+        );
+      }
+    }
+
+    // Contar cuántos dígitos reales hay antes del cursor
+    String textBeforeCursor = newText.substring(0, newCursorPosition);
+    int digitsBeforeCursor = textBeforeCursor.replaceAll(' ', '').length;
+
+    // Formatear el texto
+    final formatted = format(newText, decimalPlaces);
+
+    // Calcular la nueva posición del cursor
+    int finalCursorPosition = 0;
+    int digitCount = 0;
+
+    for (int i = 0; i < formatted.length; i++) {
+      if (formatted[i] != ' ') {
+        digitCount++;
+      }
+      if (digitCount >= digitsBeforeCursor) {
+        finalCursorPosition = i + 1;
+        break;
+      }
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: finalCursorPosition),
+    );
+  }
+}
 
 class CalculationResultScreen extends StatefulWidget {
   final int modalityId;
@@ -99,6 +236,10 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     Navigator.pop(context);
   }
 
+  double _roundDown(double value) {
+    return value.truncateToDouble();
+  }
+
   void _initValues() {
     if (_modality == null) return;
 
@@ -109,11 +250,12 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
     _calculate();
 
-    _montoSolicitado = _montoMaximoCalculado > 0
+    _montoSolicitado = _roundDown(_montoMaximoCalculado > 0
         ? _montoMaximoCalculado
-        : _params!.minimumAmountModality;
+        : _params!.minimumAmountModality);
 
-    _montoController.text = _montoSolicitado.toStringAsFixed(2);
+    _montoController.text =
+        NumberInputFormatter.formatDouble(_montoSolicitado, 2);
     _calculate();
   }
 
@@ -158,7 +300,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
 
       if (limiteEndeudamiento > _params!.debtIndex) {
         _mensajeError =
-            'La cuota ${EvaluationService.getPaymentFrequency(_params!.loanMonthTerm)} excede el límite de endeudamiento permitido de ${_params!.debtIndex}% de tu Liquido para Calificación.';
+            'La cuota ${EvaluationService.getPaymentFrequency(_params!.loanMonthTerm)} excede el límite de endeudamiento permitido de tu Liquido para Calificación.';
       }
     });
   }
@@ -172,6 +314,23 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     } else {
       final value = double.tryParse(cleaned.replaceAll(',', '.'));
       if (value != null && value >= 0) {
+        final minAmount = _params?.minimumAmountModality ?? 0;
+
+        // Mostrar mensaje si intenta ingresar un monto menor al mínimo
+        if (value < minAmount && value > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Para montos menores a Bs ${NumberInputFormatter.formatDouble(minAmount, 2)}, cambia de modalidad de préstamo',
+                style: const TextStyle(color: Colors.white),
+              ),
+              duration: const Duration(seconds: 5),
+              backgroundColor: Colors.orange.shade700,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+
         _montoSolicitado = _clampAmount(value);
         if (_montoSolicitado != value) _updateControllerWithClampedValue();
       }
@@ -188,9 +347,10 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
   }
 
   void _updateControllerWithClampedValue() {
-    _montoController.text = _montoSolicitado.toStringAsFixed(2);
-    _montoController.selection = TextSelection.fromPosition(
-        TextPosition(offset: _montoController.text.length));
+    final formatted = NumberInputFormatter.formatDouble(_montoSolicitado, 2);
+    _montoController.text = formatted;
+    _montoController.selection =
+        TextSelection.fromPosition(TextPosition(offset: formatted.length));
   }
 
   void _loadDocuments() {
@@ -419,7 +579,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
     _getMaxAmount();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Monto Solicitado',
+      Text('Monto a Acceder (Bs)',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               fontSize: 17.sp,
@@ -438,6 +598,7 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
         child: TextField(
           controller: _montoController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [NumberInputFormatter(decimalPlaces: 2)],
           onChanged: _onMontoChanged,
           style: TextStyle(
               fontSize: 20.sp,
@@ -452,7 +613,6 @@ class _CalculationResultScreenState extends State<CalculationResultScreen> {
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w400,
                 fontStyle: FontStyle.italic),
-            suffixText: 'Bs',
             suffixStyle: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
